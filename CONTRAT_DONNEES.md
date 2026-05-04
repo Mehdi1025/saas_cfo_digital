@@ -135,3 +135,8 @@ Règle : tout mock doit être **structurellement identique** au schéma JSON ci-
 ---
 
 *Document maintenu par l’équipe MVP — Mini CFO Digital.*
+
+
+
+a nepaas prendre enconsideration 
+> **Note du Dev B :** J'ai prévu d'ajouter une jauge pour le CAC la semaine prochaine.
