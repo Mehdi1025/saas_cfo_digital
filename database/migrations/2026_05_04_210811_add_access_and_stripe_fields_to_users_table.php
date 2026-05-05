@@ -15,8 +15,8 @@ return new class extends Migration
             $table->string('role')->default('user')->after('password');
             $table->string('stripe_customer_id')->nullable()->after('role');
             $table->string('stripe_subscription_id')->nullable()->after('stripe_customer_id');
-            $table->string('subscription_status')->default('inactive')->after('stripe_subscription_id');
-            $table->timestamp('suspended_at')->nullable()->after('subscription_status');
+            $table->string('stripe_status')->default('inactive')->after('stripe_subscription_id');
+            $table->timestamp('suspended_at')->nullable()->after('stripe_status');
         });
     }
 
@@ -30,7 +30,7 @@ return new class extends Migration
                 'role',
                 'stripe_customer_id',
                 'stripe_subscription_id',
-                'subscription_status',
+                'stripe_status',
                 'suspended_at',
             ]);
         });

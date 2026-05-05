@@ -5,9 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -23,11 +23,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
-        'stripe_customer_id',
-        'stripe_subscription_id',
-        'subscription_status',
-        'suspended_at',
     ];
 
     /**
@@ -54,11 +49,8 @@ class User extends Authenticatable
         ];
     }
 
-
-
     public function financialRecords(): HasMany
-{
-    return $this->hasMany(FinancialRecord::class);
-}
-
+    {
+        return $this->hasMany(FinancialRecord::class);
+    }
 }
