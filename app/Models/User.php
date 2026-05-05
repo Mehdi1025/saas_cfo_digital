@@ -45,14 +45,14 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'suspended_at' => 'datetime',
         ];
     }
 
 
 
     public function financialRecords(): HasMany
-{
-    return $this->hasMany(FinancialRecord::class);
-}
-
+    {
+        return $this->hasMany(FinancialRecord::class);
+    }
 }
