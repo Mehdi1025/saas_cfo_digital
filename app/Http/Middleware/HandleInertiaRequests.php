@@ -44,6 +44,10 @@ class HandleInertiaRequests extends Middleware
                         && in_array($user->stripe_status, ['active', 'trialing'], true),
                 ] : null,
             ],
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+            ],
         ];
     }
 }
