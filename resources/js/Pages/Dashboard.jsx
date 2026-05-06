@@ -8,7 +8,15 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 export default function Dashboard() {
     const { auth, dashboardData } = usePage().props;
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const {
+        data,
+        setData,
+        post,
+        processing,
+        errors,
+        reset,
+        recentlySuccessful,
+    } = useForm({
         month: '',
         revenue: '',
         charges: '',
@@ -41,7 +49,8 @@ export default function Dashboard() {
         event.preventDefault();
 
         post(route('financial-records.store'), {
-            onSuccess: () => reset(),
+            onSuccess: () =>
+                reset('month', 'revenue', 'charges', 'marketing_budget', 'clients_count'),
         });
     };
 
@@ -102,10 +111,7 @@ export default function Dashboard() {
                                                     className="mt-1 block w-full"
                                                     value={data.month}
                                                     onChange={(event) =>
-                                                        setData(
-                                                            'month',
-                                                            event.target.value,
-                                                        )
+                                                        setData('month', event.target.value)
                                                     }
                                                 />
                                                 <InputError
@@ -117,7 +123,7 @@ export default function Dashboard() {
                                             <div>
                                                 <InputLabel
                                                     htmlFor="revenue"
-                                                    value="CA"
+                                                    value="Chiffre d'affaires"
                                                 />
                                                 <TextInput
                                                     id="revenue"
@@ -127,10 +133,7 @@ export default function Dashboard() {
                                                     className="mt-1 block w-full"
                                                     value={data.revenue}
                                                     onChange={(event) =>
-                                                        setData(
-                                                            'revenue',
-                                                            event.target.value,
-                                                        )
+                                                        setData('revenue', event.target.value)
                                                     }
                                                 />
                                                 <InputError
@@ -152,10 +155,7 @@ export default function Dashboard() {
                                                     className="mt-1 block w-full"
                                                     value={data.charges}
                                                     onChange={(event) =>
-                                                        setData(
-                                                            'charges',
-                                                            event.target.value,
-                                                        )
+                                                        setData('charges', event.target.value)
                                                     }
                                                 />
                                                 <InputError
@@ -184,9 +184,7 @@ export default function Dashboard() {
                                                     }
                                                 />
                                                 <InputError
-                                                    message={
-                                                        errors.marketing_budget
-                                                    }
+                                                    message={errors.marketing_budget}
                                                     className="mt-2"
                                                 />
                                             </div>
@@ -217,6 +215,12 @@ export default function Dashboard() {
                                             </div>
                                         </div>
 
+                                        {recentlySuccessful && (
+                                            <p className="mb-3 mt-4 text-sm font-medium text-green-600">
+                                                Donnees enregistrees avec succes.
+                                            </p>
+                                        )}
+
                                         <div className="mt-5">
                                             <PrimaryButton disabled={processing}>
                                                 Enregistrer
@@ -230,9 +234,7 @@ export default function Dashboard() {
                                                 Chiffre d'affaires
                                             </p>
                                             <p className="mt-2 text-xl font-bold text-gray-900">
-                                                {formatCurrency(
-                                                    kpis.chiffre_affaires,
-                                                )}
+                                                {formatCurrency(kpis.chiffre_affaires)}
                                             </p>
                                         </div>
 
@@ -241,9 +243,7 @@ export default function Dashboard() {
                                                 Charges totales
                                             </p>
                                             <p className="mt-2 text-xl font-bold text-gray-900">
-                                                {formatCurrency(
-                                                    kpis.charges_totales,
-                                                )}
+                                                {formatCurrency(kpis.charges_totales)}
                                             </p>
                                         </div>
 
@@ -288,7 +288,7 @@ export default function Dashboard() {
                                                             Mois
                                                         </th>
                                                         <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                                            CA
+                                                            Chiffre d'affaires
                                                         </th>
                                                         <th className="px-4 py-3 text-sm font-semibold text-gray-600">
                                                             Charges
@@ -306,14 +306,10 @@ export default function Dashboard() {
                                                                 {item.mois}
                                                             </td>
                                                             <td className="px-4 py-3 text-sm text-gray-800">
-                                                                {formatCurrency(
-                                                                    item.ca,
-                                                                )}
+                                                                {formatCurrency(item.ca)}
                                                             </td>
                                                             <td className="px-4 py-3 text-sm text-gray-800">
-                                                                {formatCurrency(
-                                                                    item.charges,
-                                                                )}
+                                                                {formatCurrency(item.charges)}
                                                             </td>
                                                         </tr>
                                                     ))}

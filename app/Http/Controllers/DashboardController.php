@@ -16,7 +16,7 @@ class DashboardController extends Controller
             && $user->suspended_at === null
             && in_array($user->stripe_status, ['active', 'trialing'], true);
 
-        if (!$canAccessApp) {
+        if (! $canAccessApp) {
             return Inertia::render('Dashboard', [
                 'dashboardData' => null,
             ]);
@@ -39,7 +39,9 @@ class DashboardController extends Controller
                 'cac' => ($currentMonthRecord && $currentMonthRecord->clients_count > 0)
                     ? $currentMonthRecord->marketing_budget / $currentMonthRecord->clients_count
                     : 0,
-                'ltv' => 0,
+                'ltv' => ($currentMonthRecord && $currentMonthRecord->clients_count > 0)
+                    ? $currentMonthRecord->revenue / $currentMonthRecord->clients_count
+                    : 0,
             ],
             'graphique_evolution' => $records->take(-3)->values()->map(function ($record) {
                 return [
