@@ -1,8 +1,20 @@
+import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import PrimaryButton from '@/Components/PrimaryButton';
+import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 
 export default function Dashboard() {
     const { auth, dashboardData } = usePage().props;
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        month: '',
+        revenue: '',
+        charges: '',
+        marketing_budget: '',
+        clients_count: '',
+    });
 
     const kpis = dashboardData?.kpis_mensuels ?? {
         mois_actuel: null,
@@ -24,6 +36,14 @@ export default function Dashboard() {
             currency: 'EUR',
             maximumFractionDigits: 0,
         }).format(value);
+
+    const submit = (event) => {
+        event.preventDefault();
+
+        post(route('financial-records.store'), {
+            onSuccess: () => reset(),
+        });
+    };
 
     return (
         <AuthenticatedLayout
@@ -62,13 +82,157 @@ export default function Dashboard() {
                                         Vue du mois : {kpis.mois_actuel}
                                     </p>
 
+                                    <form
+                                        onSubmit={submit}
+                                        className="mt-6 border-b border-gray-200 pb-8"
+                                    >
+                                        <h4 className="text-lg font-semibold text-gray-900">
+                                            Saisie mensuelle
+                                        </h4>
+
+                                        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="month"
+                                                    value="Mois"
+                                                />
+                                                <TextInput
+                                                    id="month"
+                                                    type="month"
+                                                    className="mt-1 block w-full"
+                                                    value={data.month}
+                                                    onChange={(event) =>
+                                                        setData(
+                                                            'month',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.month}
+                                                    className="mt-2"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="revenue"
+                                                    value="CA"
+                                                />
+                                                <TextInput
+                                                    id="revenue"
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    className="mt-1 block w-full"
+                                                    value={data.revenue}
+                                                    onChange={(event) =>
+                                                        setData(
+                                                            'revenue',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.revenue}
+                                                    className="mt-2"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="charges"
+                                                    value="Charges"
+                                                />
+                                                <TextInput
+                                                    id="charges"
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    className="mt-1 block w-full"
+                                                    value={data.charges}
+                                                    onChange={(event) =>
+                                                        setData(
+                                                            'charges',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.charges}
+                                                    className="mt-2"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="marketing_budget"
+                                                    value="Budget marketing"
+                                                />
+                                                <TextInput
+                                                    id="marketing_budget"
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    className="mt-1 block w-full"
+                                                    value={data.marketing_budget}
+                                                    onChange={(event) =>
+                                                        setData(
+                                                            'marketing_budget',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errors.marketing_budget
+                                                    }
+                                                    className="mt-2"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <InputLabel
+                                                    htmlFor="clients_count"
+                                                    value="Clients"
+                                                />
+                                                <TextInput
+                                                    id="clients_count"
+                                                    type="number"
+                                                    min="0"
+                                                    step="1"
+                                                    className="mt-1 block w-full"
+                                                    value={data.clients_count}
+                                                    onChange={(event) =>
+                                                        setData(
+                                                            'clients_count',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={errors.clients_count}
+                                                    className="mt-2"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-5">
+                                            <PrimaryButton disabled={processing}>
+                                                Enregistrer
+                                            </PrimaryButton>
+                                        </div>
+                                    </form>
+
                                     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                                         <div className="rounded-xl border border-gray-200 bg-white p-4">
                                             <p className="text-sm text-gray-500">
                                                 Chiffre d'affaires
                                             </p>
                                             <p className="mt-2 text-xl font-bold text-gray-900">
-                                                {formatCurrency(kpis.chiffre_affaires)}
+                                                {formatCurrency(
+                                                    kpis.chiffre_affaires,
+                                                )}
                                             </p>
                                         </div>
 
@@ -77,7 +241,9 @@ export default function Dashboard() {
                                                 Charges totales
                                             </p>
                                             <p className="mt-2 text-xl font-bold text-gray-900">
-                                                {formatCurrency(kpis.charges_totales)}
+                                                {formatCurrency(
+                                                    kpis.charges_totales,
+                                                )}
                                             </p>
                                         </div>
 
@@ -140,10 +306,14 @@ export default function Dashboard() {
                                                                 {item.mois}
                                                             </td>
                                                             <td className="px-4 py-3 text-sm text-gray-800">
-                                                                {formatCurrency(item.ca)}
+                                                                {formatCurrency(
+                                                                    item.ca,
+                                                                )}
                                                             </td>
                                                             <td className="px-4 py-3 text-sm text-gray-800">
-                                                                {formatCurrency(item.charges)}
+                                                                {formatCurrency(
+                                                                    item.charges,
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     ))}

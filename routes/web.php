@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FinancialRecordController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -15,40 +17,13 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function (Request $request) {
-    $records = $request->user()
-        ->financialRecords()
-        ->orderBy('month')
-        ->get();
+Route::get('/dashboard', DashboardController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-    $currentMonthRecord = $records->sortByDesc('month')->first();
-
-    $dashboardData = [
-        'kpis_mensuels' => [
-            'mois_actuel' => $currentMonthRecord?->month,
-            'chiffre_affaires' => $currentMonthRecord?->revenue ?? 0,
-            'charges_totales' => $currentMonthRecord?->charges ?? 0,
-            'marge_nette' => $currentMonthRecord
-                ? $currentMonthRecord->revenue - $currentMonthRecord->charges
-                : 0,
-            'cac' => ($currentMonthRecord && $currentMonthRecord->clients_count > 0)
-                ? $currentMonthRecord->marketing_budget / $currentMonthRecord->clients_count
-                : 0,
-            'ltv' => 0,
-        ],
-        'graphique_evolution' => $records->take(-3)->values()->map(function ($record) {
-            return [
-                'mois' => $record->month,
-                'ca' => $record->revenue,
-                'charges' => $record->charges,
-            ];
-        }),
-    ];
-
-    return Inertia::render('Dashboard', [
-        'dashboardData' => $dashboardData,
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::post('/financial-records', [FinancialRecordController::class, 'store'])
+    ->middleware(['auth', 'verified','active.subscription'])
+    ->name('financial-records.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -60,6 +35,6 @@ Route::get('/mes-enregistrements-financiers', function (Request $request) {
     $records = $request->user()->financialRecords()->get();
 
     return response()->json($records);
-})->middleware(['auth']);
+})->middleware(['auth','active.subscription']);
 
 require __DIR__.'/auth.php';
