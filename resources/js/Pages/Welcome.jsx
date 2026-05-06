@@ -1,6 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 
-export default function Welcome({ auth, laravelVersion, phpVersion }) {
+export default function Welcome({ auth, flash, laravelVersion, phpVersion }) {
+    const startCheckout = () => {
+        router.post(route('billing.checkout'));
+    };
+
     const handleImageError = () => {
         document
             .getElementById('screenshot-container')
@@ -39,12 +43,23 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             </div>
                             <nav className="-mx-3 flex flex-1 justify-end">
                                 {auth.user ? (
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                    >
-                                        Tableau de bord
-                                    </Link>
+                                    <div className="flex items-center gap-2">
+                                        {!auth.user.can_access_app && (
+                                            <button
+                                                type="button"
+                                                onClick={startCheckout}
+                                                className="rounded-md bg-[#FF2D20] px-3 py-2 text-white transition hover:bg-[#e1261c] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2D20] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black"
+                                            >
+                                                S'abonner
+                                            </button>
+                                        )}
+                                        <Link
+                                            href={route('dashboard')}
+                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                        >
+                                            Tableau de bord
+                                        </Link>
+                                    </div>
                                 ) : (
                                     <>
                                         <Link
@@ -63,6 +78,18 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 )}
                             </nav>
                         </header>
+
+                        {(flash?.success || flash?.error) && (
+                            <div
+                                className={`mb-6 rounded-md px-4 py-3 text-sm font-medium ${
+                                    flash?.error
+                                        ? 'bg-red-100 text-red-800 ring-1 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-900'
+                                        : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:ring-emerald-900'
+                                }`}
+                            >
+                                {flash?.error || flash?.success}
+                            </div>
+                        )}
 
                         <main className="mt-6">
                             <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
