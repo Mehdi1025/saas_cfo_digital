@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinancialRecordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StripeCheckoutController;
+use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,9 @@ Route::get('/billing/success', [StripeCheckoutController::class, 'success'])
 Route::get('/billing/cancel', [StripeCheckoutController::class, 'cancel'])
     ->middleware(['auth', 'verified'])
     ->name('billing.cancel');
+
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
+    ->name('stripe.webhook');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

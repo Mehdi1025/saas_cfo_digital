@@ -50,27 +50,8 @@ class StripeCheckoutController extends Controller
 
     public function success(Request $request): RedirectResponse
     {
-        $sessionId = $request->query('session_id');
-
-        if (! $sessionId || ! config('services.stripe.secret')) {
-            return redirect('/')->with('success', 'Paiement termine. Verification en cours.');
-        }
-
-        $response = Http::withToken(config('services.stripe.secret'))
-            ->get("https://api.stripe.com/v1/checkout/sessions/{$sessionId}");
-
-        if ($response->ok()
-            && (string) $response->json('client_reference_id') === (string) $request->user()->id
-            && $response->json('status') === 'complete') {
-            $user = $request->user();
-            $user->stripe_customer_id = $response->json('customer');
-            $user->stripe_subscription_id = $response->json('subscription');
-            $user->stripe_status = 'active';
-            $user->save();
-        }
-
-        return redirect()->route('dashboard')
-            ->with('success', 'Abonnement active avec succes.');
+        return redirect('/')
+            ->with('success', 'Paiement termine. Votre abonnement est en cours de verification.');
     }
 
     public function cancel(): RedirectResponse
