@@ -4,6 +4,16 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, usePage } from '@inertiajs/react';
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Legend,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 
 export default function Dashboard() {
     const { auth, dashboardData } = usePage().props;
@@ -32,8 +42,15 @@ export default function Dashboard() {
         cac: 0,
         ltv: 0,
     };
+    const alert = dashboardData?.alerte ?? null;
 
     const evolution = dashboardData?.graphique_evolution ?? [];
+    const chartData = evolution.map((item) => ({
+        mois: item.mois,
+        chiffreAffaires: item.ca,
+        charges: item.charges,
+    }));
+    const hasFinancialData = evolution.length > 0;
 
     const canAccessApp = auth?.user?.can_access_app;
     const stripeStatus = auth?.user?.stripe_status;
@@ -44,6 +61,36 @@ export default function Dashboard() {
             currency: 'EUR',
             maximumFractionDigits: 0,
         }).format(value);
+
+    const formatMetricValue = (value) =>
+        value === null ? 'Pas de donnees' : formatCurrency(value);
+
+    const alertStyles = {
+        critique: {
+            container: 'border-red-200 bg-red-50 text-red-900',
+            title: 'Alerte critique',
+        },
+        attention: {
+            container: 'border-amber-200 bg-amber-50 text-amber-900',
+            title: 'Attention',
+        },
+        sain: {
+            container: 'border-green-200 bg-green-50 text-green-900',
+            title: 'Situation saine',
+        },
+    };
+
+    const formatChartAxisValue = (value) => {
+        if (value >= 1000) {
+            return `${new Intl.NumberFormat('fr-FR', {
+                maximumFractionDigits: 0,
+            }).format(value / 1000)} k€`;
+        }
+
+        return `${new Intl.NumberFormat('fr-FR', {
+            maximumFractionDigits: 0,
+        }).format(value)} €`;
+    };
 
     const submit = (event) => {
         event.preventDefault();
@@ -228,6 +275,33 @@ export default function Dashboard() {
                                         </div>
                                     </form>
 
+                                    {!hasFinancialData && (
+                                        <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-5">
+                                            <h4 className="text-lg font-semibold text-blue-900">
+                                                Aucune donnee financiere pour le moment
+                                            </h4>
+                                            <p className="mt-2 text-sm text-blue-800">
+                                                Commencez par saisir votre premier mois pour
+                                                afficher vos indicateurs et votre graphique.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {alert && (
+                                        <div
+                                            className={`mt-6 rounded-2xl border p-5 ${
+                                                alertStyles[alert.niveau]?.container
+                                            }`}
+                                        >
+                                            <h4 className="text-lg font-semibold">
+                                                {alertStyles[alert.niveau]?.title}
+                                            </h4>
+                                            <p className="mt-2 text-sm">
+                                                {alert.message}
+                                            </p>
+                                        </div>
+                                    )}
+
                                     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                                         <div className="rounded-xl border border-gray-200 bg-white p-4">
                                             <p className="text-sm text-gray-500">
@@ -261,7 +335,7 @@ export default function Dashboard() {
                                                 CAC
                                             </p>
                                             <p className="mt-2 text-xl font-bold text-gray-900">
-                                                {formatCurrency(kpis.cac)}
+                                                {formatMetricValue(kpis.cac)}
                                             </p>
                                         </div>
 
@@ -270,53 +344,91 @@ export default function Dashboard() {
                                                 LTV
                                             </p>
                                             <p className="mt-2 text-xl font-bold text-gray-900">
-                                                {formatCurrency(kpis.ltv)}
+                                                {formatMetricValue(kpis.ltv)}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <div className="mt-8">
-                                        <h4 className="text-lg font-semibold text-gray-900">
-                                            Evolution sur 3 mois
-                                        </h4>
+                                    {hasFinancialData && (
+                                        <div className="mt-8">
+                                            <h4 className="text-lg font-semibold text-gray-900">
+                                                Evolution sur 3 mois
+                                            </h4>
+                                            <p className="mt-1 text-sm text-gray-500">
+                                                Comparez rapidement le chiffre d'affaires et les
+                                                charges des derniers mois saisis.
+                                            </p>
 
-                                        <div className="mt-4 overflow-x-auto">
-                                            <table className="min-w-full border-collapse">
-                                                <thead>
-                                                    <tr className="border-b border-gray-200 text-left">
-                                                        <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                                            Mois
-                                                        </th>
-                                                        <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                                            Chiffre d'affaires
-                                                        </th>
-                                                        <th className="px-4 py-3 text-sm font-semibold text-gray-600">
-                                                            Charges
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-
-                                                <tbody>
-                                                    {evolution.map((item) => (
-                                                        <tr
-                                                            key={item.mois}
-                                                            className="border-b border-gray-100"
+                                            <div className="mt-4 rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-5 shadow-sm">
+                                                <div className="h-96 w-full">
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <BarChart
+                                                            data={chartData}
+                                                            margin={{
+                                                                top: 28,
+                                                                right: 24,
+                                                                left: 24,
+                                                                bottom: 8,
+                                                            }}
+                                                            barGap={12}
+                                                            barCategoryGap="28%"
                                                         >
-                                                            <td className="px-4 py-3 text-sm text-gray-800">
-                                                                {item.mois}
-                                                            </td>
-                                                            <td className="px-4 py-3 text-sm text-gray-800">
-                                                                {formatCurrency(item.ca)}
-                                                            </td>
-                                                            <td className="px-4 py-3 text-sm text-gray-800">
-                                                                {formatCurrency(item.charges)}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                                            <CartesianGrid
+                                                                strokeDasharray="3 3"
+                                                                stroke="#e5e7eb"
+                                                                vertical={false}
+                                                            />
+                                                            <XAxis
+                                                                dataKey="mois"
+                                                                stroke="#6b7280"
+                                                                tickLine={false}
+                                                                axisLine={false}
+                                                                tick={{ fontSize: 13 }}
+                                                            />
+                                                            <YAxis
+                                                                stroke="#6b7280"
+                                                                tickLine={false}
+                                                                axisLine={false}
+                                                                width={72}
+                                                                tick={{ fontSize: 13 }}
+                                                                tickMargin={10}
+                                                                tickFormatter={formatChartAxisValue}
+                                                            />
+                                                            <Tooltip
+                                                                formatter={(value) =>
+                                                                    formatCurrency(Number(value))
+                                                                }
+                                                                labelStyle={{ color: '#111827' }}
+                                                                contentStyle={{
+                                                                    borderRadius: '1rem',
+                                                                    border: '1px solid #e5e7eb',
+                                                                    boxShadow:
+                                                                        '0 10px 25px rgba(15, 23, 42, 0.08)',
+                                                                }}
+                                                            />
+                                                            <Legend
+                                                                wrapperStyle={{
+                                                                    paddingTop: '18px',
+                                                                }}
+                                                            />
+                                                            <Bar
+                                                                dataKey="chiffreAffaires"
+                                                                name="Chiffre d'affaires"
+                                                                fill="#2563eb"
+                                                                radius={[10, 10, 0, 0]}
+                                                            />
+                                                            <Bar
+                                                                dataKey="charges"
+                                                                name="Charges"
+                                                                fill="#f97316"
+                                                                radius={[10, 10, 0, 0]}
+                                                            />
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </>
                             )}
                         </div>

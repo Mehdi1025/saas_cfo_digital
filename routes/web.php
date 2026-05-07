@@ -30,6 +30,10 @@ Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified', 'active.subscription'])
     ->name('dashboard');
 
+Route::post('/financial-records', [FinancialRecordController::class, 'store'])
+    ->middleware(['auth', 'verified', 'active.subscription'])
+    ->name('financial-records.store');
+
 Route::post('/billing/checkout', [StripeCheckoutController::class, 'store'])
     ->middleware(['auth', 'verified'])
     ->name('billing.checkout');
