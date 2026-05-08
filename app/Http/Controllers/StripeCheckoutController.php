@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class StripeCheckoutController extends Controller
 {
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): Response
     {
         $user = $request->user();
         $stripeSecret = config('services.stripe.secret');
@@ -45,7 +47,7 @@ class StripeCheckoutController extends Controller
             return back()->with('error', 'Impossible de demarrer le paiement Stripe.');
         }
 
-        return redirect()->away($response->json('url'));
+        return Inertia::location($response->json('url'));
     }
 
     public function success(Request $request): RedirectResponse

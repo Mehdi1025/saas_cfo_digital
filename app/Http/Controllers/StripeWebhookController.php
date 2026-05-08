@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
+use RuntimeException;
 
 class StripeWebhookController extends Controller
 {
@@ -24,12 +26,18 @@ class StripeWebhookController extends Controller
             return response('Invalid Stripe payload.', Response::HTTP_BAD_REQUEST);
         }
 
-        match ($event['type']) {
-            'checkout.session.completed' => $this->handleCheckoutCompleted($event['data']['object']),
-            'customer.subscription.updated' => $this->handleSubscriptionUpdated($event['data']['object']),
-            'customer.subscription.deleted' => $this->handleSubscriptionDeleted($event['data']['object']),
-            default => null,
-        };
+        try {
+            match ($event['type']) {
+                'checkout.session.completed' => $this->handleCheckoutCompleted($event['data']['object']),
+                'customer.subscription.updated' => $this->handleSubscriptionUpdated($event['data']['object']),
+                'customer.subscription.deleted' => $this->handleSubscriptionDeleted($event['data']['object']),
+                default => null,
+            };
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response('Webhook processing failed.', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
         return response('Webhook handled.', Response::HTTP_OK);
     }
@@ -46,9 +54,15 @@ class StripeWebhookController extends Controller
             return;
         }
 
+        $subscriptionId = $session['subscription'] ?? null;
+
+        if (! $subscriptionId) {
+            return;
+        }
+
         $user->stripe_customer_id = $session['customer'] ?? $user->stripe_customer_id;
-        $user->stripe_subscription_id = $session['subscription'] ?? $user->stripe_subscription_id;
-        $user->stripe_status = 'active';
+        $user->stripe_subscription_id = $subscriptionId;
+        $user->stripe_status = $this->getStripeSubscriptionStatus($subscriptionId);
         $user->save();
     }
 
@@ -76,6 +90,24 @@ class StripeWebhookController extends Controller
         $user->save();
     }
 
+    private function getStripeSubscriptionStatus(string $subscriptionId): string
+    {
+        $stripeSecret = config('services.stripe.secret');
+
+        if (! $stripeSecret) {
+            throw new RuntimeException('Stripe secret is missing.');
+        }
+
+        $response = Http::withToken($stripeSecret)
+            ->get("https://api.stripe.com/v1/subscriptions/{$subscriptionId}");
+
+        if ($response->failed() || ! $response->json('status')) {
+            throw new RuntimeException('Unable to fetch Stripe subscription status.');
+        }
+
+        return $response->json('status');
+    }
+
     private function hasValidSignature(string $payload, string $signature, string $webhookSecret): bool
     {
         $timestamp = null;
@@ -93,7 +125,11 @@ class StripeWebhookController extends Controller
             }
         }
 
-        if (! $timestamp || $signatures === []) {
+        if (! $timestamp || ! is_numeric($timestamp) || $signatures === []) {
+            return false;
+        }
+
+        if (abs(time() - (int) $timestamp) > 300) {
             return false;
         }
 
