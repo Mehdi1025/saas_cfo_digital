@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'active.subscription' => \App\Http\Middleware\EnsureUserHasActiveSubscription::class,
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

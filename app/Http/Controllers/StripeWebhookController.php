@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProcessedStripeEvent;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -22,8 +23,12 @@ class StripeWebhookController extends Controller
 
         $event = json_decode($payload, true);
 
-        if (! is_array($event) || ! isset($event['type'], $event['data']['object'])) {
+        if (! is_array($event) || ! isset($event['id'], $event['type'], $event['data']['object'])) {
             return response('Invalid Stripe payload.', Response::HTTP_BAD_REQUEST);
+        }
+
+        if (ProcessedStripeEvent::where('stripe_event_id', $event['id'])->exists()) {
+            return response('Webhook already processed.', Response::HTTP_OK);
         }
 
         try {
@@ -33,6 +38,12 @@ class StripeWebhookController extends Controller
                 'customer.subscription.deleted' => $this->handleSubscriptionDeleted($event['data']['object']),
                 default => null,
             };
+
+            ProcessedStripeEvent::create([
+                'stripe_event_id' => $event['id'],
+                'type' => $event['type'],
+                'processed_at' => now(),
+            ]);
         } catch (\Throwable $e) {
             report($e);
 
@@ -60,9 +71,11 @@ class StripeWebhookController extends Controller
             return;
         }
 
+        $subscription = $this->getStripeSubscription($subscriptionId);
+
         $user->stripe_customer_id = $session['customer'] ?? $user->stripe_customer_id;
         $user->stripe_subscription_id = $subscriptionId;
-        $user->stripe_status = $this->getStripeSubscriptionStatus($subscriptionId);
+        $this->fillSubscriptionDetails($user, $subscription);
         $user->save();
     }
 
@@ -74,7 +87,7 @@ class StripeWebhookController extends Controller
             return;
         }
 
-        $user->stripe_status = $subscription['status'] ?? $user->stripe_status;
+        $this->fillSubscriptionDetails($user, $subscription);
         $user->save();
     }
 
@@ -90,7 +103,7 @@ class StripeWebhookController extends Controller
         $user->save();
     }
 
-    private function getStripeSubscriptionStatus(string $subscriptionId): string
+    private function getStripeSubscription(string $subscriptionId): array
     {
         $stripeSecret = config('services.stripe.secret');
 
@@ -102,10 +115,22 @@ class StripeWebhookController extends Controller
             ->get("https://api.stripe.com/v1/subscriptions/{$subscriptionId}");
 
         if ($response->failed() || ! $response->json('status')) {
-            throw new RuntimeException('Unable to fetch Stripe subscription status.');
+            throw new RuntimeException('Unable to fetch Stripe subscription.');
         }
 
-        return $response->json('status');
+        return $response->json();
+    }
+
+    private function fillSubscriptionDetails(User $user, array $subscription): void
+    {
+        $price = $subscription['items']['data'][0]['price'] ?? null;
+
+        $user->stripe_status = $subscription['status'] ?? $user->stripe_status;
+        $user->stripe_price_id = $price['id'] ?? $user->stripe_price_id;
+        $user->subscription_amount = isset($price['unit_amount'])
+            ? number_format($price['unit_amount'] / 100, 2, '.', '')
+            : $user->subscription_amount;
+        $user->subscription_currency = $price['currency'] ?? $user->subscription_currency;
     }
 
     private function hasValidSignature(string $payload, string $signature, string $webhookSecret): bool

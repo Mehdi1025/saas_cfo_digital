@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\FinancialRecordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StripeCheckoutController;
@@ -30,6 +31,10 @@ Route::get('/', function (Request $request) {
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified', 'active.subscription'])
     ->name('dashboard');
+
+Route::get('/admin', AdminController::class)
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.dashboard');
 
 Route::post('/financial-records', [FinancialRecordController::class, 'store'])
     ->middleware(['auth', 'verified', 'active.subscription'])
