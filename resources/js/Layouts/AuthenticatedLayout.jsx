@@ -1,100 +1,99 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+    const dashboardRoute =
+        user.role === 'admin' ? route('admin.dashboard') : route('dashboard');
+    const dashboardLabel = user.role === 'admin' ? 'Admin' : 'Tableau de bord';
+
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 justify-between">
-                        <div className="flex">
-                            <div className="flex shrink-0 items-center">
-                                <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                                </Link>
+        <div className="min-h-screen bg-[#0b1220] text-slate-100">
+            <div className="flex min-h-screen">
+                <aside className="hidden w-72 shrink-0 border-r border-white/5 bg-[#111a2b] lg:flex lg:flex-col">
+                    <div className="border-b border-white/5 px-6 py-6">
+                        <Link href="/" className="flex items-center gap-3">
+                            <div className="rounded-xl bg-cyan-400/10 p-2 text-cyan-300">
+                                <ApplicationLogo className="h-8 w-auto fill-current" />
                             </div>
+                            <div>
+                                <p className="text-lg font-semibold text-white">
+                                    Mini CFO Digital
+                                </p>
+                                <p className="text-sm text-slate-400">
+                                    Pilotage financier
+                                </p>
+                            </div>
+                        </Link>
+                    </div>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                {user.role === 'admin' ? (
-                                    <NavLink
-                                        href={route('admin.dashboard')}
-                                        active={route().current('admin.dashboard')}
-                                    >
-                                        Admin
-                                    </NavLink>
-                                ) : (
-                                    <NavLink
-                                        href={route('dashboard')}
-                                        active={route().current('dashboard')}
-                                    >
-                                        Tableau de bord
-                                    </NavLink>
-                                )}
-                            </div>
+                    <nav className="flex-1 px-5 py-6">
+                        <p className="px-3 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
+                            Menu principal
+                        </p>
+
+                        <div className="mt-4 space-y-2">
+                            <Link
+                                href={dashboardRoute}
+                                className="block rounded-2xl bg-indigo-500/90 px-4 py-3 text-sm font-medium text-white shadow-[0_12px_30px_rgba(79,70,229,0.25)]"
+                            >
+                                {dashboardLabel}
+                            </Link>
+
+                            <Link
+                                href={route('profile.edit')}
+                                className="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
+                            >
+                                Profil
+                            </Link>
                         </div>
+                    </nav>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
-                                <Dropdown>
-                                    <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {user.name}
+                    <div className="border-t border-white/5 px-5 py-5">
+                        <div className="rounded-2xl bg-white/[0.04] p-4">
+                            <p className="text-sm font-semibold text-white">
+                                {user.name}
+                            </p>
+                            <p className="mt-1 text-sm text-slate-400">
+                                {user.email}
+                            </p>
 
-                                                <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </Dropdown.Trigger>
-
-                                    <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
-                                            Profil
-                                        </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route('logout')}
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Se deconnecter
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
-                                </Dropdown>
-                            </div>
+                            <Link
+                                href={route('logout')}
+                                method="post"
+                                as="button"
+                                className="mt-4 w-full rounded-xl border border-white/10 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+                            >
+                                Se deconnecter
+                            </Link>
                         </div>
+                    </div>
+                </aside>
 
-                        <div className="-me-2 flex items-center sm:hidden">
+                <div className="flex min-h-screen flex-1 flex-col">
+                    <div className="border-b border-white/5 bg-[#0f1728] lg:hidden">
+                        <div className="flex items-center justify-between px-4 py-4 sm:px-6">
+                            <Link href="/" className="flex items-center gap-3">
+                                <div className="rounded-xl bg-cyan-400/10 p-2 text-cyan-300">
+                                    <ApplicationLogo className="h-7 w-auto fill-current" />
+                                </div>
+                                <span className="text-base font-semibold text-white">
+                                    Mini CFO Digital
+                                </span>
+                            </Link>
+
                             <button
                                 onClick={() =>
                                     setShowingNavigationDropdown(
                                         (previousState) => !previousState,
                                     )
                                 }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                className="inline-flex items-center justify-center rounded-xl border border-white/10 p-2 text-slate-300 transition hover:bg-white/5 hover:text-white"
                             >
                                 <svg
                                     className="h-6 w-6"
@@ -127,68 +126,68 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </svg>
                             </button>
                         </div>
-                    </div>
-                </div>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
-                    }
-                >
-                    <div className="space-y-1 pb-3 pt-2">
-                        {user.role === 'admin' ? (
-                            <ResponsiveNavLink
-                                href={route('admin.dashboard')}
-                                active={route().current('admin.dashboard')}
-                            >
-                                Admin
-                            </ResponsiveNavLink>
-                        ) : (
-                            <ResponsiveNavLink
-                                href={route('dashboard')}
-                                active={route().current('dashboard')}
-                            >
-                                Tableau de bord
-                            </ResponsiveNavLink>
-                        )}
-                    </div>
+                        <div
+                            className={
+                                (showingNavigationDropdown ? 'block' : 'hidden') +
+                                ' border-t border-white/5 bg-[#111a2b]'
+                            }
+                        >
+                            <div className="space-y-1 px-4 pb-4 pt-4">
+                                <ResponsiveNavLink
+                                    href={dashboardRoute}
+                                    active={route().current(
+                                        user.role === 'admin'
+                                            ? 'admin.dashboard'
+                                            : 'dashboard',
+                                    )}
+                                >
+                                    {dashboardLabel}
+                                </ResponsiveNavLink>
 
-                    <div className="border-t border-gray-200 pb-1 pt-4">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
+                                <ResponsiveNavLink href={route('profile.edit')}>
+                                    Profil
+                                </ResponsiveNavLink>
+
+                                <ResponsiveNavLink
+                                    method="post"
+                                    href={route('logout')}
+                                    as="button"
+                                >
+                                    Se deconnecter
+                                </ResponsiveNavLink>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profil
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route('logout')}
-                                as="button"
-                            >
-                                Se deconnecter
-                            </ResponsiveNavLink>
+                    <header className="border-b border-white/5 bg-[#0f1728]">
+                        <div className="flex items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+                            <div>
+                                {header ?? (
+                                    <h2 className="text-xl font-semibold text-white">
+                                        Tableau de bord
+                                    </h2>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-3">
+                                <div className="hidden rounded-2xl border border-white/5 bg-white/[0.04] px-4 py-2 text-sm text-slate-400 md:block">
+                                    {user.role === 'admin'
+                                        ? 'Espace administration'
+                                        : 'Suivi financier mensuel'}
+                                </div>
+                                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500/90 text-sm font-semibold text-white">
+                                    {user.name.charAt(0).toUpperCase()}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </header>
+
+                    <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                        {children}
+                    </main>
                 </div>
-            </nav>
-
-            {header && (
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
-            )}
-
-            <main>{children}</main>
+            </div>
         </div>
     );
 }
