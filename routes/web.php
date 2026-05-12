@@ -14,6 +14,10 @@ use Inertia\Inertia;
 Route::get('/', function (Request $request) {
     $user = $request->user();
 
+    if ($user && $user->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+
     if ($user
         && $user->suspended_at === null
         && in_array($user->stripe_status, ['active', 'trialing'], true)) {
