@@ -13,8 +13,12 @@ export default function AuthenticatedLayout({ header, children }) {
     const dashboardLabel = user.role === 'admin' ? 'Admin' : 'Tableau de bord';
 
     return (
-        <div className="min-h-screen bg-[#0b1220] text-slate-100">
-            <div className="flex min-h-screen">
+        <div className="relative min-h-screen bg-[#0b1220] text-slate-100">
+                <div
+                    className="pointer-events-none fixed inset-0 -z-50 bg-[#0b1220]"
+                    aria-hidden
+                />
+                <div className="flex min-h-screen">
                 <aside className="hidden w-72 shrink-0 border-r border-white/5 bg-[#111a2b] lg:flex lg:flex-col">
                     <div className="border-b border-white/5 px-6 py-6">
                         <Link href="/" className="flex items-center gap-3">
