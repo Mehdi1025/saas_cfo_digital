@@ -69,6 +69,7 @@ Route::get('/billing/cancel', [StripeCheckoutController::class, 'cancel'])
     ->name('billing.cancel');
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
+    ->middleware('throttle:60,1')
     ->name('stripe.webhook');
 
 Route::middleware('auth')->group(function () {

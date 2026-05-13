@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProcessedStripeEvent;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
@@ -32,18 +33,30 @@ class StripeWebhookController extends Controller
         }
 
         try {
-            match ($event['type']) {
+            $processed = match ($event['type']) {
                 'checkout.session.completed' => $this->handleCheckoutCompleted($event['data']['object']),
                 'customer.subscription.updated' => $this->handleSubscriptionUpdated($event['data']['object']),
                 'customer.subscription.deleted' => $this->handleSubscriptionDeleted($event['data']['object']),
-                default => null,
+                default => true,
             };
+
+            if (! $processed) {
+                return response('Webhook not processed.', Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
 
             ProcessedStripeEvent::create([
                 'stripe_event_id' => $event['id'],
                 'type' => $event['type'],
                 'processed_at' => now(),
             ]);
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response('Webhook already processed.', Response::HTTP_OK);
+            }
+
+            report($e);
+
+            return response('Webhook processing failed.', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (\Throwable $e) {
             report($e);
 
@@ -53,22 +66,22 @@ class StripeWebhookController extends Controller
         return response('Webhook handled.', Response::HTTP_OK);
     }
 
-    private function handleCheckoutCompleted(array $session): void
+    private function handleCheckoutCompleted(array $session): bool
     {
         if (($session['mode'] ?? null) !== 'subscription') {
-            return;
+            return true;
         }
 
         $user = User::find($session['client_reference_id'] ?? null);
 
         if (! $user) {
-            return;
+            return false;
         }
 
         $subscriptionId = $session['subscription'] ?? null;
 
         if (! $subscriptionId) {
-            return;
+            return false;
         }
 
         $subscription = $this->getStripeSubscription($subscriptionId);
@@ -77,30 +90,36 @@ class StripeWebhookController extends Controller
         $user->stripe_subscription_id = $subscriptionId;
         $this->fillSubscriptionDetails($user, $subscription);
         $user->save();
+
+        return true;
     }
 
-    private function handleSubscriptionUpdated(array $subscription): void
+    private function handleSubscriptionUpdated(array $subscription): bool
     {
         $user = User::where('stripe_subscription_id', $subscription['id'] ?? null)->first();
 
         if (! $user) {
-            return;
+            return false;
         }
 
         $this->fillSubscriptionDetails($user, $subscription);
         $user->save();
+
+        return true;
     }
 
-    private function handleSubscriptionDeleted(array $subscription): void
+    private function handleSubscriptionDeleted(array $subscription): bool
     {
         $user = User::where('stripe_subscription_id', $subscription['id'] ?? null)->first();
 
         if (! $user) {
-            return;
+            return false;
         }
 
         $user->stripe_status = 'canceled';
         $user->save();
+
+        return true;
     }
 
     private function getStripeSubscription(string $subscriptionId): array
