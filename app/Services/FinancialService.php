@@ -83,17 +83,17 @@ class FinancialService
             ];
         }
 
-        if ($record->revenue > 0 && $record->charges > ($record->revenue * 0.7)) {
-            return [
-                'niveau' => 'attention',
-                'message' => 'Vos charges depassent 70 % de votre chiffre d affaires.',
-            ];
-        }
-
         if ($margin > 0 && $cac !== null && $ltv !== null && $cac > 0 && ($ltv / $cac) > 3) {
             return [
                 'niveau' => 'sain',
                 'message' => 'Vos indicateurs sont favorables ce mois-ci.',
+            ];
+        }
+
+        if ($record->revenue > 0 && $record->charges > ($record->revenue * 0.7)) {
+            return [
+                'niveau' => 'attention',
+                'message' => 'Vos charges depassent 70 % de votre chiffre d affaires.',
             ];
         }
 

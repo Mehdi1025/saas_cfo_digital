@@ -11,10 +11,10 @@ class FinancialRecordController extends Controller
     {
         $validated = $request->validate([
             'month' => ['required', 'date_format:Y-m'],
-            'revenue' => ['required', 'numeric', 'min:0'],
-            'charges' => ['required', 'numeric', 'min:0'],
-            'marketing_budget' => ['required', 'numeric', 'min:0'],
-            'clients_count' => ['required', 'integer', 'min:0'],
+            'revenue' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
+            'charges' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
+            'marketing_budget' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
+            'clients_count' => ['required', 'integer', 'min:0', 'max:999999'],
         ]);
 
         $request->user()->financialRecords()->updateOrCreate(
@@ -22,6 +22,6 @@ class FinancialRecordController extends Controller
             $validated
         );
 
-        return redirect()->route('dashboard');
+        return redirect()->route('financial-entry.index');
     }
 }

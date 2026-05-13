@@ -1,6 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 
 export default function Welcome({ auth, flash, laravelVersion, phpVersion }) {
+    const canAccessDashboard = Boolean(auth.user?.can_access_app);
+
     const startCheckout = () => {
         router.post(route('billing.checkout'));
     };
@@ -44,7 +46,7 @@ export default function Welcome({ auth, flash, laravelVersion, phpVersion }) {
                             <nav className="-mx-3 flex flex-1 justify-end">
                                 {auth.user ? (
                                     <div className="flex items-center gap-2">
-                                        {!auth.user.can_access_app && (
+                                        {!canAccessDashboard && (
                                             <button
                                                 type="button"
                                                 onClick={startCheckout}
@@ -53,12 +55,14 @@ export default function Welcome({ auth, flash, laravelVersion, phpVersion }) {
                                                 S'abonner
                                             </button>
                                         )}
-                                        <Link
-                                            href={route('dashboard')}
-                                            className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                        >
-                                            Tableau de bord
-                                        </Link>
+                                        {canAccessDashboard && (
+                                            <Link
+                                                href={route('dashboard')}
+                                                className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                            >
+                                                Tableau de bord
+                                            </Link>
+                                        )}
                                     </div>
                                 ) : (
                                     <>

@@ -38,6 +38,16 @@ Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified', 'active.subscription'])
     ->name('dashboard');
 
+Route::get('/saisie-mensuelle', function (Request $request) {
+    return Inertia::render('FinancialEntry', [
+        'latestRecord' => $request->user()
+            ->financialRecords()
+            ->orderByDesc('month')
+            ->first(),
+    ]);
+})->middleware(['auth', 'verified', 'active.subscription'])
+    ->name('financial-entry.index');
+
 Route::get('/admin', AdminController::class)
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.dashboard');
