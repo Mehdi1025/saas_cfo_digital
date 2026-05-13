@@ -10,12 +10,18 @@ const statusLabels = {
 };
 
 const statusStyles = {
-    active: 'bg-green-100 text-green-800',
-    trialing: 'bg-blue-100 text-blue-800',
-    past_due: 'bg-amber-100 text-amber-800',
-    canceled: 'bg-red-100 text-red-800',
-    inactive: 'bg-gray-100 text-gray-700',
+    active: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200',
+    trialing: 'border-sky-400/30 bg-sky-400/10 text-sky-200',
+    past_due: 'border-amber-400/30 bg-amber-400/10 text-amber-200',
+    canceled: 'border-rose-400/30 bg-rose-400/10 text-rose-200',
+    inactive: 'border-slate-400/20 bg-slate-400/10 text-slate-300',
 };
+
+const statCards = [
+    ['Utilisateurs', 'total_users'],
+    ['Abonnements valides', 'active_subscriptions'],
+    ['MRR', 'mrr'],
+];
 
 export default function AdminDashboard() {
     const { stats, users } = usePage().props;
@@ -36,7 +42,7 @@ export default function AdminDashboard() {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                <h2 className="text-xl font-semibold leading-tight text-slate-100">
                     Administration
                 </h2>
             }
@@ -46,86 +52,78 @@ export default function AdminDashboard() {
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="grid gap-4 md:grid-cols-3">
-                        <div className="rounded-lg bg-white p-6 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500">
-                                Utilisateurs
-                            </p>
-                            <p className="mt-3 text-3xl font-bold text-gray-900">
-                                {stats.total_users}
-                            </p>
-                        </div>
-
-                        <div className="rounded-lg bg-white p-6 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500">
-                                Abonnements valides
-                            </p>
-                            <p className="mt-3 text-3xl font-bold text-gray-900">
-                                {stats.active_subscriptions}
-                            </p>
-                        </div>
-
-                        <div className="rounded-lg bg-white p-6 shadow-sm">
-                            <p className="text-sm font-medium text-gray-500">
-                                MRR
-                            </p>
-                            <p className="mt-3 text-3xl font-bold text-gray-900">
-                                {formatCurrency(stats.mrr)}
-                            </p>
-                        </div>
+                        {statCards.map(([label, key]) => (
+                            <div
+                                key={key}
+                                className="rounded-xl border border-white/10 bg-slate-950/70 p-6 shadow-[0_18px_45px_rgba(0,0,0,0.28)]"
+                            >
+                                <p className="text-sm font-medium text-slate-400">
+                                    {label}
+                                </p>
+                                <p className="mt-3 text-3xl font-bold text-white">
+                                    {key === 'mrr'
+                                        ? formatCurrency(stats[key])
+                                        : stats[key]}
+                                </p>
+                            </div>
+                        ))}
                     </div>
 
-                    <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-                        <div className="border-b border-gray-200 px-6 py-5">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                    <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-950/70 shadow-[0_18px_45px_rgba(0,0,0,0.28)]">
+                        <div className="border-b border-white/10 px-6 py-5">
+                            <h3 className="text-lg font-semibold text-white">
                                 Comptes utilisateurs
                             </h3>
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-full divide-y divide-white/10">
+                                <thead className="bg-white/[0.03]">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                                             Utilisateur
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                                             Role
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                                             Statut Stripe
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                                             Offre
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                                             Montant
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                                             Suspendu
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200 bg-white">
+                                <tbody className="divide-y divide-white/10">
                                     {users.map((user) => (
-                                        <tr key={user.id}>
+                                        <tr
+                                            key={user.id}
+                                            className="transition hover:bg-white/[0.03]"
+                                        >
                                             <td className="whitespace-nowrap px-6 py-4">
-                                                <p className="text-sm font-medium text-gray-900">
+                                                <p className="text-sm font-medium text-white">
                                                     {user.name}
                                                 </p>
-                                                <p className="text-sm text-gray-500">
+                                                <p className="text-sm text-slate-400">
                                                     {user.email}
                                                 </p>
                                             </td>
-                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                                                 {user.role}
                                             </td>
                                             <td className="whitespace-nowrap px-6 py-4">
                                                 <span
-                                                    className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                    className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${
                                                         statusStyles[
                                                             user.stripe_status
                                                         ] ??
-                                                        'bg-gray-100 text-gray-700'
+                                                        'border-slate-400/20 bg-slate-400/10 text-slate-300'
                                                     }`}
                                                 >
                                                     {statusLabels[
@@ -133,17 +131,17 @@ export default function AdminDashboard() {
                                                     ] ?? user.stripe_status}
                                                 </span>
                                             </td>
-                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                                                 {user.stripe_price_id ?? 'Aucune'}
                                             </td>
-                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                                                 {user.subscription_amount
                                                     ? formatCurrency(
                                                           user.subscription_amount,
                                                       )
                                                     : '0,00 EUR'}
                                             </td>
-                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                                            <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                                                 {formatDate(user.suspended_at)}
                                             </td>
                                         </tr>
