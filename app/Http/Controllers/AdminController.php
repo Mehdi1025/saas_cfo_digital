@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminAuditLog;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -36,6 +37,21 @@ class AdminController extends Controller
                 ])
                 ->latest()
                 ->get(),
+            'auditLogs' => AdminAuditLog::query()
+                ->with([
+                    'admin:id,name,email',
+                    'targetUser:id,name,email',
+                ])
+                ->latest()
+                ->take(5)
+                ->get()
+                ->map(fn (AdminAuditLog $log) => [
+                    'id' => $log->id,
+                    'action' => $log->action,
+                    'created_at' => $log->created_at,
+                    'admin' => $log->admin,
+                    'target_user' => $log->targetUser,
+                ]),
         ]);
     }
 }

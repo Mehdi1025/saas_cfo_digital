@@ -40,6 +40,8 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'role' => $user->role,
                     'stripe_status' => $user->stripe_status,
+                    'suspended_at' => $user->suspended_at,
+                    'is_suspended' => $user->suspended_at !== null,
                     'can_access_app' => $user->suspended_at === null
                         && in_array($user->stripe_status, ['active', 'trialing'], true),
                 ] : null,

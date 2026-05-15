@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\FinancialRecordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StripeCheckoutController;
@@ -51,6 +52,14 @@ Route::get('/saisie-mensuelle', function (Request $request) {
 Route::get('/admin', AdminController::class)
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.dashboard');
+
+Route::patch('/admin/users/{user}/suspend', [AdminUserController::class, 'suspend'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.users.suspend');
+
+Route::patch('/admin/users/{user}/restore', [AdminUserController::class, 'restore'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.users.restore');
 
 Route::post('/financial-records', [FinancialRecordController::class, 'store'])
     ->middleware(['auth', 'verified', 'active.subscription'])

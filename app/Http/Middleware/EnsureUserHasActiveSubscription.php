@@ -19,8 +19,16 @@ class EnsureUserHasActiveSubscription
             return redirect()->route('login');
         }
 
-        $canAccessApp = $user->suspended_at === null
-            && in_array($user->stripe_status, ['active', 'trialing'], true);
+        if ($user->suspended_at !== null) {
+            if ($request->expectsJson()) {
+                abort(Response::HTTP_FORBIDDEN, 'Compte suspendu.');
+            }
+
+            return redirect('/')
+                ->with('error', 'Votre compte est suspendu. Contactez l administrateur.');
+        }
+
+        $canAccessApp = in_array($user->stripe_status, ['active', 'trialing'], true);
 
         if (! $canAccessApp) {
             if ($request->expectsJson()) {
