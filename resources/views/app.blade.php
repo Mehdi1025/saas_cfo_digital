@@ -1,7 +1,7 @@
 @php
     $inertiaDarkShellBg = null;
-    if (request()->is('test')) {
-        $inertiaDarkShellBg = '#050505';
+    if (request()->is('test') || request()->is('dashboard_test') || request()->is('dashboard_test/*')) {
+        $inertiaDarkShellBg = '#09090B';
     } elseif (request()->routeIs(['dashboard', 'admin.dashboard', 'profile.edit', 'profile.update', 'profile.destroy'])) {
         $inertiaDarkShellBg = '#0b1220';
     }
@@ -16,7 +16,10 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link
+            href="https://fonts.bunny.net/css?family=figtree:400,500,600|inter:400,500,600,700|space-grotesk:300,400,500,600,700&display=swap"
+            rel="stylesheet"
+        />
 
         @php
             $viteHotFile = public_path('hot');
