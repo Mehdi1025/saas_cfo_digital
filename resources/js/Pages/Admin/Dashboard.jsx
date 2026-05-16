@@ -18,14 +18,29 @@ const statusStyles = {
 };
 
 const statCards = [
-    ['Utilisateurs', 'total_users'],
-    ['Abonnements valides', 'active_subscriptions'],
-    ['MRR', 'mrr'],
+    ['Utilisateurs', 'total_users', 'Comptes inscrits', 'cyan'],
+    ['Abonnements valides', 'active_subscriptions', 'Acces actifs', 'emerald'],
+    ['MRR', 'mrr', 'Revenu mensuel', 'violet'],
 ];
 
 const auditLabels = {
     suspend: 'a suspendu',
     restore: 'a reactive',
+};
+
+const statAccentStyles = {
+    cyan: {
+        glow: 'from-cyan-400/20 via-cyan-400/8 to-transparent',
+        text: 'text-cyan-300',
+    },
+    emerald: {
+        glow: 'from-emerald-400/20 via-emerald-400/8 to-transparent',
+        text: 'text-emerald-300',
+    },
+    violet: {
+        glow: 'from-violet-400/18 via-violet-400/6 to-transparent',
+        text: 'text-violet-300',
+    },
 };
 
 export default function AdminDashboard() {
@@ -67,38 +82,68 @@ export default function AdminDashboard() {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-slate-100">
-                    Administration
-                </h2>
+                <div className="flex flex-wrap items-center gap-3">
+                    <h2 className="text-2xl font-semibold tracking-tight text-white">
+                        Tableau de bord admin
+                    </h2>
+                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-400">
+                        Administration
+                    </span>
+                </div>
             }
         >
             <Head title="Administration" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div className="relative -mx-4 -my-6 min-h-[calc(100vh-5rem)] overflow-hidden px-4 py-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+                <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                        background:
+                            'linear-gradient(115deg, rgba(20,184,166,0.28) 0%, rgba(15,118,110,0.14) 19%, transparent 45%), radial-gradient(circle at 78% 24%, rgba(59,130,246,0.10), transparent 36%)',
+                    }}
+                />
+                <div className="pointer-events-none absolute -left-44 top-10 h-96 w-96 rounded-full bg-emerald-500/14 blur-[130px]" />
+
+                <div className="relative z-10 mx-auto max-w-7xl space-y-6">
                     <div className="grid gap-4 md:grid-cols-3">
-                        {statCards.map(([label, key]) => (
+                        {statCards.map(([label, key, helper, accent]) => {
+                            const accentStyle = statAccentStyles[accent];
+
+                            return (
                             <div
                                 key={key}
-                                className="rounded-xl border border-white/10 bg-slate-950/70 p-6 shadow-[0_18px_45px_rgba(0,0,0,0.28)]"
+                                className="group relative min-h-[8.5rem] overflow-hidden rounded-[1.45rem] border border-white/10 bg-white/[0.045] p-5 shadow-[0_22px_70px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:-translate-y-0.5 hover:border-emerald-400/25"
                             >
-                                <p className="text-sm font-medium text-slate-400">
+                                <div
+                                    className={`pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-r ${accentStyle.glow}`}
+                                    aria-hidden
+                                />
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
                                     {label}
                                 </p>
-                                <p className="mt-3 text-3xl font-bold text-white">
+                                <p className="mt-3 text-[2.1rem] font-bold leading-none text-white">
                                     {key === 'mrr'
                                         ? formatCurrency(stats[key])
                                         : stats[key]}
                                 </p>
+                                <p className="mt-2 text-sm text-slate-500">
+                                    {helper}
+                                </p>
                             </div>
-                        ))}
+                        )})}
                     </div>
 
-                    <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-950/70 shadow-[0_18px_45px_rgba(0,0,0,0.28)]">
+                    <div className="overflow-hidden rounded-[1.65rem] border border-white/10 bg-white/[0.045] shadow-[0_22px_70px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.06)]">
                         <div className="border-b border-white/10 px-6 py-5">
-                            <h3 className="text-lg font-semibold text-white">
-                                Comptes utilisateurs
-                            </h3>
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                <h3 className="text-lg font-bold text-white">
+                                    Comptes utilisateurs
+                                </h3>
+                                <span className="rounded-xl border border-white/10 bg-white/[0.08] px-3 py-1.5 text-xs font-semibold text-slate-300">
+                                    Liste admin
+                                </span>
+                            </div>
                         </div>
 
                         <div className="overflow-x-auto">
@@ -183,7 +228,7 @@ export default function AdminDashboard() {
                                                         onClick={() =>
                                                             restoreUser(user)
                                                         }
-                                                        className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-400/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40"
+                                                        className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-400/20 hover:shadow-[0_0_24px_rgba(16,185,129,0.2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40"
                                                     >
                                                         Reactiver
                                                     </button>
@@ -193,7 +238,7 @@ export default function AdminDashboard() {
                                                         onClick={() =>
                                                             suspendUser(user)
                                                         }
-                                                        className="rounded-full border border-rose-400/30 bg-rose-400/10 px-3 py-1.5 text-xs font-semibold text-rose-200 transition hover:bg-rose-400/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/40"
+                                                        className="rounded-full border border-rose-400/30 bg-rose-400/10 px-3 py-1.5 text-xs font-semibold text-rose-200 transition hover:bg-rose-400/20 hover:shadow-[0_0_24px_rgba(244,63,94,0.16)] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/40"
                                                     >
                                                         Suspendre
                                                     </button>
@@ -206,11 +251,16 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-xl border border-white/10 bg-slate-950/70 shadow-[0_18px_45px_rgba(0,0,0,0.28)]">
+                    <div className="overflow-hidden rounded-[1.65rem] border border-white/10 bg-white/[0.045] shadow-[0_22px_70px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.06)]">
                         <div className="border-b border-white/10 px-6 py-5">
-                            <h3 className="text-lg font-semibold text-white">
-                                Dernieres actions admin
-                            </h3>
+                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                <h3 className="text-lg font-bold text-white">
+                                    Dernieres actions admin
+                                </h3>
+                                <span className="rounded-xl border border-white/10 bg-white/[0.08] px-3 py-1.5 text-xs font-semibold text-slate-300">
+                                    Journal
+                                </span>
+                            </div>
                         </div>
 
                         <div className="divide-y divide-white/10">
