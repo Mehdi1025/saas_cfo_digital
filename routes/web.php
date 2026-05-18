@@ -35,6 +35,10 @@ Route::get('/', function (Request $request) {
 
 Route::get('/test', fn () => Inertia::render('TestLanding'));
 
+Route::get('/dashboard_test', fn () => Inertia::render('TestDashboard'));
+Route::get('/dashboard_test/saisie-mensuelle', fn () => Inertia::render('TestSaisieMensuelle'));
+Route::get('/dashboard_test/rapports', fn () => Inertia::render('TestRapports'));
+
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified', 'active.subscription'])
     ->name('dashboard');
