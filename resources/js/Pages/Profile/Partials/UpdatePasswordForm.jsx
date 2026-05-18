@@ -60,18 +60,21 @@ export default function UpdatePasswordForm({ className = '' }) {
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
+                <h2 className="font-display text-lg font-semibold tracking-wide text-white">
                     Modifier le mot de passe
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-gray-400">
                     Utilisez un mot de passe long et aleatoire pour mieux securiser votre compte.
                 </p>
             </header>
 
             {!isEditingPassword ? (
                 <div className="mt-6">
-                    <PrimaryButton onClick={() => setIsEditingPassword(true)}>
+                    <PrimaryButton
+                        onClick={() => setIsEditingPassword(true)}
+                        className="border-neonMint/20 bg-neonMint px-5 text-obsidian hover:bg-neonMint/90 focus:bg-neonMint/90 focus:ring-neonMint"
+                    >
                         Modifier le mot de passe
                     </PrimaryButton>
                 </div>
@@ -81,6 +84,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         <InputLabel
                             htmlFor="current_password"
                             value="Mot de passe actuel"
+                            className="text-gray-300"
                         />
 
                         <TextInput
@@ -91,7 +95,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                                 setData('current_password', e.target.value)
                             }
                             type="password"
-                            className="mt-1 block w-full"
+                            className="mt-1 block w-full border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-neonMint focus:ring-neonMint"
                             autoComplete="current-password"
                         />
 
@@ -105,6 +109,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         <InputLabel
                             htmlFor="password"
                             value="Nouveau mot de passe"
+                            className="text-gray-300"
                         />
 
                         <TextInput
@@ -113,7 +118,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             type="password"
-                            className="mt-1 block w-full"
+                            className="mt-1 block w-full border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-neonMint focus:ring-neonMint"
                             autoComplete="new-password"
                         />
 
@@ -124,6 +129,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         <InputLabel
                             htmlFor="password_confirmation"
                             value="Confirmer le mot de passe"
+                            className="text-gray-300"
                         />
 
                         <TextInput
@@ -133,7 +139,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                                 setData('password_confirmation', e.target.value)
                             }
                             type="password"
-                            className="mt-1 block w-full"
+                            className="mt-1 block w-full border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-neonMint focus:ring-neonMint"
                             autoComplete="new-password"
                         />
 
@@ -144,11 +150,18 @@ export default function UpdatePasswordForm({ className = '' }) {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <PrimaryButton disabled={processing}>
+                        <PrimaryButton
+                            disabled={processing}
+                            className="border-neonMint/20 bg-neonMint px-5 text-obsidian hover:bg-neonMint/90 focus:bg-neonMint/90 focus:ring-neonMint"
+                        >
                             Enregistrer
                         </PrimaryButton>
 
-                        <SecondaryButton onClick={cancelEditing} type="button">
+                        <SecondaryButton
+                            onClick={cancelEditing}
+                            type="button"
+                            className="border-white/10 bg-white/5 text-white hover:bg-white/10"
+                        >
                             Annuler
                         </SecondaryButton>
 
@@ -159,7 +172,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                             leave="transition ease-in-out"
                             leaveTo="opacity-0"
                         >
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-neonMint">
                                 Enregistre.
                             </p>
                         </Transition>

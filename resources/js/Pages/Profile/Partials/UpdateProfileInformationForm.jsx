@@ -27,22 +27,22 @@ export default function UpdateProfileInformation({
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
+                <h2 className="font-display text-lg font-semibold tracking-wide text-white">
                     Informations du profil
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-gray-400">
                     Mettez a jour les informations de votre compte et votre adresse e-mail.
                 </p>
             </header>
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>
-                    <InputLabel htmlFor="name" value="Nom" />
+                    <InputLabel htmlFor="name" value="Nom" className="text-gray-300" />
 
                     <TextInput
                         id="name"
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-neonMint focus:ring-neonMint"
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
                         required
@@ -54,12 +54,12 @@ export default function UpdateProfileInformation({
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="email" value="E-mail" />
+                    <InputLabel htmlFor="email" value="E-mail" className="text-gray-300" />
 
                     <TextInput
                         id="email"
                         type="email"
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full border-white/10 bg-white/5 text-white placeholder:text-gray-500 focus:border-neonMint focus:ring-neonMint"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         required
@@ -71,20 +71,20 @@ export default function UpdateProfileInformation({
 
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
-                        <p className="mt-2 text-sm text-gray-800">
+                        <p className="mt-2 text-sm text-gray-300">
                             Votre adresse e-mail n'est pas verifiee.
                             <Link
                                 href={route('verification.send')}
                                 method="post"
                                 as="button"
-                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                className="rounded-md text-sm text-neonMint underline hover:text-white focus:outline-none focus:ring-2 focus:ring-neonMint"
                             >
                                 Cliquez ici pour renvoyer l'e-mail de verification.
                             </Link>
                         </p>
 
                         {status === 'verification-link-sent' && (
-                            <div className="mt-2 text-sm font-medium text-green-600">
+                            <div className="mt-2 text-sm font-medium text-neonMint">
                                 Un nouveau lien de verification a ete envoye a votre adresse e-mail.
                             </div>
                         )}
@@ -92,7 +92,12 @@ export default function UpdateProfileInformation({
                 )}
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Enregistrer</PrimaryButton>
+                    <PrimaryButton
+                        disabled={processing}
+                        className="border-neonMint/20 bg-neonMint px-5 text-obsidian hover:bg-neonMint/90 focus:bg-neonMint/90 focus:ring-neonMint"
+                    >
+                        Enregistrer
+                    </PrimaryButton>
 
                     <Transition
                         show={recentlySuccessful}
@@ -101,7 +106,7 @@ export default function UpdateProfileInformation({
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-neonMint">
                             Enregistre.
                         </p>
                     </Transition>

@@ -2,8 +2,11 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
+import { useForm, usePage } from '@inertiajs/react';
+
+const GLASS_PANEL =
+    'border border-glassBorder bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.01)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-[20px]';
 
 export default function FinancialEntry() {
     const { latestRecord } = usePage().props;
@@ -46,34 +49,22 @@ export default function FinancialEntry() {
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-3xl font-semibold text-white">
-                            Saisie mensuelle
-                        </h2>
-                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                            Mise a jour des donnees
+        <AppDashboardLayout title="Saisie mensuelle" badge="Mise a jour des donnees">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                <section className={`${GLASS_PANEL} rounded-3xl p-6 lg:col-span-2`}>
+                    <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <h3 className="text-lg font-semibold tracking-wide text-white">
+                                Formulaire du mois
+                            </h3>
+                            <p className="mt-1 text-sm text-gray-400">
+                                Ajoutez vos donnees mensuelles pour alimenter les KPI.
+                            </p>
+                        </div>
+                        <span className="rounded-lg border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium text-white">
+                            Donnees reelles
                         </span>
                     </div>
-                    <p className="mt-3 text-sm text-slate-400">
-                        Ajoutez ou mettez a jour vos chiffres pour alimenter le
-                        tableau de bord.
-                    </p>
-                </div>
-            }
-        >
-            <Head title="Saisie mensuelle" />
-
-            <div className="grid gap-6 xl:grid-cols-[1.45fr_0.9fr]">
-                <section className="rounded-[2rem] border border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.015))] p-6 shadow-[0_25px_60px_rgba(2,6,23,0.22)]">
-                    <h3 className="text-xl font-semibold text-white">
-                        Formulaire du mois
-                    </h3>
-                    <p className="mt-2 text-sm text-slate-400">
-                        Les montants acceptent jusqu&apos;a 9 999 999 999,99 EUR.
-                    </p>
 
                     <form onSubmit={submit} className="mt-6 space-y-5">
                         <div className="grid gap-5 md:grid-cols-2">
@@ -81,12 +72,12 @@ export default function FinancialEntry() {
                                 <InputLabel
                                     htmlFor="month"
                                     value="Mois"
-                                    className="text-slate-300"
+                                    className="text-gray-300"
                                 />
                                 <TextInput
                                     id="month"
                                     type="month"
-                                    className="mt-2 block w-full border-white/10 bg-white/[0.03] text-white"
+                                    className="mt-2 block w-full border-white/10 bg-white/5 text-white focus:border-neonMint focus:ring-neonMint"
                                     value={data.month}
                                     onChange={(event) =>
                                         setData('month', event.target.value)
@@ -102,7 +93,7 @@ export default function FinancialEntry() {
                                 <InputLabel
                                     htmlFor="revenue"
                                     value="Chiffre d'affaires"
-                                    className="text-slate-300"
+                                    className="text-gray-300"
                                 />
                                 <TextInput
                                     id="revenue"
@@ -110,7 +101,7 @@ export default function FinancialEntry() {
                                     min="0"
                                     max="9999999999.99"
                                     step="0.01"
-                                    className="mt-2 block w-full border-white/10 bg-white/[0.03] text-white"
+                                    className="mt-2 block w-full border-white/10 bg-white/5 text-white focus:border-neonMint focus:ring-neonMint"
                                     value={data.revenue}
                                     onChange={(event) =>
                                         setData('revenue', event.target.value)
@@ -126,7 +117,7 @@ export default function FinancialEntry() {
                                 <InputLabel
                                     htmlFor="charges"
                                     value="Charges"
-                                    className="text-slate-300"
+                                    className="text-gray-300"
                                 />
                                 <TextInput
                                     id="charges"
@@ -134,7 +125,7 @@ export default function FinancialEntry() {
                                     min="0"
                                     max="9999999999.99"
                                     step="0.01"
-                                    className="mt-2 block w-full border-white/10 bg-white/[0.03] text-white"
+                                    className="mt-2 block w-full border-white/10 bg-white/5 text-white focus:border-neonMint focus:ring-neonMint"
                                     value={data.charges}
                                     onChange={(event) =>
                                         setData('charges', event.target.value)
@@ -150,7 +141,7 @@ export default function FinancialEntry() {
                                 <InputLabel
                                     htmlFor="marketing_budget"
                                     value="Budget marketing"
-                                    className="text-slate-300"
+                                    className="text-gray-300"
                                 />
                                 <TextInput
                                     id="marketing_budget"
@@ -158,7 +149,7 @@ export default function FinancialEntry() {
                                     min="0"
                                     max="9999999999.99"
                                     step="0.01"
-                                    className="mt-2 block w-full border-white/10 bg-white/[0.03] text-white"
+                                    className="mt-2 block w-full border-white/10 bg-white/5 text-white focus:border-neonMint focus:ring-neonMint"
                                     value={data.marketing_budget}
                                     onChange={(event) =>
                                         setData(
@@ -177,7 +168,7 @@ export default function FinancialEntry() {
                                 <InputLabel
                                     htmlFor="clients_count"
                                     value="Clients"
-                                    className="text-slate-300"
+                                    className="text-gray-300"
                                 />
                                 <TextInput
                                     id="clients_count"
@@ -185,7 +176,7 @@ export default function FinancialEntry() {
                                     min="0"
                                     max="999999"
                                     step="1"
-                                    className="mt-2 block w-full border-white/10 bg-white/[0.03] text-white"
+                                    className="mt-2 block w-full border-white/10 bg-white/5 text-white focus:border-neonMint focus:ring-neonMint"
                                     value={data.clients_count}
                                     onChange={(event) =>
                                         setData(
@@ -208,21 +199,24 @@ export default function FinancialEntry() {
                         )}
 
                         <div className="pt-2">
-                            <PrimaryButton disabled={processing}>
+                            <PrimaryButton
+                                disabled={processing}
+                                className="border-neonMint/20 bg-neonMint px-5 text-obsidian hover:bg-neonMint/90 focus:bg-neonMint/90 focus:ring-neonMint"
+                            >
                                 Enregistrer
                             </PrimaryButton>
                         </div>
                     </form>
                 </section>
 
-                <div className="space-y-6">
-                    <section className="rounded-[2rem] border border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.015))] p-6 shadow-[0_25px_60px_rgba(2,6,23,0.22)]">
-                        <h3 className="text-xl font-semibold text-white">
+                <div className="space-y-8">
+                    <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                        <h3 className="text-lg font-semibold tracking-wide text-white">
                             Derniere periode enregistree
                         </h3>
                         {latestRecord ? (
                             <div className="mt-5 space-y-4">
-                                <div className="rounded-2xl border border-white/6 bg-white/[0.03] p-4">
+                                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                                     <p className="text-sm text-slate-400">
                                         Mois
                                     </p>
@@ -232,7 +226,7 @@ export default function FinancialEntry() {
                                 </div>
 
                                 <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="rounded-2xl border border-white/6 bg-white/[0.03] p-4">
+                                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                                         <p className="text-sm text-slate-400">
                                             Revenus
                                         </p>
@@ -240,7 +234,7 @@ export default function FinancialEntry() {
                                             {formatCurrency(latestRecord.revenue)}
                                         </p>
                                     </div>
-                                    <div className="rounded-2xl border border-white/6 bg-white/[0.03] p-4">
+                                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                                         <p className="text-sm text-slate-400">
                                             Charges
                                         </p>
@@ -248,7 +242,7 @@ export default function FinancialEntry() {
                                             {formatCurrency(latestRecord.charges)}
                                         </p>
                                     </div>
-                                    <div className="rounded-2xl border border-white/6 bg-white/[0.03] p-4">
+                                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                                         <p className="text-sm text-slate-400">
                                             Budget marketing
                                         </p>
@@ -256,7 +250,7 @@ export default function FinancialEntry() {
                                             {formatCurrency(latestRecord.marketing_budget)}
                                         </p>
                                     </div>
-                                    <div className="rounded-2xl border border-white/6 bg-white/[0.03] p-4">
+                                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                                         <p className="text-sm text-slate-400">
                                             Clients
                                         </p>
@@ -279,8 +273,8 @@ export default function FinancialEntry() {
                         )}
                     </section>
 
-                    <section className="rounded-[2rem] border border-white/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.015))] p-6 shadow-[0_25px_60px_rgba(2,6,23,0.22)]">
-                        <h3 className="text-xl font-semibold text-white">
+                    <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                        <h3 className="text-lg font-semibold tracking-wide text-white">
                             Bonnes pratiques
                         </h3>
                         <ul className="mt-4 space-y-3 text-sm text-slate-400">
@@ -291,6 +285,6 @@ export default function FinancialEntry() {
                     </section>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </AppDashboardLayout>
     );
 }
