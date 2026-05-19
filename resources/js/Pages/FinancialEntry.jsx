@@ -50,8 +50,14 @@ export default function FinancialEntry() {
 
     return (
         <AppDashboardLayout title="Saisie mensuelle" badge="Mise a jour des donnees">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                <section className={`${GLASS_PANEL} rounded-3xl p-6 lg:col-span-2`}>
+            <div className="selection:bg-neonBlue selection:text-obsidian relative -m-8 min-h-full bg-obsidian bg-neon-gradient px-8 pb-8 pt-8 font-display">
+                <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+                    <div className="absolute left-[-10%] top-[-20%] h-[50%] w-[50%] rounded-full bg-neonBlue/20 blur-[150px]" />
+                    <div className="absolute bottom-[-20%] right-[-10%] h-[40%] w-[40%] rounded-full bg-neonMint/10 blur-[120px]" />
+                </div>
+
+                <div className="relative z-0 mx-auto grid max-w-[1600px] grid-cols-1 gap-8 lg:grid-cols-3">
+                    <section className={`${GLASS_PANEL} rounded-3xl p-6 lg:col-span-2`}>
                     <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <h3 className="text-lg font-semibold tracking-wide text-white">
@@ -209,8 +215,8 @@ export default function FinancialEntry() {
                     </form>
                 </section>
 
-                <div className="space-y-8">
-                    <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                    <div className="space-y-8">
+                        <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
                         <h3 className="text-lg font-semibold tracking-wide text-white">
                             Derniere periode enregistree
                         </h3>
@@ -271,9 +277,9 @@ export default function FinancialEntry() {
                                 </p>
                             </div>
                         )}
-                    </section>
+                        </section>
 
-                    <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                        <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
                         <h3 className="text-lg font-semibold tracking-wide text-white">
                             Bonnes pratiques
                         </h3>
@@ -282,7 +288,8 @@ export default function FinancialEntry() {
                             <li>Le nombre de clients doit rester coherent avec vos revenus du mois.</li>
                             <li>Apres chaque saisie, revenez au dashboard pour relire vos alertes.</li>
                         </ul>
-                    </section>
+                        </section>
+                    </div>
                 </div>
             </div>
         </AppDashboardLayout>

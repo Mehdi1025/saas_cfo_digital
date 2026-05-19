@@ -15,7 +15,7 @@ export default {
                 /** Inter : corps, données, UI — chargée via Bunny dans `app.blade.php`. */
                 sans: ['Inter', 'sans-serif'],
                 /** PP Neue Montreal : titres — fichiers locaux + `@font-face` requis (voir doc équipe). */
-                display: ['"PP Neue Montreal"', 'sans-serif'],
+                display: ['Syne', 'Inter', 'sans-serif'],
             },
             colors: {
                 obsidian: '#09090B',

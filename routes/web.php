@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminUserDashboardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\FinancialRecordController;
 use App\Http\Controllers\ProfileController;
@@ -58,6 +59,10 @@ Route::get('/saisie-mensuelle', function (Request $request) {
 Route::get('/admin', AdminController::class)
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.dashboard');
+
+Route::get('/admin/users/{user}/dashboard', AdminUserDashboardController::class)
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.users.dashboard');
 
 Route::patch('/admin/users/{user}/suspend', [AdminUserController::class, 'suspend'])
     ->middleware(['auth', 'verified', 'admin'])

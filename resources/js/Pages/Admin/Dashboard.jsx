@@ -1,5 +1,5 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 
 const GLASS_PANEL =
     'border border-glassBorder bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.01)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-[20px]';
@@ -118,9 +118,17 @@ export default function AdminDashboard() {
         router.patch(route('admin.users.restore', user.id), {}, { preserveScroll: true });
     };
 
+    const canViewDashboard = (user) => ['active', 'trialing'].includes(user.stripe_status);
+
     return (
         <AppDashboardLayout title="Administration">
-            <div className="space-y-8">
+            <div className="selection:bg-neonBlue selection:text-obsidian relative -m-8 min-h-full bg-obsidian bg-neon-gradient px-8 pb-8 pt-8 font-display">
+                <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+                    <div className="absolute left-[-10%] top-[-20%] h-[50%] w-[50%] rounded-full bg-neonBlue/20 blur-[150px]" />
+                    <div className="absolute bottom-[-20%] right-[-10%] h-[40%] w-[40%] rounded-full bg-neonMint/10 blur-[120px]" />
+                </div>
+
+                <div className="relative z-0 mx-auto max-w-[1600px] space-y-8">
                             <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 {statCards.map(([label, key, helper]) => (
                                     <div
@@ -201,22 +209,39 @@ export default function AdminDashboard() {
                                                     <td className="whitespace-nowrap px-6 py-4 text-right">
                                                         {auth.user.id === user.id ? (
                                                             <span className="text-xs font-medium text-gray-500">Votre compte</span>
-                                                        ) : user.suspended_at ? (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => restoreUser(user)}
-                                                                className="rounded-lg border border-neonMint/30 bg-neonMint/10 px-3 py-1.5 text-xs font-semibold text-neonMint transition hover:bg-neonMint/20"
-                                                            >
-                                                                Reactiver
-                                                            </button>
                                                         ) : (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => suspendUser(user)}
-                                                                className="rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-1.5 text-xs font-semibold text-rose-200 transition hover:bg-rose-400/20"
-                                                            >
-                                                                Suspendre
-                                                            </button>
+                                                            <div className="flex justify-end gap-2">
+                                                                {canViewDashboard(user) ? (
+                                                                    <Link
+                                                                        href={route('admin.users.dashboard', user.id)}
+                                                                        className="rounded-lg border border-neonBlue/30 bg-neonBlue/10 px-3 py-1.5 text-xs font-semibold text-neonBlue transition hover:bg-neonBlue/20"
+                                                                    >
+                                                                        Voir dashboard
+                                                                    </Link>
+                                                                ) : (
+                                                                    <span className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-gray-500">
+                                                                        Abonnement requis
+                                                                    </span>
+                                                                )}
+
+                                                                {user.suspended_at ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => restoreUser(user)}
+                                                                        className="rounded-lg border border-neonMint/30 bg-neonMint/10 px-3 py-1.5 text-xs font-semibold text-neonMint transition hover:bg-neonMint/20"
+                                                                    >
+                                                                        Reactiver
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => suspendUser(user)}
+                                                                        className="rounded-lg border border-rose-400/30 bg-rose-400/10 px-3 py-1.5 text-xs font-semibold text-rose-200 transition hover:bg-rose-400/20"
+                                                                    >
+                                                                        Suspendre
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         )}
                                                     </td>
                                                 </tr>
@@ -269,6 +294,7 @@ export default function AdminDashboard() {
                                     )}
                                 </div>
                             </section>
+                </div>
             </div>
         </AppDashboardLayout>
     );

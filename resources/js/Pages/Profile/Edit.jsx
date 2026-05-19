@@ -9,21 +9,28 @@ const GLASS_PANEL =
 export default function Edit({ mustVerifyEmail, status }) {
     return (
         <AppDashboardLayout title="Profil">
-            <div className="mx-auto max-w-5xl space-y-6">
-                <div className={`${GLASS_PANEL} rounded-3xl p-6 sm:p-8`}>
-                    <UpdateProfileInformationForm
-                        mustVerifyEmail={mustVerifyEmail}
-                        status={status}
-                        className="max-w-xl"
-                    />
+            <div className="selection:bg-neonBlue selection:text-obsidian relative -m-8 min-h-full bg-obsidian bg-neon-gradient px-8 pb-8 pt-8 font-display">
+                <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+                    <div className="absolute left-[-10%] top-[-20%] h-[50%] w-[50%] rounded-full bg-neonBlue/20 blur-[150px]" />
+                    <div className="absolute bottom-[-20%] right-[-10%] h-[40%] w-[40%] rounded-full bg-neonMint/10 blur-[120px]" />
                 </div>
 
-                <div className={`${GLASS_PANEL} rounded-3xl p-6 sm:p-8`}>
-                    <UpdatePasswordForm className="max-w-xl" />
-                </div>
+                <div className="relative z-0 mx-auto max-w-5xl space-y-6">
+                    <div className={`${GLASS_PANEL} rounded-3xl p-6 sm:p-8`}>
+                        <UpdateProfileInformationForm
+                            mustVerifyEmail={mustVerifyEmail}
+                            status={status}
+                            className="max-w-xl"
+                        />
+                    </div>
 
-                <div className={`${GLASS_PANEL} rounded-3xl p-6 sm:p-8`}>
-                    <DeleteUserForm className="max-w-xl" />
+                    <div className={`${GLASS_PANEL} rounded-3xl p-6 sm:p-8`}>
+                        <UpdatePasswordForm className="max-w-xl" />
+                    </div>
+
+                    <div className={`${GLASS_PANEL} rounded-3xl p-6 sm:p-8`}>
+                        <DeleteUserForm className="max-w-xl" />
+                    </div>
                 </div>
             </div>
         </AppDashboardLayout>

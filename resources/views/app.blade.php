@@ -2,8 +2,18 @@
     $inertiaDarkShellBg = null;
     if (request()->is('test') || request()->is('dashboard_test') || request()->is('dashboard_test/*')) {
         $inertiaDarkShellBg = '#09090B';
-    } elseif (request()->routeIs(['dashboard', 'admin.dashboard', 'profile.edit', 'profile.update', 'profile.destroy'])) {
-        $inertiaDarkShellBg = '#0b1220';
+    } elseif (request()->routeIs([
+        'dashboard',
+        'financial-entry.index',
+        'financial-records.store',
+        'admin.dashboard',
+        'admin.users.suspend',
+        'admin.users.restore',
+        'profile.edit',
+        'profile.update',
+        'profile.destroy',
+    ])) {
+        $inertiaDarkShellBg = '#09090B';
     }
 @endphp
 <!DOCTYPE html>
@@ -15,9 +25,10 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link
-            href="https://fonts.bunny.net/css?family=figtree:400,500,600|inter:400,500,600,700|space-grotesk:300,400,500,600,700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@500;600;700;800&display=swap"
             rel="stylesheet"
         />
 
