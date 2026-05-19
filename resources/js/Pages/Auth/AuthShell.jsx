@@ -170,13 +170,13 @@ export default function AuthShell({ children, mode, title, subtitle }) {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <button
-                                type="button"
+                            <a
+                                href={route('auth.google.redirect')}
                                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
                             >
                                 <GoogleIcon />
                                 Google
-                            </button>
+                            </a>
                             <button
                                 type="button"
                                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
