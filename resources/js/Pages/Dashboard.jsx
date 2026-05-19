@@ -1,5 +1,5 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     Area,
     AreaChart,
@@ -19,6 +19,7 @@ const GLASS_PANEL =
 const NEON_BLUE = '#00F0FF';
 const NEON_MINT = '#00FF9D';
 const ORANGE = '#FF8A00';
+const EURO_SYMBOL = '\u20AC';
 
 function SparklineArea({ data, stroke, fillId }) {
     return (
@@ -32,7 +33,14 @@ function SparklineArea({ data, stroke, fillId }) {
                 </defs>
                 <XAxis dataKey="i" hide />
                 <YAxis hide domain={['auto', 'auto']} />
-                <Area type="monotone" dataKey="v" stroke={stroke} strokeWidth={2} fill={`url(#${fillId})`} isAnimationActive />
+                <Area
+                    type="monotone"
+                    dataKey="v"
+                    stroke={stroke}
+                    strokeWidth={2}
+                    fill={`url(#${fillId})`}
+                    isAnimationActive
+                />
             </AreaChart>
         </ResponsiveContainer>
     );
@@ -77,10 +85,21 @@ function formatCompactCurrency(value) {
         return `${new Intl.NumberFormat('fr-FR', {
             minimumFractionDigits: 1,
             maximumFractionDigits: 1,
-        }).format(numericValue / 1000)}k €`;
+        }).format(numericValue / 1000)}k ${EURO_SYMBOL}`;
     }
 
     return formatCurrency(numericValue);
+}
+
+function formatPercentage(value) {
+    if (value === null || Number.isNaN(Number(value))) {
+        return 'N/A';
+    }
+
+    return `${new Intl.NumberFormat('fr-FR', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+    }).format(Number(value))}%`;
 }
 
 function sparklineFrom(values) {
@@ -113,6 +132,10 @@ export default function Dashboard() {
     const ratioLtvCac =
         kpis.cac !== null && kpis.ltv !== null && kpis.cac > 0
             ? kpis.ltv / kpis.cac
+            : null;
+    const netMarginPercentage =
+        kpis.chiffre_affaires > 0
+            ? (kpis.marge_nette / kpis.chiffre_affaires) * 100
             : null;
     const chargesRatio =
         kpis.chiffre_affaires > 0
@@ -163,7 +186,9 @@ export default function Dashboard() {
     const recentRows = [...chartData].reverse().slice(0, 3);
     const revenuesSpark = sparklineFrom(chartData.map((item) => item.revenus));
     const marginSpark = sparklineFrom(
-        chartData.map((item) => item.revenus - item.charges),
+        chartData.map((item) =>
+            item.revenus > 0 ? ((item.revenus - item.charges) / item.revenus) * 100 : 0,
+        ),
     );
     const ltvSpark = sparklineFrom(chartData.map(() => kpis.ltv ?? 0));
 
@@ -200,18 +225,65 @@ export default function Dashboard() {
         });
     }
 
+    const currentMonthLabel = kpis.mois_actuel ? `Vue du mois : ${kpis.mois_actuel}` : 'Aucune periode suivie';
+
     return (
-        <AppDashboardLayout
-            title="Tableau de bord mensuel"
-            badge={kpis.mois_actuel ?? 'Aucune periode'}
-        >
+        <AppDashboardLayout title="Tableau de bord mensuel" badge={kpis.mois_actuel ?? 'Aucune periode'}>
             <div className="relative z-0 mx-auto max-w-[1600px] space-y-8">
-                <section id="kpi-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonBlue/30`}>
+                <section className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                    <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-zinc-500">
+                            Dashboard metier
+                        </p>
+                        <h2 className="mt-3 text-3xl font-bold tracking-tight text-white lg:text-[2.5rem]">
+                            Vue d&apos;ensemble financiere
+                        </h2>
+                        <p className="mt-3 max-w-2xl text-sm text-gray-400">
+                            Suivez vos indicateurs du mois, vos alertes et l&apos;evolution recente de votre activite.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                        <button
+                            type="button"
+                            className="rounded-xl border border-white/10 bg-white/[0.05] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                        >
+                            Rapport
+                        </button>
+                        <Link
+                            href="/saisie-mensuelle"
+                            className="rounded-xl bg-[#3B82F6] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.25)] transition hover:bg-[#4C8DFF]"
+                        >
+                            Saisie mensuelle
+                        </Link>
+                    </div>
+                </section>
+
+                <section id="kpi-grid" className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+                    <div
+                        className={`${GLASS_PANEL} group relative overflow-hidden rounded-[26px] p-5 transition-colors duration-500 hover:border-neonBlue/30`}
+                    >
                         <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
-                            <svg className="h-10 w-10 text-neonBlue" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path d="M4 16l4-4 4 4 8-8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M16 8h4v4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                            <svg
+                                className="h-10 w-10 text-neonBlue"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden
+                            >
+                                <path
+                                    d="M4 16l4-4 4 4 8-8"
+                                    stroke="currentColor"
+                                    strokeWidth="1.75"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                <path
+                                    d="M16 8h4v4"
+                                    stroke="currentColor"
+                                    strokeWidth="1.75"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                             </svg>
                         </div>
                         <div className="relative z-10 flex h-full flex-col justify-between">
@@ -220,23 +292,48 @@ export default function Dashboard() {
                                     Chiffre d&apos;affaires
                                 </h3>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-bold tracking-tighter text-white">
+                                    <span className="text-[3rem] font-bold tracking-tighter text-white">
                                         {formatCompactCurrency(kpis.chiffre_affaires)}
                                     </span>
                                 </div>
+                                <p className="mt-3 text-sm text-neonBlue/80">{currentMonthLabel}</p>
                             </div>
                             <div className="mt-6 h-12 w-full">
-                                <SparklineArea data={revenuesSpark} stroke={NEON_BLUE} fillId="sp-revenue" />
+                                <SparklineArea
+                                    data={revenuesSpark}
+                                    stroke={NEON_BLUE}
+                                    fillId="sp-revenue"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonMint/30`}>
+                    <div
+                        className={`${GLASS_PANEL} group relative overflow-hidden rounded-[26px] p-5 transition-colors duration-500 hover:border-neonMint/30`}
+                    >
                         <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
-                            <svg className="h-10 w-10 text-neonMint" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path d="M8 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.5" />
-                                <path d="M16 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.5" />
-                                <path d="M16 8L8 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            <svg
+                                className="h-10 w-10 text-neonMint"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden
+                            >
+                                <path
+                                    d="M8 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                />
+                                <path
+                                    d="M16 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                />
+                                <path
+                                    d="M16 8L8 16"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                />
                             </svg>
                         </div>
                         <div className="relative z-10 flex h-full flex-col justify-between">
@@ -245,29 +342,60 @@ export default function Dashboard() {
                                     Marge nette
                                 </h3>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-bold tracking-tighter text-white">
-                                        {formatCompactCurrency(kpis.marge_nette)}
+                                    <span className="text-[3rem] font-bold tracking-tighter text-white">
+                                        {formatPercentage(netMarginPercentage)}
                                     </span>
                                 </div>
+                                <p className="mt-3 text-sm text-neonMint/70">
+                                    Montant net : {formatCurrency(kpis.marge_nette)}
+                                </p>
                             </div>
                             <div className="mt-6 h-12 w-full">
-                                <SparklineArea data={marginSpark} stroke={NEON_MINT} fillId="sp-margin" />
+                                <SparklineArea
+                                    data={marginSpark}
+                                    stroke={NEON_MINT}
+                                    fillId="sp-margin"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-white/20`}>
+                    <div
+                        className={`${GLASS_PANEL} group relative overflow-hidden rounded-[26px] p-5 transition-colors duration-500 hover:border-white/20`}
+                    >
                         <div className="absolute right-0 top-0 p-4 opacity-10">
-                            <svg className="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.5" />
-                                <circle cx="8.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
-                                <path d="M20 8v6M23 11h-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            <svg
+                                className="h-10 w-10 text-white"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden
+                            >
+                                <path
+                                    d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                />
+                                <circle
+                                    cx="8.5"
+                                    cy="7"
+                                    r="4"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                />
+                                <path
+                                    d="M20 8v6M23 11h-6"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                />
                             </svg>
                         </div>
                         <div className="relative z-10 flex h-full flex-col justify-between">
                             <div>
                                 <div className="mb-1 flex items-start justify-between">
-                                    <h3 className="text-sm font-medium uppercase tracking-wider text-gray-400">CAC</h3>
+                                    <h3 className="text-sm font-medium uppercase tracking-wider text-gray-400">
+                                        CAC
+                                    </h3>
                                     {kpis.cac === null && (
                                         <span className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-gray-500">
                                             Pas de donnees
@@ -275,13 +403,26 @@ export default function Dashboard() {
                                     )}
                                 </div>
                                 <div className="mt-2 flex items-baseline gap-2">
-                                    <span className={`text-3xl tracking-tighter ${kpis.cac === null ? 'font-light italic text-gray-600' : 'font-bold text-white'}`}>
-                                        {kpis.cac === null ? 'N/A' : formatCompactCurrency(kpis.cac)}
+                                    <span
+                                        className={`text-[2.7rem] tracking-tighter ${
+                                            kpis.cac === null
+                                                ? 'font-light italic text-gray-600'
+                                                : 'font-bold text-white'
+                                        }`}
+                                    >
+                                        {kpis.cac === null
+                                            ? 'N/A'
+                                            : formatCompactCurrency(kpis.cac)}
                                     </span>
                                 </div>
                             </div>
                             <div className="mt-6 flex items-center gap-2 text-xs text-gray-500">
-                                <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                <svg
+                                    className="h-3.5 w-3.5 shrink-0"
+                                    viewBox="0 0 24 24"
+                                    fill="currentColor"
+                                    aria-hidden
+                                >
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
                                 </svg>
                                 <span>Cout d&apos;acquisition moyen par client</span>
@@ -289,23 +430,41 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonBlue/30`}>
+                    <div
+                        className={`${GLASS_PANEL} group relative overflow-hidden rounded-[26px] p-5 transition-colors duration-500 hover:border-neonBlue/30`}
+                    >
                         <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
-                            <svg className="h-10 w-10 text-neonBlue" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path d="M12 3 4 10l8 11 8-11-8-7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                            <svg
+                                className="h-10 w-10 text-neonBlue"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden
+                            >
+                                <path
+                                    d="M12 3 4 10l8 11 8-11-8-7Z"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinejoin="round"
+                                />
                             </svg>
                         </div>
                         <div className="relative z-10 flex h-full flex-col justify-between">
                             <div>
-                                <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-gray-400">LTV</h3>
+                                <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-gray-400">
+                                    LTV
+                                </h3>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-bold tracking-tighter text-white">
+                                    <span className="text-[3rem] font-bold tracking-tighter text-white">
                                         {kpis.ltv === null ? 'N/A' : formatCompactCurrency(kpis.ltv)}
                                     </span>
                                 </div>
                             </div>
                             <div className="mt-6 h-12 w-full">
-                                <SparklineArea data={ltvSpark} stroke={NEON_BLUE} fillId="sp-ltv" />
+                                <SparklineArea
+                                    data={ltvSpark}
+                                    stroke={NEON_BLUE}
+                                    fillId="sp-ltv"
+                                />
                             </div>
                         </div>
                     </div>
@@ -313,15 +472,18 @@ export default function Dashboard() {
 
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="space-y-8 lg:col-span-2">
-                        <section id="main-chart-section" className={`${GLASS_PANEL} relative overflow-hidden rounded-3xl p-1`}>
+                        <section
+                            id="main-chart-section"
+                            className={`${GLASS_PANEL} relative overflow-hidden rounded-3xl p-1`}
+                        >
                             <div className="h-full rounded-[23px] bg-obsidian/40 p-6 backdrop-blur-md">
                                 <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                                     <div>
                                         <h2 className="text-lg font-semibold tracking-wide text-white">
-                                            Revenus vs Charges Totales
+                                            Evolution du chiffre d&apos;affaires
                                         </h2>
                                         <p className="mt-1 text-sm text-gray-400">
-                                            Evolution sur les mois enregistres
+                                            Comparez rapidement le chiffre d&apos;affaires et les charges sur les derniers mois.
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
@@ -329,13 +491,7 @@ export default function Dashboard() {
                                             type="button"
                                             className="rounded-lg border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-white/20"
                                         >
-                                            12M
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="rounded-lg border border-transparent bg-transparent px-3 py-1 text-xs font-medium text-gray-400 transition-colors hover:text-white"
-                                        >
-                                            YTD
+                                            12 derniers mois
                                         </button>
                                     </div>
                                 </div>
@@ -343,7 +499,10 @@ export default function Dashboard() {
                                 {hasFinancialData ? (
                                     <div className="h-[400px] w-full">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={chartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
+                                            <AreaChart
+                                                data={chartData}
+                                                margin={{ top: 10, right: 10, bottom: 10, left: 0 }}
+                                            >
                                                 <defs>
                                                     <linearGradient id="fillRev" x1="0" y1="0" x2="0" y2="1">
                                                         <stop offset="0%" stopColor={NEON_BLUE} stopOpacity={0.22} />
@@ -354,19 +513,32 @@ export default function Dashboard() {
                                                         <stop offset="100%" stopColor={ORANGE} stopOpacity={0} />
                                                     </linearGradient>
                                                 </defs>
-                                                <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                                <CartesianGrid
+                                                    stroke="rgba(255,255,255,0.05)"
+                                                    vertical={false}
+                                                />
                                                 <XAxis
                                                     dataKey="month"
-                                                    tick={{ fill: '#9CA3AF', fontSize: 12, fontFamily: 'Space Grotesk, sans-serif' }}
+                                                    tick={{
+                                                        fill: '#9CA3AF',
+                                                        fontSize: 12,
+                                                        fontFamily: 'Space Grotesk, sans-serif',
+                                                    }}
                                                     axisLine={false}
                                                     tickLine={false}
                                                 />
                                                 <YAxis
-                                                    tick={{ fill: '#9CA3AF', fontSize: 12, fontFamily: 'Space Grotesk, sans-serif' }}
-                                                    tickFormatter={(v) => `${v >= 1000 ? Math.round(v / 1000) : v}k €`}
+                                                    tick={{
+                                                        fill: '#9CA3AF',
+                                                        fontSize: 12,
+                                                        fontFamily: 'Space Grotesk, sans-serif',
+                                                    }}
+                                                    tickFormatter={(v) =>
+                                                        `${v >= 1000 ? Math.round(v / 1000) : v}k ${EURO_SYMBOL}`
+                                                    }
                                                     axisLine={false}
                                                     tickLine={false}
-                                                    width={48}
+                                                    width={52}
                                                 />
                                                 <Tooltip content={<MainChartTooltip />} />
                                                 <Area
@@ -392,7 +564,9 @@ export default function Dashboard() {
                                     </div>
                                 ) : (
                                     <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center">
-                                        <p className="text-lg font-semibold text-white">Aucune donnee financiere</p>
+                                        <p className="text-lg font-semibold text-white">
+                                            Aucune donnee financiere
+                                        </p>
                                         <p className="mt-2 text-sm text-gray-400">
                                             Ajoutez une saisie mensuelle pour afficher vos graphiques.
                                         </p>
@@ -414,10 +588,17 @@ export default function Dashboard() {
 
                         <section id="recent-transactions" className={`${GLASS_PANEL} rounded-3xl p-6`}>
                             <div className="mb-6 flex items-center justify-between">
-                                <h2 className="text-lg font-semibold tracking-wide text-white">Flux Recents</h2>
+                                <h2 className="text-lg font-semibold tracking-wide text-white">
+                                    Dernieres periodes
+                                </h2>
                                 <span className="flex items-center text-sm text-neonBlue">
-                                    Voir tout
-                                    <svg className="ml-1 h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                    Historique
+                                    <svg
+                                        className="ml-1 h-3.5 w-3.5"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        aria-hidden
+                                    >
                                         <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z" />
                                     </svg>
                                 </span>
@@ -426,18 +607,31 @@ export default function Dashboard() {
                                 <table className="w-full border-collapse text-left">
                                     <thead>
                                         <tr className="border-b border-glassBorder">
-                                            <th className="pb-3 text-xs font-medium uppercase tracking-wider text-gray-500">Date</th>
-                                            <th className="pb-3 text-xs font-medium uppercase tracking-wider text-gray-500">Description</th>
-                                            <th className="pb-3 text-xs font-medium uppercase tracking-wider text-gray-500">Categorie</th>
-                                            <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Montant</th>
+                                            <th className="pb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                Date
+                                            </th>
+                                            <th className="pb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                Description
+                                            </th>
+                                            <th className="pb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                Categorie
+                                            </th>
+                                            <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                Montant
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-glassBorder text-sm">
                                         {recentRows.length ? (
                                             recentRows.map((row) => (
-                                                <tr key={row.month} className="transition-colors hover:bg-white/5">
+                                                <tr
+                                                    key={row.month}
+                                                    className="transition-colors hover:bg-white/5"
+                                                >
                                                     <td className="py-4 text-gray-400">{row.month}</td>
-                                                    <td className="py-4 font-medium text-white">Periode financiere</td>
+                                                    <td className="py-4 font-medium text-white">
+                                                        Synthese mensuelle
+                                                    </td>
                                                     <td className="py-4">
                                                         <span className="rounded-md border border-neonBlue/20 bg-neonBlue/10 px-2.5 py-1 text-xs text-neonBlue">
                                                             Revenu
@@ -462,8 +656,24 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-8">
-                        <section id="health-score" className={`${GLASS_PANEL} relative flex min-h-[320px] flex-col items-center justify-center rounded-3xl p-6`}>
-                            <h2 className="absolute left-6 top-6 text-lg font-semibold tracking-wide text-white">Score de sante</h2>
+                        <section
+                            id="health-score"
+                            className={`${GLASS_PANEL} relative flex min-h-[310px] flex-col items-center justify-center rounded-3xl p-6`}
+                        >
+                            <div className="absolute left-6 right-6 top-6 flex items-center justify-between">
+                                <h2 className="text-lg font-semibold tracking-wide text-white">
+                                Score de sante
+                                </h2>
+                                <button
+                                    type="button"
+                                    className="text-gray-500 transition hover:text-white"
+                                    aria-label="Plus d options"
+                                >
+                                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                        <path d="M12 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 7Zm0 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 14Zm0 7a1.75 1.75 0 1 0 0-3.5A1.75 1.75 0 0 0 12 21Z" />
+                                    </svg>
+                                </button>
+                            </div>
 
                             <div className="relative mt-8 h-48 w-48">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -485,25 +695,37 @@ export default function Dashboard() {
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-5xl font-bold text-white" style={{ textShadow: '0 0 10px rgba(0, 255, 157, 0.5)' }}>
+                                    <span
+                                        className="text-5xl font-bold text-white"
+                                        style={{ textShadow: '0 0 10px rgba(0, 255, 157, 0.5)' }}
+                                    >
                                         {healthScore}
                                     </span>
-                                    <span className="mt-1 text-sm font-medium uppercase tracking-widest text-gray-400">/100</span>
+                                    <span className="mt-1 text-sm font-medium uppercase tracking-widest text-gray-400">
+                                        /100
+                                    </span>
                                 </div>
                             </div>
                             <p className="mt-6 max-w-[80%] text-center text-sm text-gray-400">
-                                Score calcule depuis vos donnees financieres.
+                                Lecture globale de votre sante financiere sur la periode courante.
                             </p>
                         </section>
 
                         <section id="alerts-panel" className={`${GLASS_PANEL} rounded-3xl p-6`}>
                             <div className="mb-6 flex items-center gap-3">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/10">
-                                    <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                    <svg
+                                        className="h-4 w-4 text-white"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                        aria-hidden
+                                    >
                                         <path d="M7 2v11h3v9l7-12h-4l4-8H7z" />
                                     </svg>
                                 </div>
-                                <h2 className="text-lg font-semibold tracking-wide text-white">Alertes</h2>
+                                <h2 className="text-lg font-semibold tracking-wide text-white">
+                                    Alertes
+                                </h2>
                             </div>
 
                             <div className="space-y-4">
@@ -518,16 +740,37 @@ export default function Dashboard() {
                                                 : 'border-white/10 bg-white/5 text-gray-300';
 
                                     return (
-                                        <div key={`${item.title}-${index}`} className={`relative overflow-hidden rounded-xl border p-4 ${toneClass}`}>
+                                        <div
+                                            key={`${item.title}-${index}`}
+                                            className={`relative overflow-hidden rounded-xl border p-4 ${toneClass}`}
+                                        >
                                             <div className="absolute bottom-0 left-0 top-0 w-1 bg-current shadow-[0_0_10px_currentColor]" />
                                             <div className="pl-2">
-                                                <h4 className="mb-1 text-sm font-semibold">{item.title}</h4>
-                                                <p className="text-xs leading-relaxed text-gray-400">{item.message}</p>
+                                                <h4 className="mb-1 text-sm font-semibold">
+                                                    {item.title}
+                                                </h4>
+                                                <p className="text-xs leading-relaxed text-gray-400">
+                                                    {item.message}
+                                                </p>
                                             </div>
                                         </div>
                                     );
                                 })}
                             </div>
+                        </section>
+
+                        <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="text-lg font-semibold tracking-wide text-white">
+                                    Rappel metier
+                                </h2>
+                                <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-gray-400">
+                                    Temps reel
+                                </span>
+                            </div>
+                            <p className="text-sm leading-relaxed text-gray-400">
+                                Revenus, CAC, LTV et score de sante se recalculent automatiquement apres chaque saisie mensuelle.
+                            </p>
                         </section>
                     </div>
                 </div>

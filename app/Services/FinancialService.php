@@ -22,7 +22,7 @@ class FinancialService
                 'ltv' => $this->calculateLtv($currentMonthRecord),
             ],
             'alerte' => $alert,
-            'graphique_evolution' => $records->take(-3)->values()->map(function ($record) {
+            'graphique_evolution' => $records->values()->map(function ($record) {
                 return [
                     'mois' => $record->month,
                     'ca' => $record->revenue,
