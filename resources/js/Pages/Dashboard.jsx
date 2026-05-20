@@ -1,5 +1,6 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
 import { usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import {
     Area,
     AreaChart,
@@ -101,7 +102,8 @@ function sparklineFrom(values) {
 }
 
 export default function Dashboard() {
-    const { dashboardData, viewedUser } = usePage().props;
+    const { dashboardData, viewedUser, aiInsight } = usePage().props;
+    const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
 
     const kpis = dashboardData?.kpis_mensuels ?? {
         mois_actuel: null,
@@ -578,6 +580,38 @@ export default function Dashboard() {
                         </section>
                     </div>
                 </div>
+
+                    {aiInsight && (
+                        <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neonBlue">
+                                        Analyse IA
+                                    </p>
+                                    <h2 className="mt-2 text-lg font-semibold tracking-wide text-white">
+                                        Lecture financière du mois
+                                    </h2>
+                                    <p className="mt-1 text-sm text-gray-400">
+                                        {aiInsight.is_edited ? 'Analyse corrigée par un administrateur.' : 'Analyse générée automatiquement par Groq.'}
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAiInsightOpen((open) => !open)}
+                                    className="w-fit rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-gray-200 transition hover:bg-white/15 hover:text-white"
+                                >
+                                    {isAiInsightOpen ? 'Masquer le diagnostic' : 'Afficher le diagnostic'}
+                                </button>
+                            </div>
+
+                            {isAiInsightOpen && (
+                                <div className="mt-5 whitespace-pre-line rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-gray-300">
+                                    {aiInsight.content}
+                                </div>
+                            )}
+                        </section>
+                    )}
                 </div>
             </div>
         </AppDashboardLayout>

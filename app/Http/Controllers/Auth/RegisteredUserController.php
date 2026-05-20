@@ -47,6 +47,10 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        if ($request->boolean('checkout')) {
+            return redirect()->route('billing.checkout.start');
+        }
+
         return redirect(route('dashboard', absolute: false));
     }
 }

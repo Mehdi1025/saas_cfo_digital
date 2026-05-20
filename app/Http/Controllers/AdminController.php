@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminAuditLog;
+use App\Models\FinancialRecord;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,6 +22,7 @@ class AdminController extends Controller
                 'total_users' => User::count(),
                 'active_subscriptions' => $activeUsersCount,
                 'mrr' => number_format($mrr, 2, '.', ''),
+                'total_revenue' => number_format(FinancialRecord::sum('revenue'), 2, '.', ''),
             ],
             'users' => User::query()
                 ->select([

@@ -24,6 +24,7 @@ const statCards = [
     ['Utilisateurs', 'total_users', 'Comptes inscrits'],
     ['Abonnements valides', 'active_subscriptions', 'Acces actifs'],
     ['MRR', 'mrr', 'Revenu mensuel'],
+    ['CA total clients', 'total_revenue', 'Somme des chiffres d affaires'],
 ];
 
 const auditLabels = {
@@ -129,7 +130,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="relative z-0 mx-auto max-w-[1600px] space-y-8">
-                            <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
                                 {statCards.map(([label, key, helper]) => (
                                     <div
                                         key={key}
@@ -141,7 +142,7 @@ export default function AdminDashboard() {
                                                 {label}
                                             </h3>
                                             <p className="text-4xl font-bold tracking-tighter text-white">
-                                                {key === 'mrr' ? formatCurrency(stats[key]) : stats[key]}
+                                                {['mrr', 'total_revenue'].includes(key) ? formatCurrency(stats[key]) : stats[key]}
                                             </p>
                                             <p className="mt-3 text-sm text-gray-400">{helper}</p>
                                         </div>

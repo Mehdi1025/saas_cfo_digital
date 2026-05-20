@@ -77,15 +77,19 @@ Route::post('/financial-records', [FinancialRecordController::class, 'store'])
     ->name('financial-records.store');
 
 Route::post('/billing/checkout', [StripeCheckoutController::class, 'store'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('billing.checkout');
 
+Route::get('/billing/checkout/start', [StripeCheckoutController::class, 'store'])
+    ->middleware(['auth'])
+    ->name('billing.checkout.start');
+
 Route::get('/billing/success', [StripeCheckoutController::class, 'success'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('billing.success');
 
 Route::get('/billing/cancel', [StripeCheckoutController::class, 'cancel'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth'])
     ->name('billing.cancel');
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])

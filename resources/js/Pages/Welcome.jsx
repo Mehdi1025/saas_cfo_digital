@@ -330,7 +330,7 @@ function TopActions({ auth, canAccessDashboard, isSuspended, startCheckout }) {
 function PrimarySubscribeAction({ auth, canAccessDashboard, isSuspended, startCheckout, children, className }) {
     if (!auth?.user) {
         return (
-            <MagneticLink href={route('login')} className={className}>
+            <MagneticLink href={`${route('register')}?checkout=1`} className={className}>
                 {children}
             </MagneticLink>
         );
@@ -364,7 +364,7 @@ function PricingAction({ auth, canAccessDashboard, isSuspended, startCheckout })
     if (!auth?.user) {
         return (
             <MagneticLink
-                href={route('login')}
+                href={`${route('register')}?checkout=1`}
                 wrapperClassName="block w-full"
                 className="block w-full rounded-xl bg-white py-4 text-center text-lg font-bold text-black shadow-[0_0_18px_rgba(255,255,255,0.25)] transition hover:bg-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             >
