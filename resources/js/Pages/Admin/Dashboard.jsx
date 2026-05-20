@@ -118,7 +118,7 @@ export default function AdminDashboard() {
         router.patch(route('admin.users.restore', user.id), {}, { preserveScroll: true });
     };
 
-    const canViewDashboard = (user) => ['active', 'trialing'].includes(user.stripe_status);
+    const canViewDashboard = (user) => user.role !== 'admin';
 
     return (
         <AppDashboardLayout title="Administration">

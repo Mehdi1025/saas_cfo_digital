@@ -15,10 +15,6 @@ class AdminUserDashboardController extends Controller
 
     public function __invoke(User $user): Response
     {
-        if (! in_array($user->stripe_status, ['active', 'trialing'], true)) {
-            abort(403, 'Ce client n a pas d abonnement actif.');
-        }
-
         $records = $user->financialRecords()
             ->orderBy('month')
             ->get();

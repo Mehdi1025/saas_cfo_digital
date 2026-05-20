@@ -4,7 +4,9 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
+use Laravel\Socialite\Contracts\Provider as SocialiteProvider;
+use Laravel\Socialite\Contracts\User as SocialiteUserContract;
+use Laravel\Socialite\Facades\Socialite;
 use Tests\TestCase;
 
 class GoogleAuthenticationTest extends TestCase
@@ -17,11 +19,24 @@ class GoogleAuthenticationTest extends TestCase
         config()->set('services.google.client_secret', 'client-secret');
         config()->set('services.google.redirect', 'http://127.0.0.1:8000/auth/google/callback');
 
+        $provider = \Mockery::mock(SocialiteProvider::class);
+        $provider->shouldReceive('scopes')
+            ->once()
+            ->with(['openid', 'email', 'profile'])
+            ->andReturnSelf();
+        $provider->shouldReceive('redirect')
+            ->once()
+            ->andReturn(redirect()->away('https://accounts.google.com/o/oauth2/v2/auth?state=test-state'));
+
+        Socialite::shouldReceive('driver')
+            ->once()
+            ->with('google')
+            ->andReturn($provider);
+
         $response = $this->get(route('auth.google.redirect'));
 
-        $response->assertRedirect();
+        $response->assertRedirect('https://accounts.google.com/o/oauth2/v2/auth?state=test-state');
         $this->assertStringContainsString('accounts.google.com', $response->headers->get('Location'));
-        $this->assertNotNull(session('google_oauth_state'));
     }
 
     public function test_google_callback_creates_and_authenticates_a_user(): void
@@ -30,23 +45,24 @@ class GoogleAuthenticationTest extends TestCase
         config()->set('services.google.client_secret', 'client-secret');
         config()->set('services.google.redirect', 'http://127.0.0.1:8000/auth/google/callback');
 
-        Http::fake([
-            'https://oauth2.googleapis.com/token' => Http::response([
-                'access_token' => 'google-token',
-            ]),
-            'https://openidconnect.googleapis.com/v1/userinfo' => Http::response([
-                'sub' => 'google-user-1',
-                'name' => 'Client Google',
-                'email' => 'client.google@example.com',
-                'email_verified' => true,
-                'picture' => 'https://example.com/avatar.png',
-            ]),
-        ]);
+        $socialiteUser = $this->fakeSocialiteUser(
+            id: 'google-user-1',
+            name: 'Client Google',
+            email: 'client.google@example.com',
+            avatar: 'https://example.com/avatar.png',
+            raw: ['email_verified' => true],
+        );
+
+        $provider = \Mockery::mock(SocialiteProvider::class);
+        $provider->shouldReceive('user')->once()->andReturn($socialiteUser);
+
+        Socialite::shouldReceive('driver')
+            ->once()
+            ->with('google')
+            ->andReturn($provider);
 
         $response = $this
-            ->withSession(['google_oauth_state' => 'secure-state'])
             ->get(route('auth.google.callback', [
-                'state' => 'secure-state',
                 'code' => 'valid-code',
             ]));
 
@@ -69,23 +85,24 @@ class GoogleAuthenticationTest extends TestCase
             'email' => 'existing@example.com',
         ]);
 
-        Http::fake([
-            'https://oauth2.googleapis.com/token' => Http::response([
-                'access_token' => 'google-token',
-            ]),
-            'https://openidconnect.googleapis.com/v1/userinfo' => Http::response([
-                'sub' => 'google-user-2',
-                'name' => 'Existing User',
-                'email' => 'existing@example.com',
-                'email_verified' => true,
-                'picture' => 'https://example.com/avatar-2.png',
-            ]),
-        ]);
+        $socialiteUser = $this->fakeSocialiteUser(
+            id: 'google-user-2',
+            name: 'Existing User',
+            email: 'existing@example.com',
+            avatar: 'https://example.com/avatar-2.png',
+            raw: ['email_verified' => true],
+        );
+
+        $provider = \Mockery::mock(SocialiteProvider::class);
+        $provider->shouldReceive('user')->once()->andReturn($socialiteUser);
+
+        Socialite::shouldReceive('driver')
+            ->once()
+            ->with('google')
+            ->andReturn($provider);
 
         $response = $this
-            ->withSession(['google_oauth_state' => 'secure-state'])
             ->get(route('auth.google.callback', [
-                'state' => 'secure-state',
                 'code' => 'valid-code',
             ]));
 
@@ -96,5 +113,22 @@ class GoogleAuthenticationTest extends TestCase
             'id' => $user->id,
             'google_id' => 'google-user-2',
         ]);
+    }
+
+    protected function fakeSocialiteUser(
+        string $id,
+        string $name,
+        string $email,
+        string $avatar,
+        array $raw = [],
+    ): SocialiteUserContract {
+        $user = \Mockery::mock(SocialiteUserContract::class);
+        $user->shouldReceive('getId')->andReturn($id);
+        $user->shouldReceive('getName')->andReturn($name);
+        $user->shouldReceive('getEmail')->andReturn($email);
+        $user->shouldReceive('getAvatar')->andReturn($avatar);
+        $user->user = $raw;
+
+        return $user;
     }
 }

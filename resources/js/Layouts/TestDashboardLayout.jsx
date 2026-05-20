@@ -98,7 +98,7 @@ function IconBell({ className }) {
 }
 
 /** Header : radial depuis le coin haut-gauche (#1A4341 → #050505). */
-const headerChromeClass = 'bg-[radial-gradient(ellipse_at_top_left,_rgba(59,130,246,0.2)_0%,_#050505_60%)]';
+const headerChromeClass = 'bg-[radial-gradient(ellipse_at_top_left,_rgba(17,83,77,0.42)_0%,_#050505_62%)]';
 
 export default function TestDashboardLayout({ children, title }) {
     const path = (usePage().url.split('?')[0] || '/').replace(/\/$/, '') || '/';
@@ -108,7 +108,7 @@ export default function TestDashboardLayout({ children, title }) {
 
     return (
         <div className="flex h-screen w-full overflow-hidden bg-[#050505] font-sans text-white antialiased">
-            <aside className="relative flex h-screen w-64 shrink-0 flex-col overflow-hidden bg-[radial-gradient(ellipse_at_top_left,_rgba(59,130,246,0.2)_0%,_#050505_70%)] border-r border-white/5">
+            <aside className="relative flex h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-white/5 bg-[radial-gradient(ellipse_at_top_left,_rgba(17,83,77,0.4)_0%,_#050505_72%)]">
                 <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
                 <div className="border-b border-white/5 px-5 pb-5 pt-6">
                     <div className="flex items-center gap-3">
@@ -137,7 +137,7 @@ export default function TestDashboardLayout({ children, title }) {
                 <div className="mt-auto border-t border-white/5 px-3 py-4">
                     <span className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/60 transition hover:bg-white/[0.04] hover:text-white/75">
                         <IconSettings className="h-5 w-5 shrink-0 text-white/55" />
-                        Paramètres Admin
+                        Parametres Admin
                     </span>
                 </div>
                 </div>
@@ -203,7 +203,7 @@ export default function TestDashboardLayout({ children, title }) {
                         aria-hidden
                         style={{
                             background:
-                                'radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.14) 0%, transparent 40%), radial-gradient(ellipse 90% 70% at 0% 0%, rgba(26, 67, 65, 0.4) 0%, transparent 55%)',
+                                'radial-gradient(circle at 0% 0%, rgba(17, 83, 77, 0.22) 0%, transparent 38%), radial-gradient(ellipse 90% 70% at 0% 0%, rgba(17, 83, 77, 0.38) 0%, transparent 55%)',
                         }}
                     />
                     <div className="relative z-[1]">{children}</div>

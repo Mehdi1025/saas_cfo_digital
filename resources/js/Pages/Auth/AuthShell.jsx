@@ -89,6 +89,8 @@ function AuthTabs({ mode }) {
 }
 
 export default function AuthShell({ children, mode, title, subtitle }) {
+    const googleLabel = mode === 'login' ? 'Se connecter avec Google' : 'Continuer avec Google';
+
     return (
         <div className="relative min-h-screen overflow-hidden bg-[#020707] text-white">
             <div
@@ -175,7 +177,7 @@ export default function AuthShell({ children, mode, title, subtitle }) {
                                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
                             >
                                 <GoogleIcon />
-                                Google
+                                {googleLabel}
                             </a>
                             <button
                                 type="button"

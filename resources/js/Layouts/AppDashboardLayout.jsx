@@ -123,7 +123,7 @@ function SidebarContent({ navItems, onNavigate }) {
     );
 }
 
-const headerChromeClass = 'bg-[radial-gradient(ellipse_at_top_left,_rgba(59,130,246,0.2)_0%,_#050505_60%)]';
+const headerChromeClass = 'bg-[radial-gradient(ellipse_at_top_left,_rgba(17,83,77,0.42)_0%,_#050505_62%)]';
 
 export default function AppDashboardLayout({ children, title, badge }) {
     const { auth } = usePage().props;
@@ -158,7 +158,7 @@ export default function AppDashboardLayout({ children, title, badge }) {
                         aria-label="Fermer le menu"
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
-                    <aside className="relative flex h-full w-72 max-w-[86vw] shrink-0 flex-col overflow-hidden border-r border-white/5 bg-[radial-gradient(ellipse_at_top_left,_rgba(59,130,246,0.2)_0%,_#050505_70%)] shadow-2xl">
+                    <aside className="relative flex h-full w-72 max-w-[86vw] shrink-0 flex-col overflow-hidden border-r border-white/5 bg-[radial-gradient(ellipse_at_top_left,_rgba(17,83,77,0.4)_0%,_#050505_72%)] shadow-2xl">
                         <button
                             type="button"
                             className="absolute right-4 top-5 z-10 rounded-lg border border-white/10 bg-white/5 p-2 text-zinc-300 transition hover:bg-white/10 hover:text-white"
@@ -175,7 +175,7 @@ export default function AppDashboardLayout({ children, title, badge }) {
                 </div>
             )}
 
-            <aside className="relative hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-white/5 bg-[radial-gradient(ellipse_at_top_left,_rgba(59,130,246,0.2)_0%,_#050505_70%)] lg:flex">
+            <aside className="relative hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-white/5 bg-[radial-gradient(ellipse_at_top_left,_rgba(17,83,77,0.4)_0%,_#050505_72%)] lg:flex">
                 <SidebarContent navItems={navItems} />
             </aside>
 
@@ -246,7 +246,7 @@ export default function AppDashboardLayout({ children, title, badge }) {
                         aria-hidden
                         style={{
                             background:
-                                'radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.14) 0%, transparent 40%), radial-gradient(ellipse 90% 70% at 0% 0%, rgba(26, 67, 65, 0.4) 0%, transparent 55%)',
+                                'radial-gradient(circle at 0% 0%, rgba(17, 83, 77, 0.22) 0%, transparent 38%), radial-gradient(ellipse 90% 70% at 0% 0%, rgba(17, 83, 77, 0.38) 0%, transparent 55%)',
                         }}
                     />
                     <div className="relative z-[1]">{children}</div>
