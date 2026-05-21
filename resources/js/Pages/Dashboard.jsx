@@ -1,5 +1,5 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
-import { usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import {
     Area,
@@ -104,6 +104,28 @@ function sparklineFrom(values) {
 export default function Dashboard() {
     const { dashboardData, viewedUser, aiInsight } = usePage().props;
     const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
+    const {
+        data: aiInsightForm,
+        setData: setAiInsightForm,
+        patch: updateAiInsight,
+        processing: isUpdatingAiInsight,
+        errors: aiInsightErrors,
+        recentlySuccessful: aiInsightUpdated,
+    } = useForm({
+        edited_content: aiInsight?.edited_content ?? aiInsight?.content ?? '',
+    });
+
+    const submitAiInsightUpdate = (event) => {
+        event.preventDefault();
+
+        if (!aiInsight?.id) {
+            return;
+        }
+
+        updateAiInsight(route('admin.ai-insights.update', aiInsight.id), {
+            preserveScroll: true,
+        });
+    };
 
     const kpis = dashboardData?.kpis_mensuels ?? {
         mois_actuel: null,
@@ -606,8 +628,59 @@ export default function Dashboard() {
                             </div>
 
                             {isAiInsightOpen && (
-                                <div className="mt-5 whitespace-pre-line rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-gray-300">
-                                    {aiInsight.content}
+                                <div className="mt-5 space-y-5">
+                                    <div className="whitespace-pre-line rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-gray-300">
+                                        {aiInsight.content}
+                                    </div>
+
+                                    {viewedUser && (
+                                        <form
+                                            onSubmit={submitAiInsightUpdate}
+                                            className="rounded-2xl border border-neonMint/20 bg-neonMint/5 p-5"
+                                        >
+                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neonMint">
+                                                        Correction admin
+                                                    </p>
+                                                    <h3 className="mt-1 text-base font-semibold text-white">
+                                                        Modifier l&apos;analyse IA visible par le client
+                                                    </h3>
+                                                    <p className="mt-1 text-sm text-gray-400">
+                                                        Cette correction sera utilisee a la place du texte genere par Groq.
+                                                    </p>
+                                                </div>
+                                                {aiInsightUpdated && (
+                                                    <span className="rounded-lg border border-neonMint/30 bg-neonMint/10 px-3 py-1.5 text-xs font-semibold text-neonMint">
+                                                        Enregistre
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <textarea
+                                                value={aiInsightForm.edited_content}
+                                                onChange={(event) => setAiInsightForm('edited_content', event.target.value)}
+                                                rows="8"
+                                                className="mt-4 w-full rounded-xl border border-white/10 bg-black/40 p-4 text-sm leading-6 text-white placeholder:text-gray-500 focus:border-neonMint/60 focus:ring-neonMint/20"
+                                            />
+
+                                            {aiInsightErrors.edited_content && (
+                                                <p className="mt-2 text-sm text-rose-300">
+                                                    {aiInsightErrors.edited_content}
+                                                </p>
+                                            )}
+
+                                            <div className="mt-4 flex justify-end">
+                                                <button
+                                                    type="submit"
+                                                    disabled={isUpdatingAiInsight}
+                                                    className="rounded-lg border border-neonMint/30 bg-neonMint/10 px-4 py-2 text-sm font-semibold text-neonMint transition hover:bg-neonMint/20 disabled:cursor-not-allowed disabled:opacity-60"
+                                                >
+                                                    {isUpdatingAiInsight ? 'Enregistrement...' : 'Enregistrer la correction'}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    )}
                                 </div>
                             )}
                         </section>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminAiInsightController;
 use App\Http\Controllers\AdminUserDashboardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\FinancialRecordController;
@@ -71,6 +72,10 @@ Route::patch('/admin/users/{user}/suspend', [AdminUserController::class, 'suspen
 Route::patch('/admin/users/{user}/restore', [AdminUserController::class, 'restore'])
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.users.restore');
+
+Route::patch('/admin/ai-insights/{aiInsight}', [AdminAiInsightController::class, 'update'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.ai-insights.update');
 
 Route::post('/financial-records', [FinancialRecordController::class, 'store'])
     ->middleware(['auth', 'verified', 'active.subscription'])
