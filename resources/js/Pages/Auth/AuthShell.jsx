@@ -48,17 +48,6 @@ function GoogleIcon() {
     );
 }
 
-function MicrosoftIcon() {
-    return (
-        <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
-            <path fill="#fff" d="M3 3h8.5v8.5H3V3Z" opacity="0.95" />
-            <path fill="#fff" d="M12.5 3H21v8.5h-8.5V3Z" opacity="0.75" />
-            <path fill="#fff" d="M3 12.5h8.5V21H3v-8.5Z" opacity="0.65" />
-            <path fill="#fff" d="M12.5 12.5H21V21h-8.5v-8.5Z" opacity="0.85" />
-        </svg>
-    );
-}
-
 function AuthTabs({ mode }) {
     const activeClass =
         'bg-slate-700/80 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]';
@@ -171,7 +160,7 @@ export default function AuthShell({ children, mode, title, subtitle }) {
                             <div className="h-px flex-1 bg-white/10" />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <a
                                 href={route('auth.google.redirect')}
                                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
@@ -179,13 +168,6 @@ export default function AuthShell({ children, mode, title, subtitle }) {
                                 <GoogleIcon />
                                 {googleLabel}
                             </a>
-                            <button
-                                type="button"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
-                            >
-                                <MicrosoftIcon />
-                                Microsoft
-                            </button>
                         </div>
                     </div>
 
