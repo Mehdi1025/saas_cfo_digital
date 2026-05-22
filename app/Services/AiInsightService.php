@@ -64,4 +64,17 @@ class AiInsightService
             'edited_at' => $insight->edited_at,
         ];
     }
+
+    public function dashboardStatus(?AiInsight $insight, array $dashboardData): string
+    {
+        if ($insight) {
+            return 'ready';
+        }
+
+        if (! ($dashboardData['kpis_mensuels']['mois_actuel'] ?? null)) {
+            return 'missing_data';
+        }
+
+        return 'unavailable';
+    }
 }

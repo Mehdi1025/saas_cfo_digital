@@ -30,6 +30,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'dashboardData' => $dashboardData,
             'aiInsight' => $this->aiInsightService->toDashboardPayload($aiInsight),
+            'aiInsightStatus' => $this->aiInsightService->dashboardStatus($aiInsight, $dashboardData),
         ]);
     }
 }

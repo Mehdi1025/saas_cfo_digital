@@ -181,26 +181,26 @@ export default function AppDashboardLayout({ children, title, badge }) {
 
             <div className="relative flex min-w-0 flex-1 flex-col">
                 <header
-                    className={`flex shrink-0 items-center justify-between border-b border-white/5 pb-5 pl-5 pr-8 pt-6 ${headerChromeClass}`}
+                    className={`flex shrink-0 flex-col gap-4 border-b border-white/5 px-4 pb-5 pt-6 sm:px-5 lg:flex-row lg:items-center lg:justify-between lg:pr-8 ${headerChromeClass}`}
                 >
-                    <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
                         <button
                             type="button"
-                            className="rounded-lg border border-white/10 bg-white/5 p-2 text-zinc-300 transition hover:bg-white/10 hover:text-white lg:hidden"
+                            className="relative z-20 shrink-0 rounded-lg border border-white/10 bg-white/5 p-2 text-zinc-300 transition hover:bg-white/10 hover:text-white lg:hidden"
                             aria-label="Ouvrir le menu"
                             onClick={() => setIsMobileMenuOpen(true)}
                         >
                             <IconMenu className="h-5 w-5" />
                         </button>
-                        <h1 className="truncate text-2xl font-display font-bold leading-tight tracking-tight text-white">
+                        <h1 className="min-w-0 truncate text-xl font-display font-bold leading-tight tracking-tight text-white sm:text-2xl">
                             {title}
                         </h1>
-                        <span className="shrink-0 rounded-full border border-[#10B981]/25 bg-[#10B981]/10 px-3 py-1 text-xs font-medium leading-none text-[#5eead4]">
+                        <span className="hidden shrink-0 rounded-full border border-[#10B981]/25 bg-[#10B981]/10 px-3 py-1 text-xs font-medium leading-none text-[#5eead4] sm:inline-flex">
                             {headerBadge}
                         </span>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-4">
+                    <div className="flex w-full shrink-0 flex-wrap items-center justify-between gap-3 lg:w-auto lg:justify-end lg:gap-4">
                         <div className="flex items-center gap-2 rounded-full border border-[#10B981]/35 bg-[#10B981]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white">
                             <span
                                 className="h-2 w-2 shrink-0 rounded-full bg-[#10B981] shadow-[0_0_10px_rgba(16,185,129,0.95)]"

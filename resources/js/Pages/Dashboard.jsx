@@ -102,7 +102,7 @@ function sparklineFrom(values) {
 }
 
 export default function Dashboard() {
-    const { dashboardData, viewedUser, aiInsight } = usePage().props;
+    const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable' } = usePage().props;
     const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
     const {
         data: aiInsightForm,
@@ -240,6 +240,11 @@ export default function Dashboard() {
                 'Vos indicateurs ne presentent pas de risque majeur sur le mois courant.',
         });
     }
+
+    const aiInsightEmptyMessage =
+        aiInsightStatus === 'missing_data'
+            ? 'Saisissez vos donnees mensuelles pour generer l analyse IA.'
+            : 'L analyse IA est momentanement indisponible. Le dashboard reste accessible.';
 
     return (
         <AppDashboardLayout
@@ -603,8 +608,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                    {aiInsight && (
-                        <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                    <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
                             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
                                     <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neonBlue">
@@ -614,20 +618,41 @@ export default function Dashboard() {
                                         Lecture financière du mois
                                     </h2>
                                     <p className="mt-1 text-sm text-gray-400">
-                                        {aiInsight.is_edited ? 'Analyse corrigée par un administrateur.' : 'Analyse générée automatiquement par Groq.'}
+                                        {aiInsight
+                                            ? aiInsight.is_edited
+                                                ? 'Analyse corrigee par un administrateur.'
+                                                : 'Analyse generee automatiquement par Groq.'
+                                            : aiInsightEmptyMessage}
                                     </p>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => setIsAiInsightOpen((open) => !open)}
-                                    className="w-fit rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-gray-200 transition hover:bg-white/15 hover:text-white"
-                                >
-                                    {isAiInsightOpen ? 'Masquer le diagnostic' : 'Afficher le diagnostic'}
-                                </button>
+                                {aiInsight ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAiInsightOpen((open) => !open)}
+                                        className="w-fit rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-gray-200 transition hover:bg-white/15 hover:text-white"
+                                    >
+                                        {isAiInsightOpen ? 'Masquer le diagnostic' : 'Afficher le diagnostic'}
+                                    </button>
+                                ) : (
+                                    <span className="w-fit rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-gray-400">
+                                        En attente
+                                    </span>
+                                )}
                             </div>
 
-                            {isAiInsightOpen && (
+                            {!aiInsight && (
+                                <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-6 text-sm leading-7 text-gray-300">
+                                    <p className="font-semibold text-white">
+                                        Analyse non disponible pour le moment
+                                    </p>
+                                    <p className="mt-2 text-gray-400">
+                                        {aiInsightEmptyMessage}
+                                    </p>
+                                </div>
+                            )}
+
+                            {aiInsight && isAiInsightOpen && (
                                 <div className="mt-5 space-y-5">
                                     <div className="whitespace-pre-line rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-gray-300">
                                         {aiInsight.content}
@@ -684,7 +709,6 @@ export default function Dashboard() {
                                 </div>
                             )}
                         </section>
-                    )}
                 </div>
             </div>
         </AppDashboardLayout>

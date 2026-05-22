@@ -28,6 +28,7 @@ class AdminUserDashboardController extends Controller
         return Inertia::render('Dashboard', [
             'dashboardData' => $dashboardData,
             'aiInsight' => $this->aiInsightService->toDashboardPayload($aiInsight),
+            'aiInsightStatus' => $this->aiInsightService->dashboardStatus($aiInsight, $dashboardData),
             'viewedUser' => [
                 'id' => $user->id,
                 'name' => $user->name,
