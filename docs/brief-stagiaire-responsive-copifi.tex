@@ -1,0 +1,423 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{ragged2e}
+\usepackage{listings}
+\usepackage{tikz}
+
+% ── Palette Copifi ──
+\definecolor{copifiobsidian}{HTML}{050505}
+\definecolor{copifiemerald}{HTML}{10B981}
+\definecolor{copifisky}{HTML}{0EA5E9}
+\definecolor{copifizinc500}{HTML}{71717A}
+\definecolor{copificodebg}{HTML}{F4F4F5}
+\definecolor{copificodeframe}{HTML}{D4D4D8}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=copifiemerald,
+    urlcolor=copifisky,
+    pdftitle={Brief stagiaire — Responsive Copifi},
+    pdfauthor={Équipe Copifi},
+    pdfsubject={Mission responsive mobile — SaaS Copifi}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Brief stagiaire — Responsive Copifi}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries\color{copifiobsidian}}{\chaptertitlename\ \thechapter}{16pt}{\Huge}
+
+\titleformat{\section}
+{\normalfont\Large\bfseries\color{copifiemerald}}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{copifiobsidian}}
+{\thesubsection}{1em}{}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{copificodebg},
+    frame=single,
+    rulecolor=\color{copificodeframe},
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true,
+    showstringspaces=false,
+    tabsize=2,
+}
+
+\newcommand{\filepath}[1]{\texttt{\small #1}}
+\newcommand{\feat}[1]{\textbf{#1}}
+\newcommand{\breakpoint}[2]{#1 & #2 \\}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════
+\begin{titlepage}
+    \centering
+    \vspace*{1.2cm}
+    {\Huge\bfseries\color{copifiobsidian} Brief stagiaire\par}
+    \vspace{0.6cm}
+    {\LARGE\color{copifiemerald} Responsive — site Copifi\par}
+    \vspace{0.4cm}
+    {\large Mission jour 1 : rendre l'application utilisable sur mobile et tablette\par}
+    \vspace{0.3cm}
+    {\normalsize React + Inertia + Tailwind CSS — projet \filepath{saas\_cfo\_digital}\par}
+    \vspace{1.4cm}
+    \rule{0.78\textwidth}{1pt}
+    \vspace{1cm}
+    \begin{tabular}{>{\bfseries}r p{9.2cm}}
+        Produit & Copifi (SaaS facturation + pilotage) \\
+        Périmètre & Frontend uniquement (\filepath{resources/js/}) \\
+        Stack & React 18, Inertia.js, Tailwind CSS 3, Vite \\
+        Durée estimée & 1 journée (8 h) \\
+        Branche Git cible & \filepath{feature/responsive-mobile} \\
+        Version document & 1.0 — Juillet 2026 \\
+    \end{tabular}
+    \vfill
+    \begin{minipage}{0.88\textwidth}
+        \centering
+        \small\itshape
+        Ce document décrit l'objectif, la méthode de test, l'ordre de travail,
+        les fichiers prioritaires et les livrables attendus en fin de journée.
+        \textbf{Ne pas modifier} le backend PHP, les routes, ni la logique métier.
+    \end{minipage}
+\end{titlepage}
+
+\tableofcontents
+\cleardoublepage
+
+% ============================================================
+\chapter{Objectif de la mission}
+% ============================================================
+
+\section{Ce qu'on attend}
+
+Rendre \textbf{tout le site Copifi} utilisable et lisible sur les viewports suivants :
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \feat{320\,px} — iPhone SE (pire cas, prioritaire)
+    \item \feat{375\,px} — iPhone standard
+    \item \feat{768\,px} — tablette portrait
+    \item \feat{1024\,px} — tablette paysage / bascule sidebar
+    \item \feat{1280\,px+} — desktop (ne pas régresser l'existant)
+\end{itemize}
+
+\section{Definition of Done}
+
+Une page est considérée \textbf{terminée} lorsque :
+
+\begin{enumerate}[leftmargin=1.5em]
+    \item Aucun scroll horizontal involontaire sur la page.
+    \item Tous les boutons et liens sont cliquables au doigt (zone min.\ 44$\times$44\,px).
+    \item Les textes ne débordent pas du viewport (pas de \texttt{overflow-x} caché).
+    \item La navigation principale est accessible sans zoom.
+    \item \texttt{npm run build} passe sans erreur après les modifications.
+\end{enumerate}
+
+% ============================================================
+\chapter{Environnement et méthode}
+% ============================================================
+
+\section{Installation locale}
+
+\begin{lstlisting}[language=bash]
+cd saas_cfo_digital
+composer install
+npm ci
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm run dev          # terminal 1
+php artisan serve    # terminal 2
+\end{lstlisting}
+
+\section{Outils de test obligatoires}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Chrome DevTools : \feat{F12} $\rightarrow$ \textbf{Toggle device toolbar} (Ctrl+Shift+M).
+    \item Tester \textbf{chaque page modifiée} aux 5 largeurs listées au chapitre~1.
+    \item Mode \textbf{Responsive} + mode \textbf{iPhone SE} explicite pour valider le pire cas.
+\end{itemize}
+
+\section{Breakpoints Tailwind (référence)}
+
+Le projet utilise les breakpoints \textbf{par défaut} de Tailwind (aucun \texttt{screens} custom dans \filepath{tailwind.config.js}).
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Préfixe} & \textbf{Min width} & \textbf{Usage typique} \\
+\midrule
+\breakpoint{(défaut)}{0 — mobile first}
+\breakpoint{\texttt{sm:}}{640\,px}
+\breakpoint{\texttt{md:}}{768\,px}
+\breakpoint{\texttt{lg:}}{1024\,px — sidebar desktop, grilles larges}
+\breakpoint{\texttt{xl:}}{1280\,px — dashboards larges}
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Règle mobile first :} styles de base pour mobile, puis enrichissement avec \texttt{sm:}, \texttt{md:}, \texttt{lg:}.
+
+% ============================================================
+\chapter{Règles de développement}
+% ============================================================
+
+\section{À faire}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Utiliser \textbf{uniquement Tailwind CSS} (pas de lib CSS externe, pas de CSS inline sauvage).
+    \item Réduire le padding mobile : \texttt{p-4 sm:p-6 lg:p-8} au lieu de \texttt{p-8} partout.
+    \item Titres responsives : \texttt{text-2xl sm:text-3xl lg:text-4xl}.
+    \item Toolbars filtres : \texttt{flex-col gap-3 sm:flex-row sm:items-center}.
+    \item Tables : scroll horizontal explicite \textbf{ou} vue cartes en mobile (voir chapitre~\ref{ch:patterns}).
+    \item Commits atomiques : \texttt{fix(responsive): factures index mobile}.
+\end{itemize}
+
+\section{Interdictions}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Modifier les contrôleurs PHP, les routes, les migrations, les services.
+    \item Changer les couleurs, la typographie ou le logo (pas de refonte visuelle).
+    \item Supprimer des colonnes de tableau sans alternative mobile.
+    \item Utiliser \texttt{!important} ou des largeurs fixes en pixels sans breakpoint.
+    \item Valider uniquement en zoom desktop 50\,\% (test device toolbar obligatoire).
+\end{itemize}
+
+% ============================================================
+\chapter{Ordre de travail — priorités}
+\label{ch:priorites}
+% ============================================================
+
+\section{Phase A — Layouts globaux (matin, $\sim$2\,h)}
+
+Ces fichiers impactent \textbf{toutes} les pages de l'application.
+
+\begin{longtable}{@{}p{5.2cm}p{4.2cm}p{5.6cm}@{}}
+\toprule
+\textbf{Fichier} & \textbf{Problème actuel} & \textbf{Action attendue} \\
+\midrule
+\endhead
+\filepath{Layouts/AppDashboardLayout.jsx} &
+Header chargé sur mobile ; \texttt{p-8} fixe &
+\texttt{p-4 sm:p-6 lg:p-8} sur \texttt{<main>} ; simplifier header \texttt{< sm} \\
+\filepath{Components/CfoPageShell.jsx} &
+Double padding \texttt{-m-8 px-8} &
+\texttt{px-4 sm:px-6 lg:px-8} \\
+\filepath{Layouts/FacturationLayout.jsx} &
+En-têtes page &
+Vérifier \texttt{flex-col gap-4 sm:flex-row} \\
+\filepath{Layouts/TestDashboardLayout.jsx} &
+Sidebar fixe sans menu mobile &
+Copier le drawer de \filepath{AppDashboardLayout.jsx} \\
+\bottomrule
+\end{longtable}
+
+\textbf{Critère Phase A :} navigation OK à 320\,px, menu hamburger fonctionnel, contenu non coupé sous le header.
+
+\section{Phase B — Landing ( $\sim$2\,h)}
+
+\begin{longtable}{@{}p{5.5cm}p{8.8cm}@{}}
+\toprule
+\textbf{Fichier} & \textbf{Action attendue} \\
+\midrule
+\endhead
+\filepath{Pages/Welcome.jsx} &
+Menu hamburger \texttt{< md} avec ancres ; hero \texttt{text-3xl sm:text-4xl lg:text-5xl} ; KPIs \texttt{grid-cols-1 sm:grid-cols-3} ; atténuer mockup 3D \texttt{< md} \\
+\filepath{Components/Landing/LandingChatWidget.jsx} &
+\texttt{min-h-[320px] sm:min-h-[420px] lg:min-h-[520px]} \\
+\bottomrule
+\end{longtable}
+
+\section{Phase C — Pages listes / tableaux ($\sim$3\,h)}
+
+\begin{longtable}{@{}p{5.8cm}p{2.2cm}p{6.3cm}@{}}
+\toprule
+\textbf{Fichier} & \textbf{min-w table} & \textbf{Priorité} \\
+\midrule
+\endhead
+\filepath{Pages/FacturesFournisseurs/Index.jsx} & 960\,px & \textcolor{copifiemerald}{\textbf{Haute — 0 responsive actuel}} \\
+\filepath{Pages/Factures/Index.jsx} & 980\,px & Haute \\
+\filepath{Pages/Devis/Index.jsx} & 960\,px & Haute \\
+\filepath{Pages/FinFlow/Payments/Index.jsx} & 900\,px & Moyenne \\
+\filepath{Pages/FinFlow/Catalogue/Index.jsx} & 900\,px & Moyenne \\
+\filepath{Pages/FinFlow/Clients/Index.jsx} & 760\,px & Moyenne \\
+\filepath{Components/FinFlow/DashboardHome.jsx} & 640\,px & Moyenne \\
+\bottomrule
+\end{longtable}
+
+\textbf{Option rapide :} conserver le scroll + ajouter un conteneur \texttt{overflow-x-auto}.\\
+\textbf{Option recommandée :} vue \textbf{cartes} \texttt{< md}, table \texttt{hidden md:block}.
+
+\section{Phase D — Formulaires lourds ($\sim$3\,h)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \filepath{Pages/FinFlow/InvoiceCreate.jsx} — lignes en cartes \texttt{< lg} ; barre d'actions empilée ou menu \texttt{⋮} ; preview sous le formulaire.
+    \item \filepath{Pages/Devis/Create.jsx} — même traitement que la facture.
+\end{itemize}
+
+\textbf{Critère :} créer une facture/devis entièrement sur iPhone 375\,px sans zoom navigateur.
+
+\section{Phase E — Dashboards et reste ($\sim$2\,h)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \filepath{Pages/Dashboard.jsx} — KPIs \texttt{grid-cols-1 sm:grid-cols-2 xl:grid-cols-4}
+    \item \filepath{Pages/Facturation/Dashboard.jsx} — via \filepath{DashboardHome.jsx}
+    \item \filepath{Pages/FinFlow/Settings/Index.jsx} — sections empilées
+    \item \filepath{Pages/Copilot.jsx} — stack vertical \texttt{< lg}
+    \item \filepath{Pages/Auth/AuthShell.jsx} — vérifier 320\,px
+    \item \filepath{Pages/Admin/Dashboard.jsx} — table scroll ou cartes
+\end{itemize}
+
+% ============================================================
+\chapter{Patterns réutilisables}
+\label{ch:patterns}
+% ============================================================
+
+\section{Table $\rightarrow$ cartes mobile}
+
+\begin{lstlisting}[language=Java]
+{/* Mobile : cartes */}
+<div className="space-y-3 md:hidden">
+  {items.map((item) => (
+    <div key={item.id}
+         className="rounded-xl border border-white/10 bg-white/5 p-4">
+      <p className="font-medium text-white">{item.reference}</p>
+      <p className="text-sm text-zinc-400">{item.client}</p>
+      <p className="mt-2 text-lg font-semibold text-emerald-400">
+        {item.total}
+      </p>
+    </div>
+  ))}
+</div>
+
+{/* Desktop : table */}
+<div className="hidden md:block overflow-x-auto">
+  <table className="min-w-full ...">...</table>
+</div>
+\end{lstlisting}
+
+\section{Toolbar filtres}
+
+\begin{lstlisting}[language=Java]
+<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <input className="w-full sm:max-w-xs" />
+  <div className="flex flex-wrap gap-2">{/* boutons */}</div>
+</div>
+\end{lstlisting}
+
+\section{Padding page cohérent}
+
+\begin{lstlisting}[language=Java]
+<main className="flex-1 p-4 sm:p-6 lg:p-8">
+\end{lstlisting}
+
+% ============================================================
+\chapter{Inventaire des fichiers}
+% ============================================================
+
+\section{Layouts (\filepath{resources/js/Layouts/})}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \filepath{AppDashboardLayout.jsx} — shell principal (sidebar + header)
+    \item \filepath{FacturationLayout.jsx} — wrapper facturation
+    \item \filepath{GuestLayout.jsx} — auth legacy
+    \item \filepath{TestDashboardLayout.jsx} — prototype (à corriger)
+\end{itemize}
+
+\section{Pages (\filepath{resources/js/Pages/}) — 31 fichiers}
+
+\textbf{Racine :} \filepath{Welcome.jsx}, \filepath{Dashboard.jsx}, \filepath{Copilot.jsx}, \filepath{FinancialEntry.jsx}, pages Test*.\\
+\textbf{Auth :} \filepath{Auth/AuthShell.jsx}, Login, Register, etc.\\
+\textbf{Facturation :} \filepath{Facturation/Dashboard.jsx}\\
+\textbf{FinFlow :} InvoiceCreate, Clients, Catalogue, Payments, Settings, Placeholder\\
+\textbf{Documents :} Devis (Index, Create), Factures (Index), FacturesFournisseurs (Index)\\
+\textbf{Admin / Profile :} \filepath{Admin/Dashboard.jsx}, \filepath{Profile/Edit.jsx}
+
+\section{Composants partagés}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \filepath{Components/FinFlow/} — KPI, modales, dashboard home (15 fichiers)
+    \item \filepath{Components/CfoPageShell.jsx}, \filepath{CfoPageBackground.jsx}
+    \item \filepath{Components/Landing/LandingChatWidget.jsx}
+    \item \filepath{Components/Dashboard/DashboardChatWidget.jsx}
+    \item \filepath{Components/ui/} — login, logo
+\end{itemize}
+
+% ============================================================
+\chapter{Checklist de validation}
+% ============================================================
+
+\section{Checklist stagiaire (à cocher en fin de journée)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item[$\square$] \filepath{Welcome.jsx} — 320, 375, 768, 1024
+    \item[$\square$] \filepath{AppDashboardLayout.jsx} — menu + header
+    \item[$\square$] \filepath{Dashboard.jsx} (pilotage)
+    \item[$\square$] \filepath{Facturation/Dashboard.jsx}
+    \item[$\square$] \filepath{Factures/Index.jsx}
+    \item[$\square$] \filepath{Devis/Index.jsx} + \filepath{Devis/Create.jsx}
+    \item[$\square$] \filepath{FinFlow/InvoiceCreate.jsx}
+    \item[$\square$] \filepath{FinFlow/Clients/Index.jsx}
+    \item[$\square$] \filepath{FinFlow/Catalogue/Index.jsx}
+    \item[$\square$] \filepath{FinFlow/Payments/Index.jsx}
+    \item[$\square$] \filepath{FinFlow/Settings/Index.jsx}
+    \item[$\square$] \filepath{FacturesFournisseurs/Index.jsx}
+    \item[$\square$] \filepath{Copilot.jsx}
+    \item[$\square$] Auth (Login, Register)
+    \item[$\square$] \filepath{Profile/Edit.jsx}
+\end{itemize}
+
+\section{Validation tuteur (5 min)}
+
+\begin{enumerate}[leftmargin=1.5em]
+    \item iPhone 375\,px : landing + login + liste factures + création facture.
+    \item Aucun scroll horizontal involontaire.
+    \item Boutons cliquables au doigt.
+    \item \texttt{npm run build} OK.
+\end{enumerate}
+
+% ============================================================
+\chapter{Livrables fin de journée}
+% ============================================================
+
+\begin{enumerate}[leftmargin=1.5em]
+    \item \textbf{Branche Git} : \filepath{feature/responsive-mobile} (PR ou merge request).
+    \item \textbf{Screenshots} avant/après pour 3 pages :
+    \begin{itemize}
+        \item Welcome (landing)
+        \item Factures/Index
+        \item InvoiceCreate
+    \end{itemize}
+    à 375\,px de large.
+    \item \textbf{Liste des fichiers modifiés} (commentaire PR ou fichier \filepath{RESPONSIVE-NOTES.md}).
+    \item \textbf{Notes} : pages non terminées + blocages éventuels.
+\end{enumerate}
+
+\vfill
+\begin{center}
+\small\color{copifizinc500}
+Document interne Copifi — Brief stagiaire responsive — Juillet 2026\\
+Compilable avec \texttt{pdflatex} (2 passes pour la table des matières).
+\end{center}
+
+\end{document}

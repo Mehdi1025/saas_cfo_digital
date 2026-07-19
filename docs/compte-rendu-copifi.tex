@@ -1,0 +1,775 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=2.1cm]{geometry}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{ragged2e}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{float}
+
+% ── Palette Copifi ──
+\definecolor{copifiobsidian}{HTML}{050505}
+\definecolor{copifiemerald}{HTML}{10B981}
+\definecolor{copifisky}{HTML}{0EA5E9}
+\definecolor{copifilime}{HTML}{CCFF00}
+\definecolor{copifizinc500}{HTML}{71717A}
+\definecolor{copificodebg}{HTML}{F4F4F5}
+\definecolor{copificodeframe}{HTML}{D4D4D8}
+\definecolor{copifiwarn}{HTML}{F59E0B}
+\definecolor{copifidanger}{HTML}{EF4444}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=copifiemerald,
+    urlcolor=copifisky,
+    pdftitle={Compte rendu technique — Copifi},
+    pdfauthor={Équipe Copifi},
+    pdfsubject={Inventaire complet du SaaS Copifi}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Compte rendu — Copifi}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries\color{copifiobsidian}}{\chaptertitlename\ \thechapter}{14pt}{\Huge}
+
+\titleformat{\section}
+{\normalfont\Large\bfseries\color{copifiemerald}}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\normalfont\large\bfseries\color{copifiobsidian}}
+{\thesubsection}{1em}{}
+
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{copificodebg},
+    frame=single,
+    rulecolor=\color{copificodeframe},
+    breaklines=true,
+    columns=fullflexible,
+    keepspaces=true,
+}
+
+\newcommand{\filepath}[1]{\texttt{\small #1}}
+\newcommand{\feat}[1]{\textbf{#1}}
+\newcommand{\statusok}{\textcolor{copifiemerald}{\textbf{Implémenté}}}
+\newcommand{\statuspartial}{\textcolor{copifiwarn}{\textbf{Partiel}}}
+\newcommand{\statusgap}{\textcolor{copifidanger}{\textbf{Manquant}}}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════
+\begin{titlepage}
+    \centering
+    \vspace*{0.8cm}
+    {\Huge\bfseries\color{copifiobsidian} Compte rendu technique\par}
+    \vspace{0.5cm}
+    {\LARGE\color{copifiemerald} Copifi\par}
+    \vspace{0.35cm}
+    {\large SaaS de facturation conforme 2026 \& pilotage financier TPE/PME\par}
+    \vspace{0.25cm}
+    {\normalsize Inventaire détaillé du produit, de l'architecture et de l'état d'avancement\par}
+    \vspace{1.2cm}
+    \rule{0.82\textwidth}{1pt}
+    \vspace{0.9cm}
+    \begin{tabular}{>{\bfseries}r p{9.4cm}}
+        Dépôt & \filepath{saas\_cfo\_digital} (GitHub) \\
+        Noms alternatifs (code) & Mini CFO Digital, FinFlow (modules internes) \\
+        Stack & Laravel 12, PHP 8.2+, React 18, Inertia.js, Tailwind, Vite 7 \\
+        Base de données & MySQL (production Cloudways) \\
+        Hébergement & Cloudways (Debian, Node 22 via nvm) \\
+        Version document & 1.0 — Juillet 2026 \\
+        Public visé & Direction, équipe produit, stagiaires, auditeurs techniques \\
+    \end{tabular}
+    \vfill
+    \begin{minipage}{0.9\textwidth}
+        \centering
+        \small\itshape
+        Ce document décrit \textbf{ce que contient le site aujourd'hui}, tel qu'implémenté dans le code source.
+        Il distingue les fonctionnalités livrées, partielles et absentes.
+        Les promesses marketing de la landing sont croisées avec la réalité technique.
+    \end{minipage}
+\end{titlepage}
+
+\tableofcontents
+\cleardoublepage
+
+% ============================================================
+\chapter{Synthèse exécutive}
+% ============================================================
+
+\section{Vision produit}
+
+Copifi est un \textbf{SaaS B2B français} destiné aux TPE, PME, indépendants et auto-entrepreneurs.
+Il combine deux piliers :
+
+\begin{enumerate}[leftmargin=1.5em]
+    \item \feat{Facturation conforme} — devis, factures, avoirs, clients, catalogue, paiements,
+    génération PDF/Factur-X, transmission Plateforme Agréée (PA), e-reporting, factures fournisseurs.
+    \item \feat{Pilotage financier} — saisie mensuelle de KPI (CA, charges, budget marketing, clients),
+    tableaux de bord (marge, CAC, LTV), insights IA (Groq), copilote conversationnel.
+\end{enumerate}
+
+\section{Positionnement réglementaire}
+
+Le produit anticipe la \textbf{réforme de la facturation électronique} (sept.\ 2026 réception / sept.\ 2027 émission pour les micro-entreprises) :
+format Factur-X EN~16931, statuts CDAR, webhooks PA, commande planifiée d'e-reporting.
+
+\section{État global (juillet 2026)}
+
+\begin{center}
+\begin{tabular}{@{}p{5.5cm}p{2.2cm}p{6.8cm}@{}}
+\toprule
+\textbf{Domaine} & \textbf{État} & \textbf{Commentaire} \\
+\midrule
+Landing \& marketing & \statusok & \filepath{Welcome.jsx}, chat IA public \\
+Auth (email + Google) & \statusok & Laravel Breeze + Socialite \\
+Abonnement Stripe & \statuspartial & 1 \texttt{STRIPE\_PRICE\_ID} ; pas d'essai 14j sans CB \\
+Module facturation & \statusok & CRUD complet devis/factures/clients/catalogue \\
+Factur-X + email & \statusok & PJ Factur-X à l'envoi facture \\
+Intégration PA & \statuspartial & Architecture + tests ; PA réelle non validée prod \\
+E-reporting & \statuspartial & Commande + service ; dépend PA \\
+Pilotage KPI + IA & \statusok & Dashboard, saisie, insights Groq \\
+Administration & \statusok & Suspension users, édition insights \\
+Pages légales & \statusgap & Liens footer sans routes \\
+Responsive mobile & \statuspartial & Desktop OK ; mobile à améliorer \\
+Tests automatisés & \statuspartial & PA, compliance, auth ; peu de tests facturation \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Chiffres clés du dépôt}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{41} migrations base de données
+    \item \textbf{15} modèles Eloquent
+    \item \textbf{16} services applicatifs
+    \item \textbf{12} classes Support (calculs, Factur-X, compliance)
+    \item \textbf{$\sim$25} contrôleurs HTTP (+ auth Breeze)
+    \item \textbf{31} pages React/Inertia
+    \item \textbf{$\sim$70} routes web + 1 route API PA
+    \item \textbf{14} fichiers de tests PHPUnit
+\end{itemize}
+
+% ============================================================
+\chapter{Architecture technique}
+% ============================================================
+
+\section{Stack logicielle}
+
+\subsection{Backend}
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Composant} & \textbf{Version (composer.json)} \\
+\midrule
+PHP & $\geq$ 8.2 \\
+Laravel Framework & $\geq$ 12.0 \\
+Inertia Laravel & $\geq$ 2.0 \\
+Laravel Sanctum & $\geq$ 4.0 \\
+Laravel Socialite (Google) & $\geq$ 5.27 \\
+Tightenco Ziggy (routes JS) & $\geq$ 2.0 \\
+atgp/factur-x & $\geq$ 3.3 \\
+barryvdh/laravel-dompdf & 3.1.1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Frontend}
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Composant} & \textbf{Version (package.json)} \\
+\midrule
+React / React DOM & 18.2 \\
+Inertia React & 2.0 \\
+Vite & 7.0.7 \\
+Tailwind CSS & 3.2.1 \\
+Framer Motion & 12.40 \\
+Recharts (graphiques) & 3.8 \\
+Lucide React (icônes) & 1.16 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Patron architectural}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \feat{Monolithe Laravel} avec SPA React via \textbf{Inertia.js} (pas d'API REST séparée pour l'UI).
+    \item \feat{Multi-tenant léger} : chaque utilisateur possède ses tiers, articles, documents (\texttt{user\_id} sur les tables facturation).
+    \item \feat{Queue database} : jobs PA asynchrones (\texttt{TransmitInvoiceToPaJob}).
+    \item \feat{Sessions / cache / queue} en base MySQL par défaut.
+    \item \feat{Assets} compilés par Vite dans \filepath{public/build/}.
+\end{itemize}
+
+\section{Structure des répertoires principaux}
+
+\begin{lstlisting}
+app/
+  Http/Controllers/     # Contrôleurs web + API PA
+  Models/               # 15 modeles Eloquent
+  Services/             # Logique metier
+  Support/              # Calculs, Factur-X, compliance
+  Jobs/                 # Transmission PA
+  Mail/                 # Emails facture/devis
+  Console/Commands/     # E-reporting planifie
+resources/js/
+  Pages/                # 31 pages Inertia
+  Layouts/              # 4 layouts
+  Components/           # FinFlow, Landing, Dashboard, UI
+  utils/                # TVA, devises, totaux
+routes/
+  web.php, api.php, auth.php, console.php
+database/migrations/    # 41 migrations
+tests/                  # Feature + Unit
+\end{lstlisting}
+
+\section{Middleware et sécurité}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{auth}, \texttt{verified} — authentification + email vérifié
+    \item \texttt{active.subscription} — abonnement Stripe \texttt{active|trialing}, compte non suspendu
+    \item \texttt{admin} — rôle administrateur
+    \item CSRF exempt : \filepath{/stripe/webhook}, \filepath{/api/pa/webhook}
+    \item Throttle : chat landing (12/min), copilot (20/min), webhooks Stripe (60/min)
+    \item Health check Laravel : \filepath{/up}
+\end{itemize}
+
+% ============================================================
+\chapter{Parcours utilisateur et pages}
+% ============================================================
+
+\section{Landing et acquisition}
+
+\begin{longtable}{@{}p{3.2cm}p{2.8cm}p{8.5cm}@{}}
+\toprule
+\textbf{Page} & \textbf{Route} & \textbf{Contenu} \\
+\midrule
+\endhead
+\filepath{Welcome.jsx} & \texttt{/} &
+Landing Copifi : hero, fonctionnalités, tarifs, FAQ, chat IA public (Groq), CTA inscription.
+Redirige utilisateurs connectés (admin $\rightarrow$ \texttt{/admin}, abonné $\rightarrow$ \texttt{/dashboard}). \\
+\filepath{TestLanding.jsx} & \texttt{/test} & Variante test landing \\
+\bottomrule
+\end{longtable}
+
+\section{Authentification et compte}
+
+Pages Breeze + Google OAuth (\filepath{Auth/}) :
+Login, Register, Forgot/Reset password, Verify email, Confirm password.
+Layout partagé \filepath{AuthShell.jsx} (hero masqué \texttt{< lg}).
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Google : \texttt{/auth/google/redirect} et \texttt{/callback}
+    \item Profil : \filepath{Profile/Edit.jsx} — mise à jour nom, email, mot de passe, suppression compte
+    \item Abonnement : Stripe Checkout (\texttt{/billing/checkout}), success/cancel
+\end{itemize}
+
+\section{Pilotage financier (Mini CFO)}
+
+\begin{longtable}{@{}p{3.5cm}p{3cm}p{7.8cm}@{}}
+\toprule
+\textbf{Page} & \textbf{Route} & \textbf{Contenu} \\
+\midrule
+\endhead
+\filepath{Dashboard.jsx} & \texttt{/dashboard} &
+KPIs : marge, CAC, LTV, alertes ; graphiques Recharts ; insights IA mensuels ; widget chat copilote. \\
+\filepath{FinancialEntry.jsx} & \texttt{/saisie-mensuelle} &
+Formulaire saisie mensuelle : CA, charges, budget marketing, nombre clients. \\
+\filepath{Copilot.jsx} & \texttt{/copilote} &
+Page dédiée copilote IA avec contexte financier + facturation. \\
+\bottomrule
+\end{longtable}
+
+\section{Module facturation (FinFlow)}
+
+Navigation sidebar : Vue d'ensemble, Devis, Factures, Clients, Catalogue, Paiements, Paramètres, Factures fournisseurs.
+
+\begin{longtable}{@{}p{4cm}p{2.8cm}p{7.5cm}@{}}
+\toprule
+\textbf{Page} & \textbf{Route} & \textbf{Contenu} \\
+\midrule
+\endhead
+\filepath{Facturation/Dashboard.jsx} & \texttt{/facturation} &
+KPIs facturation, graphiques donut, analyse IA, timeline documents, encours. \\
+\filepath{Factures/Index.jsx} & \texttt{/factures} &
+Liste factures, pipeline statuts, filtres, actions PDF/envoi/paiement. \\
+\filepath{FinFlow/InvoiceCreate.jsx} & \texttt{/factures/nouveau}, \texttt{/edit} &
+Création/édition facture : client, lignes, remises, TVA multi-pays, devises, prestation, escompte, preview PDF. \\
+\filepath{Devis/Index.jsx} & \texttt{/devis} & Liste devis + statuts \\
+\filepath{Devis/Create.jsx} & \texttt{/devis/nouveau}, \texttt{/edit} &
+Création devis (similaire facture) + conversion facture. \\
+\filepath{FinFlow/Clients/Index.jsx} & \texttt{/clients} &
+CRUD clients (tiers) : SIRET, TVA, pays, email. \\
+\filepath{FinFlow/Catalogue/Index.jsx} & \texttt{/catalogue} &
+CRUD articles : SKU, type, catégorie, prix HT, image. \\
+\filepath{FinFlow/Payments/Index.jsx} & \texttt{/paiements} &
+Suivi paiements, export CSV, retry. \\
+\filepath{FinFlow/Settings/Index.jsx} & \texttt{/parametres} &
+Identité entreprise, logo, SIRET, TVA, mandat facturation électronique, destinations livraison. \\
+\filepath{FacturesFournisseurs/Index.jsx} & \texttt{/achats/factures-fournisseurs} &
+Boîte de réception factures fournisseurs (webhook PA). \\
+\bottomrule
+\end{longtable}
+
+\section{Administration}
+
+\filepath{Admin/Dashboard.jsx} (\texttt{/admin}) : liste utilisateurs, statistiques, suspension/restauration, édition insights IA, accès dashboard utilisateur.
+
+% ============================================================
+\chapter{Routes HTTP — inventaire}
+% ============================================================
+
+\section{Routes publiques}
+
+\texttt{GET /}, \texttt{GET /test}, \texttt{POST /landing/chat}, \texttt{GET /tracking/\{document\}/pixel}.
+
+\section{Routes authentification (\filepath{routes/auth.php})}
+
+Inscription, connexion, Google OAuth, reset password, vérification email, logout — standard Laravel Breeze.
+
+\section{Routes pilotage (abonnement requis)}
+
+\texttt{/dashboard}, \texttt{/saisie-mensuelle}, \texttt{/copilote}, \texttt{POST /dashboard/chat}, \texttt{POST /copilote/chat}, \texttt{POST /financial-records}, \texttt{GET /mes-enregistrements-financiers} (JSON).
+
+\section{Routes facturation (abonnement requis)}
+
+Préfixe groupé sous middleware \texttt{active.subscription} :
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{/facturation} — dashboard + analyse IA
+    \item \texttt{/factures/*} — CRUD, PDF, envoi, paiements, avoir
+    \item \texttt{/devis/*} — CRUD, PDF, email, statuts, conversion
+    \item \texttt{/clients}, \texttt{/catalogue}, \texttt{/paiements}, \texttt{/parametres}
+    \item \texttt{/achats/factures-fournisseurs}
+\end{itemize}
+
+\section{Routes billing et webhooks}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Stripe Checkout : \texttt{POST/GET /billing/checkout}
+    \item \texttt{POST /stripe/webhook} — événements abonnement
+    \item \texttt{POST /api/pa/webhook} — statuts CDAR + factures entrantes PA
+\end{itemize}
+
+\section{Routes admin}
+
+\texttt{/admin}, suspension/restauration users, édition insights, vue dashboard utilisateur.
+
+% ============================================================
+\chapter{Backend — modèles et domaine métier}
+% ============================================================
+
+\section{Modèles Eloquent}
+
+\begin{longtable}{@{}p{3.2cm}p{3cm}p{7.3cm}@{}}
+\toprule
+\textbf{Modèle} & \textbf{Table} & \textbf{Rôle} \\
+\midrule
+\endhead
+\texttt{User} & \texttt{users} & Compte, rôle, Stripe, Google, suspension \\
+\texttt{Tier} & \texttt{tiers} & Client ou prospect (SIRET, TVA, pays) \\
+\texttt{Document} & \texttt{documents} & Devis, facture ou avoir \\
+\texttt{LigneDocument} & \texttt{ligne\_documents} & Lignes de document \\
+\texttt{Article} & \texttt{articles} & Catalogue produits/services \\
+\texttt{Payment} & \texttt{payments} & Paiements clients \\
+\texttt{CompanySetting} & \texttt{company\_settings} & Identité émetteur \\
+\texttt{DeliveryDestination} & \texttt{delivery\_destinations} & Frais port par destination \\
+\texttt{FinancialRecord} & \texttt{financial\_records} & Saisie KPI mensuelle \\
+\texttt{AiInsight} & \texttt{ai\_insights} & Insight IA mensuel \\
+\texttt{DocumentEvent} & \texttt{document\_events} & Timeline audit document \\
+\texttt{FactureFournisseur} & \texttt{factures\_fournisseurs} & Factures reçues PA \\
+\texttt{AdminAuditLog} & \texttt{admin\_audit\_logs} & Journal actions admin \\
+\texttt{ProcessedStripeEvent} & \texttt{processed\_stripe\_events} & Idempotence Stripe \\
+\texttt{ProcessedPaWebhook} & \texttt{processed\_pa\_webhooks} & Idempotence PA \\
+\bottomrule
+\end{longtable}
+
+\section{Document — cycle de vie}
+
+\textbf{Types :} \texttt{devis}, \texttt{facture}, \texttt{avoir}.
+
+\textbf{Statuts devis :} brouillon, envoyé, accepté, rejeté, expiré, converti.
+
+\textbf{Statuts facture :} brouillon, envoyé, partiellement payé, payé, en retard, annulé.
+
+\textbf{Statuts CDAR (PA) :} déposée, rejetée, refusée, suspendue, encaissée, approuvée.
+
+\textbf{Relations :} document parent (devis $\rightarrow$ facture), lignes, paiements, événements, \texttt{pa\_document\_id}.
+
+% ============================================================
+\chapter{Services et logique métier}
+% ============================================================
+
+\section{Services applicatifs (\filepath{app/Services/})}
+
+\begin{longtable}{@{}p{4.2cm}p{9.3cm}@{}}
+\toprule
+\textbf{Service} & \textbf{Responsabilité} \\
+\midrule
+\endhead
+\texttt{FinancialService} & Calcul marge, CAC, LTV, alertes dashboard pilotage \\
+\texttt{FinancialAnalysisService} & Analyse IA des données facturation \\
+\texttt{AiInsightService} & Génération insights mensuels Groq \\
+\texttt{GroqApiService} & Client HTTP API Groq LLM \\
+\texttt{DashboardChatService} & Chat copilote (contexte user + KPI + facturation) \\
+\texttt{LandingChatService} & Chat public landing (FAQ produit) \\
+\texttt{CopilotContextService} & Construction contexte structuré copilote \\
+\texttt{DocumentPdfService} & PDF DomPDF + Factur-X assemblé \\
+\texttt{DocumentMailerService} & Envoi email facture \\
+\texttt{DevisMailerService} & Envoi email devis \\
+\texttt{ReferenceGeneratorService} & Références DEV-/FAC-/AVO- \\
+\texttt{CompanySettingsService} & Paramètres entreprise frontend/PDF \\
+\texttt{DeliveryDestinationService} & Destinations livraison et frais port \\
+\texttt{DocumentEventRecorder} & Journal événements document \\
+\texttt{RestPaApiClient} & Client REST PA (production) \\
+\texttt{GenericPaApiClient} & Simulation PA locale \\
+\bottomrule
+\end{longtable}
+
+\section{Classes Support (\filepath{app/Support/})}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{DocumentTotals}, \texttt{LigneAmounts} — calculs HT/TVA/TTC, remises ligne
+    \item \texttt{FinancialDiscount} — escompte pour paiement anticipé
+    \item \texttt{TaxRateResolver} — TVA par pays (\filepath{config/taxes.php})
+    \item \texttt{ExchangeRateResolver} — devises (\filepath{config/currencies.php})
+    \item \texttt{DocumentRegulatoryFields} — champs réglementaires documents
+    \item \texttt{DocumentPrestation} — type prestation, frais port
+    \item \texttt{ArticleCatalog} — articles disponibles pour lignes
+    \item \texttt{InvoiceComplianceValidator} — contrôles pré-envoi (SIRET, catégorie opération…)
+    \item \texttt{FacturXCiiGenerator} — XML CII EN~16931
+    \item \texttt{FacturXAssembler} — PDF/A-3 + XML embarqué (atgp/factur-x)
+    \item \texttt{EReportingService} — collecte transactions B2C/international pour PA
+\end{itemize}
+
+\section{Jobs, emails, commandes}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Job} \texttt{TransmitInvoiceToPaJob} — soumission Factur-X à la PA (5 tentatives, backoff)
+    \item \textbf{Mail} \texttt{DocumentSentMail} — facture + PJ Factur-X
+    \item \textbf{Mail} \texttt{DevisSentMail} — devis + PJ PDF
+    \item \textbf{Commande} \texttt{finflow:process-ereporting} — planifiée daily 02:00 (\filepath{routes/console.php})
+\end{itemize}
+
+% ============================================================
+\chapter{Fonctionnalités détaillées}
+% ============================================================
+
+\section{Facturation et documents}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item CRUD \textbf{devis} avec statuts, envoi email, conversion en facture
+    \item CRUD \textbf{factures} avec validation compliance, PDF, envoi email Factur-X
+    \item Génération \textbf{avoir} depuis facture
+    \item \textbf{Paiements} rattachés aux factures (partiel/total, escompte financier)
+    \item \textbf{Remises} par ligne (pourcentage ou montant)
+    \item \textbf{Multi-devises} avec taux fixes configurables
+    \item \textbf{Multi-TVA} selon pays client
+    \item \textbf{Catégories d'opération} (biens/services) — conformité facture électronique
+    \item \textbf{Timeline} événements par document (\filepath{DocumentTimeline.jsx})
+    \item \textbf{Tracking ouverture} email (pixel \texttt{/tracking/\{id\}/pixel})
+    \item Export CSV catalogue et paiements
+\end{itemize}
+
+\section{Conformité et PA}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Format \textbf{Factur-X} (PDF + XML CII) via package \texttt{atgp/factur-x}
+    \item Envoi email avec pièce jointe Factur-X (\filepath{DocumentSentMail})
+    \item Transmission PA asynchrone si \texttt{electronic\_invoicing\_active}
+    \item Webhook PA : mise à jour statut CDAR + réception factures fournisseurs
+    \item E-reporting : commande batch + service dédié
+    \item Mandat facturation électronique (modal + date acceptation)
+    \item Validateur compliance avant émission (\filepath{InvoiceComplianceValidator})
+\end{itemize}
+
+\section{Intelligence artificielle (Groq)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Chat \textbf{landing} public (limité, sans auth)
+    \item Chat \textbf{dashboard} et page \textbf{copilote} (contexte utilisateur)
+    \item \textbf{Insights mensuels} générés et éditables par admin
+    \item \textbf{Analyse financière} facturation (endpoint JSON \texttt{/facturation/analyze})
+    \item Modèle par défaut : \texttt{llama-3.1-8b-instant}
+\end{itemize}
+
+\section{Abonnement et monétisation}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Stripe Checkout pour souscription
+    \item Webhook Stripe : activation/suspension \texttt{stripe\_status}
+    \item Middleware \texttt{active.subscription} sur pilotage et facturation
+    \item Landing affiche 2 plans ; code n'expose qu'un \texttt{STRIPE\_PRICE\_ID}
+\end{itemize}
+
+\section{Administration}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Liste utilisateurs avec statut abonnement
+    \item Suspension / restauration compte + audit log
+    \item Consultation dashboard d'un utilisateur
+    \item Édition manuelle des insights IA
+\end{itemize}
+
+% ============================================================
+\chapter{Frontend — composants et design}
+% ============================================================
+
+\section{Layouts}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \filepath{AppDashboardLayout.jsx} — shell principal Copifi, sidebar, menu mobile drawer (\texttt{lg:})
+    \item \filepath{FacturationLayout.jsx} — en-tête page + flash messages
+    \item \filepath{GuestLayout.jsx} — pages invité
+    \item \filepath{TestDashboardLayout.jsx} — prototype (sidebar non responsive)
+\end{itemize}
+
+\section{Composants FinFlow (facturation)}
+
+\texttt{DashboardHome}, \texttt{DashboardKpiCards}, \texttt{KPICard}, \texttt{DonutChartCard}, \texttt{FinancialAnalysisCard}, \texttt{DocumentTimeline}, \texttt{PaymentModal}, \texttt{ModalMandatFacturation}, \texttt{FlashMessages}, logos (\texttt{FinFlowAwwwardsLogo}, \texttt{CompanyBrandLogo}), \texttt{UserAvatar}.
+
+\section{Composants transverses}
+
+\texttt{CfoPageShell}, \texttt{CfoPageBackground}, \texttt{LandingChatWidget}, \texttt{DashboardChatWidget}, composants UI auth (\texttt{login-hero-panel}, \texttt{login-with-listed-provider}).
+
+\section{Identité visuelle}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Thème \textbf{dark fintech} : obsidian, emerald (\texttt{\#10B981}), sky, lime accent
+    \item Typographies : Inter (corps), Syne (display)
+    \item Logo : \filepath{public/images/finflow-logo.png}, composants animés React
+    \item Marque UI : \textbf{Copifi} ; legacy code : FinFlow, Mini CFO Digital
+\end{itemize}
+
+\section{Utilitaires JavaScript}
+
+\filepath{utils/taxRates.js}, \filepath{currency.js}, \filepath{documentTotals.js}, \filepath{ligneAmounts.js}, \filepath{financialDiscount.js}, \filepath{company.js}, \filepath{user.js}.
+
+Hook : \filepath{hooks/useClientVatRate.js}.
+
+% ============================================================
+\chapter{Base de données}
+% ============================================================
+
+\section{Tables principales (41 migrations)}
+
+\subsection{Noyau Laravel}
+\texttt{users}, \texttt{password\_reset\_tokens}, \texttt{sessions}, \texttt{cache}, \texttt{cache\_locks}, \texttt{jobs}, \texttt{job\_batches}, \texttt{failed\_jobs}.
+
+\subsection{Facturation}
+\texttt{tiers}, \texttt{articles}, \texttt{documents}, \texttt{ligne\_documents}, \texttt{payments}, \texttt{company\_settings}, \texttt{delivery\_destinations}, \texttt{document\_events}, \texttt{factures\_fournisseurs}.
+
+\subsection{Pilotage \& admin}
+\texttt{financial\_records}, \texttt{ai\_insights}, \texttt{admin\_audit\_logs}.
+
+\subsection{Intégrations}
+\texttt{processed\_stripe\_events}, \texttt{processed\_pa\_webhooks}.
+
+\section{Seeders}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \filepath{DatabaseSeeder.php} — admin, utilisateurs démo, records financiers
+    \item \filepath{FacturationDemoSeeder.php} — jeu de données facturation démo
+\end{itemize}
+
+% ============================================================
+\chapter{Configuration et variables d'environnement}
+% ============================================================
+
+\section{Fichiers config (\filepath{config/})}
+
+\texttt{app.php}, \texttt{auth.php}, \texttt{database.php}, \texttt{mail.php}, \texttt{queue.php}, \texttt{session.php}, \texttt{cache.php}, \texttt{filesystems.php}, \texttt{services.php} (Stripe, Google, Groq, PA), \texttt{company.php}, \texttt{taxes.php}, \texttt{currencies.php}.
+
+\section{Variables \filepath{.env} essentielles}
+
+\begin{longtable}{@{}p{4.5cm}p{8.8cm}@{}}
+\toprule
+\textbf{Variable} & \textbf{Usage} \\
+\midrule
+\endhead
+\texttt{APP\_*} & Nom, URL, locale (fr), debug \\
+\texttt{DB\_*} & MySQL \\
+\texttt{MAIL\_*} & SMTP production (défaut : log) \\
+\texttt{STRIPE\_*} & Clés, price ID, webhook secret \\
+\texttt{GOOGLE\_*} & OAuth connexion Google \\
+\texttt{GROQ\_*} & API IA chat + insights \\
+\texttt{PA\_API\_*} & URL, clé, secret webhook PA \\
+\texttt{QUEUE\_CONNECTION} & database (recommandé redis en prod lourde) \\
+\bottomrule
+\end{longtable}
+
+\section{Données partagées Inertia}
+
+Via \filepath{HandleInertiaRequests.php} : \texttt{auth.user}, \texttt{tax\_rates}, \texttt{currencies}, \texttt{flash}, \texttt{company}, \texttt{delivery\_destinations}.
+
+% ============================================================
+\chapter{Templates email et PDF}
+% ============================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \filepath{resources/views/pdf/facture.blade.php} — template PDF facture/devis/avoir
+    \item \filepath{resources/views/emails/document-sent.blade.php} — email facture (mention Factur-X)
+    \item \filepath{resources/views/emails/devis-sent.blade.php} — email devis
+    \item \filepath{resources/views/app.blade.php} — shell HTML Inertia + Vite
+\end{itemize}
+
+% ============================================================
+\chapter{Tests automatisés}
+% ============================================================
+
+\section{Couverture actuelle}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Auth} : login, register, reset, Google OAuth, vérification email
+    \item \textbf{Profile} : CRUD profil
+    \item \textbf{PA} : job transmission, webhooks statut/fournisseur, e-reporting, idempotence
+    \item \textbf{Email} : pièce jointe Factur-X (\filepath{DocumentSentMailTest})
+    \item \textbf{Unit} : \texttt{FinancialService}, \texttt{InvoiceComplianceValidator}
+\end{itemize}
+
+\section{Non couvert (gaps tests)}
+
+CRUD devis/factures E2E, webhooks Stripe, rendu PDF, chat Groq, pages React, exports CSV.
+
+% ============================================================
+\chapter{Déploiement et exploitation}
+% ============================================================
+
+\section{Environnement production (Cloudways)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Application : \texttt{hkubebmsdw} sur serveur Debian
+    \item Webroot : \filepath{public\_html/public}
+    \item PHP 8.2+, Composer \texttt{--no-dev}, migrations, cache config/routes/views
+    \item Node 22 via nvm (\texttt{source \textasciitilde/.profile}) pour \texttt{npm run build}
+    \item Cron : \texttt{schedule:run} + \texttt{queue:work} chaque minute
+\end{itemize}
+
+\section{Commandes opérationnelles}
+
+\begin{lstlisting}[language=bash]
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+php artisan migrate --force
+php artisan storage:link
+php artisan config:cache && php artisan route:cache
+php artisan finflow:process-ereporting   # manuel ou cron 02:00
+\end{lstlisting}
+
+\section{Webhooks à configurer}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Stripe $\rightarrow$ \texttt{https://domaine/stripe/webhook}
+    \item PA $\rightarrow$ \texttt{https://domaine/api/pa/webhook} (header \texttt{X-PA-Signature})
+\end{itemize}
+
+% ============================================================
+\chapter{Lacunes, risques et feuille de route}
+% ============================================================
+
+\section{Éléments manquants ou incomplets}
+
+\begin{longtable}{@{}p{4.5cm}p{8.8cm}@{}}
+\toprule
+\textbf{Sujet} & \textbf{Détail} \\
+\midrule
+\endhead
+Pages légales &
+Liens \texttt{/mentions-legales}, \texttt{/cgv}, confidentialité dans landing/auth — \textbf{aucune route}. \\
+PA production &
+Client REST branché ; endpoints placeholder ; non validé contre PA agréée réelle. \\
+Archivage 10 ans &
+Promis landing ; non implémenté en code. \\
+Signature en ligne &
+Champ BDD + UI ; pas de workflow signature. \\
+2FA &
+Paramètres : « à venir ». \\
+Responsive mobile &
+Desktop abouti ; mobile/tablette à traiter (brief stagiaire existant). \\
+Naming &
+Copifi / FinFlow / Mini CFO Digital coexistent. \\
+Essai gratuit 14j &
+Landing ; pas implémenté Stripe trial sans CB. \\
+Plans Stripe &
+2 plans landing ; 1 seul \texttt{PRICE\_ID} en env. \\
+Taux de change &
+Config statique, pas de API live. \\
+Tests &
+Couverture partielle ; pas de CI/CD documentée. \\
+\bottomrule
+\end{longtable}
+
+\section{Recommandations prioritaires}
+
+\begin{enumerate}[leftmargin=1.5em]
+    \item Publier pages légales (RGPD, CGV, mentions)
+    \item Brancher PA agréée réelle + recette bout-en-bout
+    \item Finaliser responsive (voir \filepath{brief-stagiaire-responsive-copifi.tex})
+    \item Aligner branding et variables \texttt{APP\_NAME}
+    \item Compléter tests facturation + Stripe
+    \item Configurer SMTP production et queue worker stable
+\end{enumerate}
+
+% ============================================================
+\chapter{Annexes}
+% ============================================================
+
+\section{Documentation interne existante}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \filepath{docs/brief-identite-visuelle-copifi.tex} — brief designer
+    \item \filepath{docs/brief-stagiaire-responsive-copifi.tex} — mission responsive
+    \item \filepath{docs/catalogue-fonctionnalites.tex} — catalogue fonctionnalités
+    \item \filepath{docs/etat-recette-finflow.tex} — état recette / gaps prod
+    \item \filepath{docs/brief-creatif-logo-mini-cfo-digital.md} — brief logo legacy
+\end{itemize}
+
+\section{Documentation réglementaire (contexte produit)}
+
+Réforme facturation électronique France :
+\begin{itemize}[leftmargin=1.5em]
+    \item 1\er{} septembre 2026 — réception e-factures (toutes entreprises)
+    \item 1\er{} septembre 2027 — émission + e-reporting (micro-entreprises)
+    \item Formats : Factur-X, UBL, CII via Plateforme Agréée
+\end{itemize}
+
+\section{Glossaire}
+
+\begin{description}[style=nextline, leftmargin=2cm, labelwidth=2.2cm]
+    \item[Copifi] Nom produit affiché dans l'UI (2026).
+    \item[FinFlow] Nom interne module facturation (code, composants).
+    \item[Factur-X] PDF/A-3 avec XML CII EN~16931 embarqué.
+    \item[PA] Plateforme Agréée — opérateur certifié DGFiP pour e-facturation.
+    \item[CDAR] Cycle de vie statut facture côté PA (déposée, approuvée…).
+    \item[E-reporting] Transmission données transactions (B2C, export) à l'administration.
+    \item[Inertia.js] Pont Laravel $\leftrightarrow$ React sans API REST dédiée.
+    \item[Tier] Client ou prospect dans le modèle métier.
+\end{description}
+
+\vfill
+\begin{center}
+\small\color{copifizinc500}
+Document généré à partir de l'inventaire code source — Juillet 2026\\
+Compilation : \texttt{pdflatex compte-rendu-copifi.tex} (2 passes)
+\end{center}
+
+\end{document}

@@ -1,0 +1,473 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=2.1cm]{geometry}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{listings}
+
+\definecolor{copifiobsidian}{HTML}{050505}
+\definecolor{copifiemerald}{HTML}{10B981}
+\definecolor{copifisky}{HTML}{0EA5E9}
+\definecolor{copifizinc500}{HTML}{71717A}
+\definecolor{copifiwarn}{HTML}{F59E0B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=copifiemerald,
+    urlcolor=copifisky,
+    pdftitle={Compte rendu — Dashboards Copifi},
+    pdfauthor={Équipe Copifi}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Dashboards Copifi — inventaire détaillé}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries\color{copifiobsidian}}{\chaptertitlename\ \thechapter}{14pt}{\Huge}
+
+\titleformat{\section}
+{\normalfont\Large\bfseries\color{copifiemerald}}
+{\thesection}{1em}{}
+
+\newcommand{\filepath}[1]{\texttt{\small #1}}
+\newcommand{\route}[1]{\texttt{\small #1}}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\Huge\bfseries\color{copifiobsidian} Compte rendu\par}
+    \vspace{0.5cm}
+    {\LARGE\color{copifiemerald} Contenu des dashboards Copifi\par}
+    \vspace{0.35cm}
+    {\large Inventaire détaillé de ce qui est affiché, calculé et accessible\par}
+    \vspace{1.2cm}
+    \rule{0.82\textwidth}{1pt}
+    \vspace{0.9cm}
+    \begin{tabular}{>{\bfseries}r p{9.4cm}}
+        Produit & Copifi \\
+        Périmètre & Zone connectée après abonnement actif \\
+        Fichiers clés & \filepath{Dashboard.jsx}, \filepath{Facturation/Dashboard.jsx}, \filepath{AppDashboardLayout.jsx} \\
+        Route principale pilotage & \route{/dashboard} \\
+        Route dashboard facturation & \route{/facturation} \\
+        Version & Juillet 2026 \\
+    \end{tabular}
+    \vfill
+    \small\itshape
+    Document basé sur le code source actuel (React/Inertia + Laravel).
+\end{titlepage}
+
+\tableofcontents
+\cleardoublepage
+
+% ============================================================
+\chapter{Vue d'ensemble}
+% ============================================================
+
+Copifi expose \textbf{plusieurs écrans « dashboard »} dans l'espace connecté :
+
+\begin{center}
+\begin{tabular}{@{}p{3.2cm}p{2.5cm}p{7.8cm}@{}}
+\toprule
+\textbf{Écran} & \textbf{Route} & \textbf{Rôle} \\
+\midrule
+Tableau de bord mensuel & \route{/dashboard} & Pilotage financier (CA, marge, CAC, LTV, IA) \\
+Vue facturation & \route{/facturation} & KPIs facturation, graphiques, activité documents \\
+Administration & \route{/admin} & Gestion utilisateurs (rôle admin uniquement) \\
+Copilote IA & \route{/copilote} & Chat conversationnel (hors dashboard strict) \\
+Saisie mensuelle & \route{/saisie-mensuelle} & Formulaire alimentant le dashboard pilotage \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Tous les dashboards utilisateur passent par le \textbf{même shell visuel} :
+\filepath{resources/js/Layouts/AppDashboardLayout.jsx} (sidebar Copifi, header, menu mobile).
+
+\textbf{Accès :} middleware \texttt{auth}, \texttt{verified}, \texttt{active.subscription} (abonnement Stripe \texttt{active|trialing}, compte non suspendu).
+
+% ============================================================
+\chapter{Shell commun — AppDashboardLayout}
+% ============================================================
+
+\section{Sidebar (navigation)}
+
+Pour un \textbf{utilisateur standard}, la sidebar contient 3 sections :
+
+\subsection{Section « Pilotage »}
+\begin{itemize}[leftmargin=1.5em]
+    \item Tableau de bord $\rightarrow$ \route{/dashboard}
+    \item Copilote IA $\rightarrow$ \route{/copilote}
+    \item Saisie mensuelle $\rightarrow$ \route{/saisie-mensuelle}
+\end{itemize}
+
+\subsection{Section « Facturation »}
+\begin{itemize}[leftmargin=1.5em]
+    \item Vue facturation $\rightarrow$ \route{/facturation}
+    \item Liste des factures $\rightarrow$ \route{/factures}
+    \item Création de facture $\rightarrow$ \route{/factures/nouveau}
+    \item Liste des devis $\rightarrow$ \route{/devis}
+    \item Création de devis $\rightarrow$ \route{/devis/nouveau}
+    \item Factures fournisseurs $\rightarrow$ \route{/achats/factures-fournisseurs}
+    \item Gestion des clients $\rightarrow$ \route{/clients}
+    \item Catalogue produits $\rightarrow$ \route{/catalogue}
+    \item Suivi des paiements $\rightarrow$ \route{/paiements}
+    \item Paramètres $\rightarrow$ \route{/parametres}
+\end{itemize}
+
+\subsection{Section « Compte »}
+\begin{itemize}[leftmargin=1.5em]
+    \item Profil $\rightarrow$ \route{/profile}
+\end{itemize}
+
+\section{Header (barre supérieure)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Titre de page} dynamique (ex.\ « Tableau de bord mensuel »)
+    \item \textbf{Badge période} ou statut (ex.\ mois courant, « Abonnement : actif »)
+    \item Indicateur \textbf{Abonnement : actif} (pastille verte)
+    \item Bouton \textbf{Notifications} (cloche + point rouge — \textcolor{copifiwarn}{non branché fonctionnellement})
+    \item Bloc utilisateur : nom, rôle, initiale, bouton \textbf{Déconnexion}
+\end{itemize}
+
+\section{Responsive}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Sidebar fixe \texttt{w-64} visible à partir de \texttt{lg} (1024\,px)
+    \item Menu \textbf{hamburger} + drawer mobile en dessous de \texttt{lg}
+\end{itemize}
+
+% ============================================================
+\chapter{Dashboard pilotage — \route{/dashboard}}
+% ============================================================
+
+\section{Identité de l'écran}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Titre affiché :} « Tableau de bord mensuel »
+    \item \textbf{Badge header :} mois du dernier enregistrement financier (ex.\ « 2026-07 ») ou « Aucune période »
+    \item \textbf{Page React :} \filepath{resources/js/Pages/Dashboard.jsx}
+    \item \textbf{Contrôleur :} \filepath{DashboardController.php}
+    \item \textbf{Services :} \filepath{FinancialService.php}, \filepath{AiInsightService.php}
+    \item \textbf{Source de données :} table \texttt{financial\_records} (saisie via \route{/saisie-mensuelle})
+\end{itemize}
+
+\section{Bandeau admin (conditionnel)}
+
+Si un administrateur consulte le dashboard \textbf{d'un autre utilisateur} (\route{/admin/users/\{user\}/dashboard}) :
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Encart « Vue administrateur »
+    \item Nom et email de l'utilisateur consulté
+    \item Statut Stripe affiché
+\end{itemize}
+
+\section{Grille KPI — 4 cartes (section \#kpi-grid)}
+
+Grille responsive : \texttt{1 col} $\rightarrow$ \texttt{md:2} $\rightarrow$ \texttt{xl:4}.
+
+\begin{longtable}{@{}p{3.5cm}p{10.8cm}@{}}
+\toprule
+\textbf{Carte} & \textbf{Contenu affiché} \\
+\midrule
+\endhead
+Chiffre d'affaires &
+Montant du \textbf{dernier mois saisi} (format compact k\,\€). Sparkline 7 points sur l'historique des revenus mensuels. \\
+Marge nette &
+Pourcentage marge = (CA $-$ charges) / CA. Sous-texte : montant net en €. Sparkline des marges \% par mois. \\
+CAC &
+Coût d'acquisition client = \textbf{budget marketing / nombre clients} du mois. Affiche « N/A » si \texttt{clients\_count = 0}. \\
+LTV &
+Lifetime value simplifiée = \textbf{CA / nombre clients} du mois. « N/A » si pas de clients. Sparkline. \\
+\bottomrule
+\end{longtable}
+
+\subsection{Formules backend (\filepath{FinancialService.php})}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{marge\_nette} = \texttt{revenue} $-$ \texttt{charges}
+    \item \texttt{cac} = \texttt{marketing\_budget} / \texttt{clients\_count}
+    \item \texttt{ltv} = \texttt{revenue} / \texttt{clients\_count}
+\end{itemize}
+
+\section{Zone centrale — graphique principal (\#main-chart-section)}
+
+\textbf{Titre :} « Revenus vs Charges Totales »
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Graphique \textbf{AreaChart} (Recharts) : courbes Revenus (bleu néon) et Charges (orange)
+    \item Axe X : mois des enregistrements \texttt{financial\_records}
+    \item Axe Y : montants en k\,\€
+    \item Tooltip au survol avec détail par série
+    \item État vide : message « Aucune donnée financière » + invitation à saisir via \route{/saisie-mensuelle}
+    \item Boutons \textbf{12M} / \textbf{YTD} : \textcolor{copifiwarn}{affichés mais non fonctionnels} (pas de filtre branché)
+\end{itemize}
+
+\section{Tableau « Flux Récents » (\#recent-transactions)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Affiche les \textbf{3 derniers mois} de l'historique financier
+    \item Colonnes : Date (mois), Description (« Période financière »), Catégorie (badge « Revenu »), Montant (CA du mois)
+    \item Lien « Voir tout » : \textcolor{copifiwarn}{présent sans navigation}
+\end{itemize}
+
+\section{Colonne droite — Score de santé (\#health-score)}
+
+\textbf{Score /100} calculé côté frontend à partir des KPI :
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Base 50 points
+    \item Marge nette $>$ 0 : +20 ; $<$ 0 : $-$25
+    \item Ratio LTV/CAC $>$ 3 : +20 ; entre 1 et 3 : +8 ; $<$ 1 : $-$18
+    \item Charges / CA $\leq$ 50\,\% : +10 ; $\leq$ 70\,\% : +5 ; sinon $-$10
+    \item Plafonné entre 0 et 100
+    \item Visualisation : \textbf{donut chart} (anneau vert + reste gris)
+\end{itemize}
+
+\section{Panneau Alertes (\#alerts-panel)}
+
+Alertes générées par \filepath{FinancialService::buildAlert()} + règles UI :
+
+\begin{longtable}{@{}p{2.5cm}p{11.8cm}@{}}
+\toprule
+\textbf{Niveau} & \textbf{Déclencheur} \\
+\midrule
+\endhead
+critique & Marge négative ; ou LTV $<$ CAC \\
+attention & Charges $>$ 70\,\% du CA \\
+sain & Marge $>$ 0 et LTV/CAC $>$ 3 \\
+neutral & Données CAC/LTV incomplètes ; ou aucune alerte \\
+\bottomrule
+\end{longtable}
+
+Chaque alerte : titre coloré + message explicatif.
+
+\section{Bloc Analyse IA}
+
+\textbf{Titre :} « Lecture financière du mois »
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Texte généré par \textbf{Groq} via \filepath{AiInsightService} (stocké en BDD \texttt{ai\_insights})
+    \item Bouton « Afficher / Masquer le diagnostic »
+    \item Statuts : analyse disponible, « en attente », ou message si pas de saisie mensuelle
+    \item Indication si texte \textbf{corrigé par un admin}
+    \item \textbf{Mode admin} (vue utilisateur) : formulaire d'édition du texte IA + enregistrement (\route{PATCH /admin/ai-insights/\{id\}})
+\end{itemize}
+
+\section{Ce que ce dashboard ne contient PAS}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Pas de données factures/devis en direct (uniquement saisie manuelle mensuelle)
+    \item Pas de widget chat copilote intégré sur cette page (chat sur \route{/copilote})
+    \item Pas d'export PDF/Excel du dashboard pilotage
+\end{itemize}
+
+% ============================================================
+\chapter{Dashboard facturation — \route{/facturation}}
+% ============================================================
+
+\section{Identité de l'écran}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Titre :} « Vue d'ensemble »
+    \item \textbf{Description :} « Gérez vos finances, factures et devis en temps réel. »
+    \item \textbf{Page :} \filepath{Facturation/Dashboard.jsx} $\rightarrow$ composant \filepath{DashboardHome.jsx}
+    \item \textbf{Layout :} \filepath{FacturationLayout.jsx} (en-tête + actions)
+    \item \textbf{Contrôleur :} \filepath{FacturationDashboardController.php}
+    \item \textbf{Source :} documents (\texttt{factures}, \texttt{devis}, \texttt{avoirs}), tiers, paiements
+\end{itemize}
+
+\section{Actions en-tête (\filepath{DashboardHeaderActions})}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Bouton \textbf{Rapport} (icône téléchargement) — \textcolor{copifiwarn}{non branché}
+    \item Bouton \textbf{Créer Facture} $\rightarrow$ \route{/factures/nouveau}
+\end{itemize}
+
+\section{4 cartes KPI (première ligne)}
+
+\begin{longtable}{@{}p{3.5cm}p{10.8cm}@{}}
+\toprule
+\textbf{KPI} & \textbf{Données affichées} \\
+\midrule
+\endhead
+CA Encaissé &
+Somme TTC en EUR des factures statut \texttt{paid}. Tendance \% vs mois précédent. Sparkline 7 mois (k\,\€). \\
+Devis en attente &
+Montant TTC des devis statut \texttt{sent} + nombre. Sparkline 7 mois. \\
+Factures en retard &
+Nombre de factures \texttt{sent} dont \texttt{due\_date} $<$ aujourd'hui. Sparkline du nombre sur 7 mois. \\
+Nouveaux clients &
+Clients créés ce mois-ci. Tendance \% vs mois précédent. Sparkline 7 mois. \\
+\bottomrule
+\end{longtable}
+
+\section{Carte Analyse IA facturation (\filepath{FinancialAnalysisCard.jsx})}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Bouton « Générer l'analyse »
+    \item Appel API \route{POST /facturation/analyze} $\rightarrow$ \filepath{FinancialAnalysisService} (Groq)
+    \item Données envoyées (anonymisées) : CA encaissé mois, tendance, factures en retard, devis en attente, nouveaux clients
+    \item Réponse affichée en \textbf{Markdown} (titres, listes, gras)
+    \item États : chargement (skeleton), erreur session/503, succès
+\end{itemize}
+
+\section{Graphiques (deuxième ligne)}
+
+\subsection{Évolution du chiffre d'affaires (2/3 largeur)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item AreaChart \textbf{6 derniers mois}
+    \item Valeur = factures émises (hors annulées) $-$ avoirs envoyés, en k\,\€
+    \item Bouton « 6 Derniers Mois » — \textcolor{copifiwarn}{décoratif, pas de changement de période}
+\end{itemize}
+
+\subsection{Répartition des factures (donut, 1/3)}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Camembert : \textbf{Payées} (vert), \textbf{En attente} (ambre), \textbf{En retard} (rouge)
+    \item Centre : nombre total de factures actives
+    \item Pourcentages calculés côté backend
+\end{itemize}
+
+\section{Activité récente + Raccourcis (troisième ligne)}
+
+\subsection{Tableau Activité Récente (7 dernières lignes)}
+
+Documents triés par \texttt{updated\_at} décroissant :
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Colonne} & \textbf{Contenu} \\
+\midrule
+Client / Réf & Avatar initiales, nom client, référence document \\
+Type & Facture, Devis ou Avoir \\
+Montant & TTC devise document \\
+Statut & Badge coloré (Payée, Envoyé, En retard…) \\
+Date & Relatif (Aujourd'hui, Hier, Il y a Xj…) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Lien « Voir tout » $\rightarrow$ \route{/factures}.
+
+\subsection{Panneau Raccourcis}
+
+Trois cartes cliquables :
+\begin{itemize}[leftmargin=1.5em]
+    \item Nouvelle Facture $\rightarrow$ \route{/factures/nouveau}
+    \item Nouveau Devis $\rightarrow$ \route{/devis/nouveau}
+    \item Ajouter Client $\rightarrow$ \route{/clients}
+\end{itemize}
+
+% ============================================================
+\chapter{Dashboard admin — \route{/admin}}
+% =============================================================
+
+\section{Accès}
+
+Réservé aux utilisateurs \texttt{role = admin}. Sidebar réduite : Admin + Profil.
+
+\section{Contenu (\filepath{Admin/Dashboard.jsx})}
+
+\subsection{4 cartes statistiques}
+\begin{itemize}[leftmargin=1.5em]
+    \item Utilisateurs (total inscrits)
+    \item Abonnements valides
+    \item MRR (revenu mensuel récurrent)
+    \item CA total clients (somme des \texttt{financial\_records.revenue})
+\end{itemize}
+
+\subsection{Tableau utilisateurs}
+
+Colonnes typiques : nom, email, statut Stripe (badge coloré), rôle, date inscription, actions :
+\begin{itemize}[leftmargin=1.5em]
+    \item Voir dashboard utilisateur
+    \item Suspendre / Réactiver
+\end{itemize}
+
+\subsection{Journal d'audit}
+
+Liste des dernières actions admin (\texttt{admin\_audit\_logs}) : suspension, restauration.
+
+% ============================================================
+\chapter{Pages liées au pilotage (hors dashboard strict)}
+% ============================================================
+
+\section{Saisie mensuelle — \route{/saisie-mensuelle}}
+
+Formulaire alimentant le dashboard \route{/dashboard} :
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Mois (YYYY-MM)
+    \item Chiffre d'affaires (\texttt{revenue})
+    \item Charges (\texttt{charges})
+    \item Budget marketing (\texttt{marketing\_budget})
+    \item Nombre de clients (\texttt{clients\_count})
+    \item Envoi : \route{POST /financial-records}
+\end{itemize}
+
+\section{Copilote IA — \route{/copilote}}
+
+Page dédiée avec \filepath{DashboardChatWidget.jsx} :
+\begin{itemize}[leftmargin=1.5em]
+    \item Chat Groq avec contexte financier + facturation
+    \item API : \route{POST /copilote/chat} ou \route{/dashboard/chat}
+    \item Limite : 20 messages/minute
+\end{itemize}
+
+% ============================================================
+\chapter{Synthèse des sources de données}
+% ============================================================
+
+\begin{center}
+\begin{tabular}{@{}p{4.5cm}p{4cm}p{5.8cm}@{}}
+\toprule
+\textbf{Dashboard} & \textbf{Table / source} & \textbf{Mise à jour} \\
+\midrule
+Pilotage KPI & \texttt{financial\_records} & Saisie manuelle mensuelle \\
+Pilotage graphiques & \texttt{financial\_records} & Idem \\
+Pilotage alertes & Calcul \filepath{FinancialService} & Temps réel à l'affichage \\
+Pilotage IA & \texttt{ai\_insights} + Groq & Génération à la visite \\
+Facturation KPI & \texttt{documents}, \texttt{tiers} & Temps réel documents \\
+Facturation activité & \texttt{documents} + relations & Temps réel \\
+Facturation analyse IA & Agrégats anonymisés + Groq & Sur clic utilisateur \\
+Admin stats & \texttt{users}, Stripe, \texttt{financial\_records} & Temps réel \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\chapter{Éléments UI présents mais non finalisés}
+% ============================================================
+
+\begin{itemize}[leftmargin=1.5em]
+    \item Boutons \textbf{12M / YTD} sur graphique dashboard pilotage
+    \item Lien \textbf{« Voir tout »} flux récents (pilotage)
+    \item Bouton \textbf{Rapport} (dashboard facturation)
+    \item Bouton \textbf{Notifications} (header) — pas de panneau notifications
+    \item Filtre période graphique CA facturation (bouton « 6 Derniers Mois »)
+\end{itemize}
+
+\vfill
+\begin{center}
+\small\color{copifizinc500}
+Compte rendu dashboards Copifi — Juillet 2026\\
+\filepath{docs/compte-rendu-dashboard-copifi.tex}
+\end{center}
+
+\end{document}
