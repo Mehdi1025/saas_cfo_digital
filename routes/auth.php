@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\EmailVerificationCheckController;
 use App\Http\Controllers\Auth\EmailVerificationCompleteController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\EmailVerificationStatusController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -60,7 +61,11 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:12,1')
         ->name('verification.check');
 
-    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+    Route::get('verification/status', EmailVerificationStatusController::class)
+        ->middleware('throttle:30,1')
+        ->name('verification.status');
+
+    Route::match(['get', 'post'], 'email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
         ->middleware('throttle:6,1')
         ->name('verification.send');
 

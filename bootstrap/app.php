@@ -35,6 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'stripe/webhook',
             'api/pa/webhook',
+            'verification/check',
+            'email/verification-notification',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

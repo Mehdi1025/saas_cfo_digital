@@ -22,6 +22,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        if ($this->app->environment('production')) {
+            config([
+                'session.secure' => filter_var(env('SESSION_SECURE_COOKIE', true), FILTER_VALIDATE_BOOL),
+                'session.same_site' => env('SESSION_SAME_SITE', 'lax'),
+            ]);
+        }
+
         // Simulation locale : GenericPaApiClient::class
         $this->app->bind(PaClientInterface::class, RestPaApiClient::class);
 

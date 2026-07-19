@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -10,13 +12,21 @@ use Inertia\Response;
 
 class EmailVerificationPromptController extends Controller
 {
-    /**
-     * Display the email verification prompt.
-     */
+    use RedirectsVerifiedUsers;
+
     public function __invoke(Request $request): RedirectResponse|Response
     {
-        return $request->user()->hasVerifiedEmail()
-                    ? redirect()->intended(route('dashboard', absolute: false))
-                    : Inertia::render('Auth/VerifyEmail', ['status' => session('status')]);
+        $user = $request->user()->fresh();
+
+        if ($user->hasVerifiedEmail()) {
+            $this->loginVerifiedUser($user);
+
+            return $this->redirectVerifiedUser($user);
+        }
+
+        return Inertia::render('Auth/VerifyEmail', [
+            'status' => session('status'),
+            'userEmail' => $user->email,
+        ]);
     }
 }
