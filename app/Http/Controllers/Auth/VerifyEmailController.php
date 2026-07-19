@@ -15,19 +15,26 @@ class VerifyEmailController extends Controller
     use RedirectsVerifiedUsers;
 
     /**
-     * Valide le lien signe, confirme l'e-mail et connecte l'utilisateur
-     * (meme si la session a ete perdue sur mobile).
+     * Valide le lien signe, confirme l'e-mail et connecte l'utilisateur.
      */
     public function __invoke(Request $request, string $id, string $hash): RedirectResponse
     {
-        $user = User::query()->findOrFail($id);
+        $user = User::query()->find($id);
+
+        if ($user === null) {
+            return redirect()
+                ->route('login')
+                ->with('error', 'Ce lien de confirmation est invalide ou expire. Connectez-vous pour en recevoir un nouveau.');
+        }
 
         if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
             abort(403);
         }
 
         if (! $request->hasValidSignature()) {
-            abort(403);
+            return redirect()
+                ->route('login')
+                ->with('error', 'Ce lien de confirmation a expire. Connectez-vous pour en recevoir un nouveau.');
         }
 
         if (! $user->hasVerifiedEmail()) {

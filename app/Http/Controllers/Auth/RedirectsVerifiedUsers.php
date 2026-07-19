@@ -22,7 +22,16 @@ trait RedirectsVerifiedUsers
                 ->with('success', 'E-mail confirme. Bienvenue !');
         }
 
-        return redirect()->route('verification.complete');
+        if (
+            filled(config('services.stripe.secret'))
+            && filled(config('services.stripe.price_id'))
+        ) {
+            return redirect()->route('billing.checkout.start')
+                ->with('success', 'E-mail confirme. Finalisez votre abonnement pour acceder a Copifi.');
+        }
+
+        return redirect('/')
+            ->with('success', 'E-mail confirme. Vous etes connecte a Copifi.');
     }
 
     protected function loginVerifiedUser(User $user): void

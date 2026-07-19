@@ -39,7 +39,7 @@ class EmailVerificationTest extends TestCase
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
         $this->assertAuthenticatedAs($user);
-        $response->assertRedirect(route('verification.complete', absolute: false));
+        $response->assertRedirect(route('billing.checkout.start', absolute: false));
     }
 
     public function test_verified_user_can_continue_from_check_button(): void
