@@ -20,6 +20,8 @@ class FinancialService
                 'marge_nette' => $this->calculateNetMargin($currentMonthRecord),
                 'cac' => $this->calculateCac($currentMonthRecord),
                 'ltv' => $this->calculateLtv($currentMonthRecord),
+                'marketing_budget' => $currentMonthRecord?->marketing_budget ?? 0,
+                'clients_count' => $currentMonthRecord?->clients_count ?? 0,
             ],
             'alerte' => $alert,
             'graphique_evolution' => $records->values()->map(function ($record) {

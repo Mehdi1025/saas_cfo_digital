@@ -77,4 +77,13 @@ class AiInsightService
 
         return 'unavailable';
     }
+
+    /**
+     * @param  array<string, mixed>  $simulationContext
+     * @param  array<string, mixed>  $params
+     */
+    public function generateSimulationInsight(array $dashboardData, array $simulationContext, array $params): string
+    {
+        return $this->groqApiService->generateSimulationInsight($dashboardData, $simulationContext, $params);
+    }
 }

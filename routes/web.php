@@ -9,6 +9,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CopilotController;
 use App\Http\Controllers\DashboardChatController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardSimulationController;
 use App\Http\Controllers\DevisController;
 use App\Http\Controllers\FacturationDashboardController;
 use App\Http\Controllers\FactureController;
@@ -62,6 +63,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified', 'active.subscription'])
     ->name('dashboard');
+
+Route::post('/dashboard/simulate-insights', [DashboardSimulationController::class, 'simulateInsights'])
+    ->middleware(['auth', 'verified', 'active.subscription', 'throttle:12,1'])
+    ->name('dashboard.simulate-insights');
 
 Route::post('/dashboard/chat', DashboardChatController::class)
     ->middleware(['auth', 'verified', 'active.subscription', 'throttle:20,1'])

@@ -1,7 +1,12 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
 import CfoPageShell from '@/Components/CfoPageShell';
 import DashboardChatWidget from '@/Components/Dashboard/DashboardChatWidget';
+import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
+import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
+import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
+import { useDashboardSimulation } from '@/hooks/useDashboardSimulation';
 import { useForm, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import {
     Area,
@@ -147,54 +152,30 @@ export default function Dashboard() {
     }));
     const hasFinancialData = chartData.length > 0;
 
-    const ratioLtvCac =
-        kpis.cac !== null && kpis.ltv !== null && kpis.cac > 0
-            ? kpis.ltv / kpis.cac
-            : null;
+    const {
+        simulationMode,
+        setSimulationMode,
+        sliders,
+        updateSlider,
+        resetSimulation,
+        activeChartData,
+        healthScore,
+        healthTone,
+        simulatedInsight,
+        isSimulatingInsight,
+        simulationError,
+    } = useDashboardSimulation({
+        historicalChartData: chartData,
+        baselineKpis: kpis,
+        hasFinancialData,
+        viewedUserId: viewedUser?.id,
+    });
+
+
     const netMarginPercentage =
         kpis.chiffre_affaires > 0
             ? (kpis.marge_nette / kpis.chiffre_affaires) * 100
             : null;
-    const chargesRatio =
-        kpis.chiffre_affaires > 0
-            ? kpis.charges_totales / kpis.chiffre_affaires
-            : null;
-
-    const healthScore = (() => {
-        if (!hasFinancialData) {
-            return 0;
-        }
-
-        let score = 50;
-
-        if (kpis.marge_nette > 0) {
-            score += 20;
-        } else if (kpis.marge_nette < 0) {
-            score -= 25;
-        }
-
-        if (ratioLtvCac !== null) {
-            if (ratioLtvCac > 3) {
-                score += 20;
-            } else if (ratioLtvCac >= 1) {
-                score += 8;
-            } else {
-                score -= 18;
-            }
-        }
-
-        if (chargesRatio !== null) {
-            if (chargesRatio <= 0.5) {
-                score += 10;
-            } else if (chargesRatio <= 0.7) {
-                score += 5;
-            } else {
-                score -= 10;
-            }
-        }
-
-        return Math.max(0, Math.min(100, score));
-    })();
 
     const healthPie = [
         { name: 'Score', value: healthScore },
@@ -253,8 +234,21 @@ export default function Dashboard() {
             title="Tableau de bord mensuel"
             badge={kpis.mois_actuel ?? 'Aucune periode'}
         >
-            <CfoPageShell>
+            <CfoPageShell simulationMode={simulationMode}>
                 <div className="mx-auto max-w-[1600px] space-y-8">
+                    <section className={`${GLASS_PANEL} rounded-2xl p-5`}>
+                        <SimulationModeToggle
+                            enabled={simulationMode}
+                            onChange={setSimulationMode}
+                            disabled={!hasFinancialData}
+                        />
+                        {!hasFinancialData && (
+                            <p className="mt-3 text-sm text-gray-500">
+                                Ajoutez une saisie mensuelle pour activer le simulateur What-If.
+                            </p>
+                        )}
+                    </section>
+
                     {viewedUser && (
                         <section className={`${GLASS_PANEL} rounded-2xl p-4`}>
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -394,7 +388,9 @@ export default function Dashboard() {
                                             Revenus vs Charges Totales
                                         </h2>
                                         <p className="mt-1 text-sm text-gray-400">
-                                            Evolution sur les mois enregistres
+                                            {simulationMode
+                                                ? 'Historique solide + projection 6 mois (pointille)'
+                                                : 'Evolution sur les mois enregistres'}
                                         </p>
                                     </div>
                                     <div className="flex gap-2">
@@ -416,7 +412,7 @@ export default function Dashboard() {
                                 {hasFinancialData ? (
                                     <div className="h-[400px] w-full">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={chartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
+                                            <AreaChart data={activeChartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
                                                 <defs>
                                                     <linearGradient id="fillRev" x1="0" y1="0" x2="0" y2="1">
                                                         <stop offset="0%" stopColor={NEON_BLUE} stopOpacity={0.22} />
@@ -426,6 +422,20 @@ export default function Dashboard() {
                                                         <stop offset="0%" stopColor={ORANGE} stopOpacity={0.12} />
                                                         <stop offset="100%" stopColor={ORANGE} stopOpacity={0} />
                                                     </linearGradient>
+                                                    <linearGradient id="fillRevSim" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor={NEON_BLUE} stopOpacity={0.12} />
+                                                        <stop offset="100%" stopColor={NEON_BLUE} stopOpacity={0} />
+                                                    </linearGradient>
+                                                    <linearGradient id="fillChgSim" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor={ORANGE} stopOpacity={0.08} />
+                                                        <stop offset="100%" stopColor={ORANGE} stopOpacity={0} />
+                                                    </linearGradient>
+                                                    <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
+                                                        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#00F0FF" floodOpacity="0.65" />
+                                                    </filter>
+                                                    <filter id="glowOrange" x="-20%" y="-20%" width="140%" height="140%">
+                                                        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#FF8A00" floodOpacity="0.55" />
+                                                    </filter>
                                                 </defs>
                                                 <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                                                 <XAxis
@@ -444,22 +454,52 @@ export default function Dashboard() {
                                                 <Tooltip content={<MainChartTooltip />} />
                                                 <Area
                                                     type="monotone"
-                                                    dataKey="charges"
+                                                    dataKey="chargesHist"
                                                     name="Charges Totales"
                                                     stroke={ORANGE}
                                                     strokeWidth={2}
                                                     fill="url(#fillChg)"
+                                                    connectNulls={false}
                                                     isAnimationActive
                                                 />
                                                 <Area
                                                     type="monotone"
-                                                    dataKey="revenus"
+                                                    dataKey="revenusHist"
                                                     name="Revenus"
                                                     stroke={NEON_BLUE}
                                                     strokeWidth={3}
                                                     fill="url(#fillRev)"
+                                                    connectNulls={false}
                                                     isAnimationActive
                                                 />
+                                                {simulationMode && (
+                                                    <>
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="chargesSim"
+                                                            name="Charges (simulation)"
+                                                            stroke={ORANGE}
+                                                            strokeWidth={2}
+                                                            strokeDasharray="8 6"
+                                                            fill="url(#fillChgSim)"
+                                                            connectNulls
+                                                            style={{ filter: 'url(#glowOrange)' }}
+                                                            isAnimationActive
+                                                        />
+                                                        <Area
+                                                            type="monotone"
+                                                            dataKey="revenusSim"
+                                                            name="Revenus (simulation)"
+                                                            stroke={NEON_BLUE}
+                                                            strokeWidth={3}
+                                                            strokeDasharray="8 6"
+                                                            fill="url(#fillRevSim)"
+                                                            connectNulls
+                                                            style={{ filter: 'url(#glowBlue)' }}
+                                                            isAnimationActive
+                                                        />
+                                                    </>
+                                                )}
                                             </AreaChart>
                                         </ResponsiveContainer>
                                     </div>
@@ -481,7 +521,27 @@ export default function Dashboard() {
                                         <div className="h-3 w-3 rounded-full bg-[#FF8A00] shadow-[0_0_8px_rgba(255,138,0,0.5)]" />
                                         <span className="text-sm text-gray-300">Charges Totales</span>
                                     </div>
+                                    {simulationMode && (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-0.5 w-5 border-t-2 border-dashed border-neonBlue" />
+                                                <span className="text-sm text-gray-400">Projection revenus</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-0.5 w-5 border-t-2 border-dashed border-[#FF8A00]" />
+                                                <span className="text-sm text-gray-400">Projection charges</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
+
+                                {simulationMode && (
+                                    <SimulationControlsPanel
+                                        sliders={sliders}
+                                        onChange={updateSlider}
+                                        onReset={resetSimulation}
+                                    />
+                                )}
                             </div>
                         </section>
 
@@ -537,6 +597,11 @@ export default function Dashboard() {
                     <div className="space-y-8">
                         <section id="health-score" className={`${GLASS_PANEL} relative flex min-h-[320px] flex-col items-center justify-center rounded-3xl p-6`}>
                             <h2 className="absolute left-6 top-6 text-lg font-semibold tracking-wide text-white">Score de sante</h2>
+                            {simulationMode && (
+                                <span className="absolute right-6 top-6 rounded-md border border-neonBlue/20 bg-neonBlue/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-neonBlue">
+                                    Simule
+                                </span>
+                            )}
 
                             <div className="relative mt-8 h-48 w-48">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -551,21 +616,30 @@ export default function Dashboard() {
                                             stroke="#09090B"
                                             strokeWidth={2}
                                             paddingAngle={0}
+                                            isAnimationActive
                                         >
-                                            <Cell fill={NEON_MINT} />
+                                            <Cell fill={healthTone.color} />
                                             <Cell fill="rgba(255,255,255,0.05)" />
                                         </Pie>
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-5xl font-bold text-white" style={{ textShadow: '0 0 10px rgba(0, 255, 157, 0.5)' }}>
+                                    <motion.span
+                                        key={healthScore}
+                                        initial={{ scale: 0.92, opacity: 0.6 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                                        className={`text-5xl font-bold text-white ${healthTone.glow}`}
+                                    >
                                         {healthScore}
-                                    </span>
+                                    </motion.span>
                                     <span className="mt-1 text-sm font-medium uppercase tracking-widest text-gray-400">/100</span>
                                 </div>
                             </div>
                             <p className="mt-6 max-w-[80%] text-center text-sm text-gray-400">
-                                Score calcule depuis vos donnees financieres.
+                                {simulationMode
+                                    ? `Projection a 6 mois — ${healthTone.label}.`
+                                    : 'Score calcule depuis vos donnees financieres.'}
                             </p>
                         </section>
 
@@ -615,11 +689,13 @@ export default function Dashboard() {
                                         Lecture financière du mois
                                     </h2>
                                     <p className="mt-1 text-sm text-gray-400">
-                                        {aiInsight
-                                            ? aiInsight.is_edited
-                                                ? 'Analyse corrigee par un administrateur.'
-                                                : 'Analyse generee automatiquement par Groq.'
-                                            : aiInsightEmptyMessage}
+                                        {simulationMode
+                                            ? 'Analyse What-If en direct via Groq.'
+                                            : aiInsight
+                                              ? aiInsight.is_edited
+                                                  ? 'Analyse corrigee par un administrateur.'
+                                                  : 'Analyse generee automatiquement par Groq.'
+                                              : aiInsightEmptyMessage}
                                     </p>
                                 </div>
 
@@ -638,7 +714,7 @@ export default function Dashboard() {
                                 )}
                             </div>
 
-                            {!aiInsight && (
+                            {!simulationMode && !aiInsight && (
                                 <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-6 text-sm leading-7 text-gray-300">
                                     <p className="font-semibold text-white">
                                         Analyse non disponible pour le moment
@@ -649,7 +725,14 @@ export default function Dashboard() {
                                 </div>
                             )}
 
-                            {aiInsight && isAiInsightOpen && (
+                            <SimulationAiInsightBlock
+                                enabled={simulationMode}
+                                insight={simulatedInsight}
+                                isLoading={isSimulatingInsight}
+                                error={simulationError}
+                            />
+
+                            {!simulationMode && aiInsight && isAiInsightOpen && (
                                 <div className="mt-5 space-y-5">
                                     <div className="whitespace-pre-line rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-gray-300">
                                         {aiInsight.content}
