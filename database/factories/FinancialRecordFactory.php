@@ -15,16 +15,16 @@ class FinancialRecordFactory extends Factory
 
     public function definition(): array
     {
-        $revenue = fake()->numberBetween(8000, 18000);
-        $charges = fake()->numberBetween(2500, 9000);
-        $marketingBudget = fake()->numberBetween(700, 2500);
-        $clientsCount = fake()->numberBetween(3, 12);
+        $revenue = random_int(8000, 18000);
+        $charges = random_int(2500, min(9000, $revenue - 500));
+        $marketingBudget = random_int(700, 2500);
+        $clientsCount = random_int(3, 12);
 
         return [
             'user_id' => User::factory(),
-            'month' => fake()->date('Y-m'),
+            'month' => now()->subMonths(random_int(0, 11))->format('Y-m'),
             'revenue' => $revenue,
-            'charges' => min($charges, $revenue - 500),
+            'charges' => $charges,
             'marketing_budget' => $marketingBudget,
             'clients_count' => $clientsCount,
         ];
