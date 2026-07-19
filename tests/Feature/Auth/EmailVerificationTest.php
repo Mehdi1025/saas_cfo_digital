@@ -48,7 +48,7 @@ class EmailVerificationTest extends TestCase
             'stripe_status' => 'active',
         ]);
 
-        $response = $this->actingAs($user)->post(route('verification.check'));
+        $response = $this->actingAs($user)->get(route('verification.check'));
 
         $response->assertRedirect(route('dashboard', absolute: false));
         $this->assertAuthenticatedAs($user);

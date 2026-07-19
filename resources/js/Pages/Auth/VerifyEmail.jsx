@@ -3,16 +3,10 @@ import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function VerifyEmail({ status }) {
     const resendForm = useForm({});
-    const confirmForm = useForm({});
 
     const resendEmail = (event) => {
         event.preventDefault();
         resendForm.post(route('verification.send'));
-    };
-
-    const confirmEmail = (event) => {
-        event.preventDefault();
-        confirmForm.post(route('verification.check'));
     };
 
     return (
@@ -46,15 +40,13 @@ export default function VerifyEmail({ status }) {
                     </div>
                 )}
 
-                <button
-                    type="button"
-                    onClick={confirmEmail}
-                    disabled={confirmForm.processing}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#18c98f] px-5 py-4 text-sm font-bold text-black shadow-[0_0_30px_rgba(24,201,143,0.25)] transition hover:bg-[#25e0a4] disabled:cursor-not-allowed disabled:opacity-60"
+                <Link
+                    href={route('verification.check')}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#18c98f] px-5 py-4 text-sm font-bold text-black shadow-[0_0_30px_rgba(24,201,143,0.25)] transition hover:bg-[#25e0a4]"
                 >
-                    {confirmForm.processing ? 'Verification...' : "J'ai confirme mon e-mail"}
-                    {!confirmForm.processing && <span aria-hidden>{'->'}</span>}
-                </button>
+                    J&apos;ai confirme mon e-mail
+                    <span aria-hidden>{'->'}</span>
+                </Link>
 
                 <form onSubmit={resendEmail}>
                     <button

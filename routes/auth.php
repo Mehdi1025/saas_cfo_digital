@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
         ->middleware('verified')
         ->name('verification.complete');
 
-    Route::post('verification/check', [EmailVerificationCheckController::class, 'store'])
+    Route::get('verification/check', [EmailVerificationCheckController::class, 'store'])
         ->middleware('throttle:12,1')
         ->name('verification.check');
 
