@@ -22,7 +22,7 @@ class EmailVerificationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_email_can_be_verified(): void
+    public function test_email_can_be_verified_without_existing_session(): void
     {
         $user = User::factory()->unverified()->create();
 
@@ -34,11 +34,24 @@ class EmailVerificationTest extends TestCase
             ['id' => $user->id, 'hash' => sha1($user->email)]
         );
 
-        $response = $this->actingAs($user)->get($verificationUrl);
+        $response = $this->get($verificationUrl);
 
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
-        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(route('verification.complete', absolute: false));
+    }
+
+    public function test_verified_user_can_continue_from_check_button(): void
+    {
+        $user = User::factory()->create([
+            'stripe_status' => 'active',
+        ]);
+
+        $response = $this->actingAs($user)->post(route('verification.check'));
+
+        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_email_is_not_verified_with_invalid_hash(): void
@@ -51,7 +64,7 @@ class EmailVerificationTest extends TestCase
             ['id' => $user->id, 'hash' => sha1('wrong-email')]
         );
 
-        $this->actingAs($user)->get($verificationUrl);
+        $this->get($verificationUrl)->assertForbidden();
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }

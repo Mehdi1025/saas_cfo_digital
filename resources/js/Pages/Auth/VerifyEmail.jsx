@@ -1,50 +1,82 @@
-import PrimaryButton from '@/Components/PrimaryButton';
-import GuestLayout from '@/Layouts/GuestLayout';
+import AuthShell from '@/Pages/Auth/AuthShell';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function VerifyEmail({ status }) {
-    const { post, processing } = useForm({});
+    const resendForm = useForm({});
+    const confirmForm = useForm({});
 
-    const submit = (e) => {
-        e.preventDefault();
+    const resendEmail = (event) => {
+        event.preventDefault();
+        resendForm.post(route('verification.send'));
+    };
 
-        post(route('verification.send'));
+    const confirmEmail = (event) => {
+        event.preventDefault();
+        confirmForm.post(route('verification.check'));
     };
 
     return (
-        <GuestLayout>
+        <AuthShell
+            mode="register"
+            title="Confirmez votre e-mail"
+            subtitle="Ouvrez le lien recu sur votre telephone ou ordinateur, puis continuez ici."
+        >
             <Head title="Verification de l'e-mail" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Merci pour votre inscription. Avant de commencer, veuillez
-                verifier votre adresse e-mail en cliquant sur le lien que nous
-                venons de vous envoyer. Si vous ne l'avez pas recu, nous pouvons
-                vous en envoyer un nouveau.
-            </div>
-
-            {status === 'verification-link-sent' && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    Un nouveau lien de verification a ete envoye a l'adresse
-                    e-mail fournie lors de l'inscription.
+            <div className="space-y-4">
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-7 text-slate-300">
+                    <p className="font-semibold text-white">Etapes simples</p>
+                    <ol className="mt-2 list-decimal space-y-1 pl-5 text-slate-400">
+                        <li>Ouvrez l&apos;e-mail de confirmation (verifiez les spams).</li>
+                        <li>Appuyez sur le lien de validation.</li>
+                        <li>Revenez ici et appuyez sur « J&apos;ai confirme mon e-mail ».</li>
+                    </ol>
                 </div>
-            )}
 
-            <form onSubmit={submit}>
-                <div className="mt-4 flex items-center justify-between">
-                    <PrimaryButton disabled={processing}>
-                        Renvoyer l'e-mail de verification
-                    </PrimaryButton>
+                {status === 'verification-link-sent' && (
+                    <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm font-medium text-emerald-300">
+                        Un nouveau lien vient d&apos;etre envoye.
+                    </div>
+                )}
 
+                {status === 'not-verified-yet' && (
+                    <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm font-medium text-amber-200">
+                        Votre e-mail n&apos;est pas encore confirme. Cliquez d&apos;abord sur le lien
+                        recu par e-mail.
+                    </div>
+                )}
+
+                <button
+                    type="button"
+                    onClick={confirmEmail}
+                    disabled={confirmForm.processing}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#18c98f] px-5 py-4 text-sm font-bold text-black shadow-[0_0_30px_rgba(24,201,143,0.25)] transition hover:bg-[#25e0a4] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    {confirmForm.processing ? 'Verification...' : "J'ai confirme mon e-mail"}
+                    {!confirmForm.processing && <span aria-hidden>{'->'}</span>}
+                </button>
+
+                <form onSubmit={resendEmail}>
+                    <button
+                        type="submit"
+                        disabled={resendForm.processing}
+                        className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/[0.08] disabled:opacity-60"
+                    >
+                        {resendForm.processing ? 'Envoi...' : "Renvoyer l'e-mail de confirmation"}
+                    </button>
+                </form>
+
+                <div className="flex justify-center pt-2">
                     <Link
                         href={route('logout')}
                         method="post"
                         as="button"
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="text-sm text-slate-500 underline transition hover:text-slate-300"
                     >
                         Se deconnecter
                     </Link>
                 </div>
-            </form>
-        </GuestLayout>
+            </div>
+        </AuthShell>
     );
 }
