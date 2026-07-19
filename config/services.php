@@ -50,8 +50,16 @@ return [
 
     'groq' => [
         'key' => env('GROQ_API_KEY'),
+        'api_key' => env('GROQ_API_KEY'),
         'model' => env('GROQ_MODEL', 'llama-3.1-8b-instant'),
         'url' => env('GROQ_API_URL', 'https://api.groq.com/openai/v1/chat/completions'),
+        'verify_ssl' => filter_var(env('GROQ_VERIFY_SSL', true), FILTER_VALIDATE_BOOLEAN),
+    ],
+
+    'pa' => [
+        'url' => env('PA_API_URL', 'https://pa.example.com/api'),
+        'key' => env('PA_API_KEY'),
+        'webhook_secret' => env('PA_WEBHOOK_SECRET'),
     ],
 
 ];

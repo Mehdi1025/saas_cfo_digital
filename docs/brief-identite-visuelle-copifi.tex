@@ -1,0 +1,679 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{ragged2e}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+% ── Palette Copifi (IMMUABLE — issue de la landing en production) ──
+\definecolor{copifiobsidian}{HTML}{050505}
+\definecolor{copifidark}{HTML}{09090B}
+\definecolor{copificardA}{HTML}{121A26}
+\definecolor{copificardB}{HTML}{0F1520}
+\definecolor{copificardC}{HTML}{0D1825}
+\definecolor{copifiemerald}{HTML}{10B981}
+\definecolor{copifiemeraldlight}{HTML}{34D399}
+\definecolor{copifiemeraldsoft}{HTML}{A7F3D0}
+\definecolor{copifisky}{HTML}{0EA5E9}
+\definecolor{copifiskylight}{HTML}{38BDF8}
+\definecolor{copifiskysoft}{HTML}{BAE6FD}
+\definecolor{copifilime}{HTML}{CCFF00}
+\definecolor{copifilimehover}{HTML}{B8E600}
+\definecolor{copifiblue}{HTML}{3B82F6}
+\definecolor{copifizinc400}{HTML}{A1A1AA}
+\definecolor{copifizinc500}{HTML}{71717A}
+\definecolor{copifitealbrand}{HTML}{11534D}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=copifiemerald,
+    urlcolor=copifisky,
+    pdftitle={Brief identité visuelle — Copifi},
+    pdfauthor={Équipe Copifi},
+    pdfsubject={Brief créatif pour designer — SaaS facturation et pilotage}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Brief identité visuelle — Copifi}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries\color{copifiobsidian}}{\chaptertitlename\ \thechapter}{16pt}{\Huge}
+
+\titleformat{\section}
+{\normalfont\Large\bfseries\color{copifiemerald}}
+{\thesection}{1em}{}
+
+\newcommand{\hex}[1]{\texttt{\small #1}}
+\newcommand{\feat}[1]{\textbf{#1}}
+\newcommand{\swatch}[2]{%
+    \tikz[baseline=-0.5ex]{\fill[#1] (0,0) rectangle (0.55,0.55);}%
+    \hspace{0.35em}#2%
+}
+
+\newcommand{\colorrow}[4]{%
+    #1 & \hex{#2} & #3 & #4 \\%
+}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════
+\begin{titlepage}
+    \centering
+    \vspace*{1.2cm}
+    {\Huge\bfseries\color{copifiobsidian} Brief identité visuelle\par}
+    \vspace{0.6cm}
+    {\LARGE\color{copifiemerald} Copifi\par}
+    \vspace{0.4cm}
+    {\large SaaS de facturation conforme 2026 + pilotage d'entreprise\par}
+    \vspace{0.3cm}
+    {\normalsize Document de cadrage pour designer graphique / identité de marque\par}
+    \vspace{1.4cm}
+    \rule{0.78\textwidth}{1pt}
+    \vspace{1cm}
+    \begin{tabular}{>{\bfseries}r p{9.2cm}}
+        Client / produit & Copifi (ex FinFlow) \\
+        Type de mission & Identité visuelle complète (logo, charte, déclinaisons) \\
+        Contrainte majeure & \textbf{Conserver la palette chromatique du site existant} \\
+        Référence UI & Landing page \texttt{Welcome.jsx} (juillet 2026) \\
+        Cible & TPE, PME, indépendants, auto-entrepreneurs (France) \\
+        Version document & 1.0 — Juillet 2026 \\
+    \end{tabular}
+    \vfill
+    \begin{minipage}{0.85\textwidth}
+        \centering
+        \small\itshape
+        Ce document explique le produit, son positionnement, son univers visuel déjà en place
+        et les livrables attendus. La palette de couleurs listée au chapitre~\ref{ch:couleurs}
+        est \textbf{verrouillée} : le designer crée l'identité \emph{dans} cet univers, sans le remplacer.
+    \end{minipage}
+\end{titlepage}
+
+\tableofcontents
+\cleardoublepage
+
+% ============================================================
+\chapter{Mission et périmètre}
+% ============================================================
+
+\section{Ce que nous attendons du designer}
+
+Nous souhaitons une \textbf{identité visuelle professionnelle et mémorisable} pour Copifi :
+logotype, symbole, déclinaisons, guide d'usage minimal et assets exportés (SVG, PNG, favicon).
+
+Le site web et l'application existent déjà avec une direction visuelle \emph{dark fintech premium}.
+\textbf{Votre mission n'est pas de réinventer les couleurs}, mais de :
+\begin{itemize}[leftmargin=*]
+    \item concevoir un logo et une marque cohérents avec la palette actuelle ;
+    \item formaliser une charte graphique (typographies, espacements, usages) ;
+    \item produire les déclinaisons nécessaires (web, app, e-mail, print léger) ;
+    \item garantir la lisibilité du symbole de 16\,px (favicon) à l'affichage hero.
+\end{itemize}
+
+\section{Ce qui est hors périmètre (pour l'instant)}
+
+\begin{itemize}[leftmargin=*]
+    \item Refonte complète de l'interface produit (déjà développée en React + Tailwind).
+    \item Changement de la palette principale (emerald / sky / lime / obsidian).
+    \item Illustrations marketing complexes ou banques d'images custom (hors logo / pictos de base).
+\end{itemize}
+
+\section{Livrables attendus}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{2 à 3 pistes créatives} avec moodboard court (1 planche par piste).
+    \item \textbf{Logo final vectoriel} : symbole + wordmark «\,Copifi\,».
+    \item \textbf{Kit de déclinaisons} :
+    \begin{itemize}
+        \item couleur principale (fond sombre) ;
+        \item monochrome blanc (usage principal produit) ;
+        \item monochrome noir (fond clair, PDF, e-mails) ;
+        \item symbole seul (favicon, icône app, avatar sidebar) ;
+        \item wordmark seul si séparable.
+    \end{itemize}
+    \item \textbf{Favicon} 16$\times$16, 32$\times$32 et app icon 512$\times$512.
+    \item \textbf{Mini charte} (PDF 4--8 pages) : couleurs hex, typo recommandée, zone de protection, interdits.
+    \item \textbf{Fichiers sources} : Figma ou Adobe Illustrator + exports SVG / PNG @2x.
+\end{enumerate}
+
+% ============================================================
+\chapter{Le produit Copifi — vue d'ensemble}
+% ============================================================
+
+\section{Qu'est-ce que Copifi ?}
+
+Copifi est un \textbf{SaaS B2B français} qui réunit, dans une seule application et un seul abonnement,
+deux capacités que les concurrents proposent séparément :
+
+\begin{enumerate}[leftmargin=*]
+    \item \feat{Facturation conforme} — devis, factures, paiements, PDF, relances, avec conformité
+    à la réforme de la facturation électronique 2026--2027 (Factur-X, Plateforme Agréée DGFiP,
+    archivage légal 10 ans).
+    \item \feat{Pilotage d'entreprise} — tableau de bord dirigeant : trésorerie, marge, CAC, LTV, DSO,
+    alertes automatiques, analyses IA mensuelles et copilote financier contextuel.
+\end{enumerate}
+
+\section{Promesse et baseline}
+
+\begin{table}[h]
+\centering
+\caption{Messages clés de marque (déjà utilisés sur le site)}
+\begin{tabular}{@{}p{3.2cm}p{10.5cm}@{}}
+\toprule
+\textbf{Élément} & \textbf{Contenu} \\
+\midrule
+Baseline hero & \emph{Pilotez, facturez, décidez.} \\
+Sous-titre & Bien plus qu'un logiciel de facturation. \\
+Accroche différenciation & Les logiciels de facturation s'arrêtent à la facture. Nous, on va jusqu'à la décision. \\
+Promesse conformité & La loi change. Pas vos habitudes. \\
+Promesse pilotage & Vos chiffres ne dorment plus dans un tableur. \\
+CTA principal & Démarrer l'essai gratuit (14 jours, sans carte bancaire). \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Public cible}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Indépendants et freelances} — besoin de facturer vite et d'encaisser sans friction.
+    \item \textbf{TPE / PME} — 1 à 20 salariés, dirigeant seul face aux chiffres, sans DAF dédié.
+    \item \textbf{Auto-entrepreneurs assujettis à la TVA} — concernés par la réforme 2026.
+    \item \textbf{Profil psychologique} : entrepreneur pragmatique, sensible à la conformité légale,
+    allergique aux tableurs Excel, en quête de clarté sans jargon comptable.
+\end{itemize}
+
+\section{Concurrents implicites et différenciation}
+
+\begin{table}[h]
+\centering
+\caption{Positionnement}
+\begin{tabular}{@{}p{4.5cm}p{9.2cm}@{}}
+\toprule
+\textbf{Catégorie} & \textbf{Limite} \\
+\midrule
+Logiciels de facturation classiques & S'arrêtent à l'émission de facture ; pas de pilotage financier. \\
+Tableurs Excel / Google Sheets & Manuels, erreurs, pas de conformité PA / Factur-X. \\
+Outils BI génériques & Complexes, pas intégrés au cycle commercial. \\
+\textbf{Copifi} & \textbf{Facturation + pilotage + IA, un seul abonnement, données auto-alimentées par chaque facture.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Les deux piliers produit (système visuel à refléter)}
+
+L'identité doit permettre de \textbf{distinguer visuellement} les deux piliers, comme sur le site :
+
+\begin{table}[h]
+\centering
+\caption{Sémantique des deux piliers}
+\rowcolors{2}{white}{gray!6}
+\begin{tabular}{@{}p{2.8cm}p{5.5cm}p{5.5cm}@{}}
+\toprule
+ & \textbf{Pilier 1 — Facturation} & \textbf{Pilier 2 — Pilotage} \\
+\midrule
+Couleur UI & Emerald (vert) & Sky (bleu ciel) \\
+Thème & Conformité, légal, confiance & Data, KPIs, intelligence \\
+Fonctions clés & Devis, factures, Factur-X, PA, archivage & Trésorerie, marge, CAC, LTV, alertes, IA \\
+Message & Facturer, sans faute & Piloter, sans tableur \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\chapter{Fonctionnalités détaillées du SaaS}
+% ============================================================
+
+\section{Module facturation (Pilier 1)}
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Gestion clients (tiers)} — fiches clients, coordonnées, pays, numéro d'immatriculation.
+    \item \feat{Catalogue produits / services} — articles avec prix, descriptions, images, activation.
+    \item \feat{Devis} — création, envoi par e-mail (PDF), suivi d'ouverture (pixel tracking),
+    statuts (brouillon, envoyé, accepté, refusé, expiré), conversion en facture en un clic.
+    \item \feat{Factures} — numérotation légale automatique, lignes avec remises, escompte financier,
+    multi-devises, prestations, catégories d'opération, export PDF.
+    \item \feat{Conformité électronique} — génération Factur-X (PDF + XML), transmission Plateforme Agréée,
+    statuts CDAR, archivage inaltérable 10 ans, piste d'audit.
+    \item \feat{Paiements} — suivi des encaissements, relances, tableau de bord recouvrement,
+    escompte sur paiement anticipé.
+    \item \feat{Factures fournisseurs} — saisie des achats (module en cours d'enrichissement).
+    \item \feat{Paramètres entreprise} — logo, coordonnées, TVA, mandat de facturation électronique,
+    destinations de livraison.
+\end{itemize}
+
+\section{Module pilotage financier (Pilier 2)}
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Dashboard CFO} — KPI en temps réel : CA, charges, marge, trésorerie.
+    \item \feat{Indicateurs avancés} — CAC (coût d'acquisition client), LTV (valeur vie client),
+    DSO (délai de paiement), ratios de rentabilité.
+    \item \feat{Saisie mensuelle} — complément de données pour analyse (charges fixes, etc.).
+    \item \feat{Alertes automatiques} — marge négative, charges $>$ 70\,\% du CA, retards d'encaissement.
+    \item \feat{Analyse IA mensuelle} — synthèse en français clair de la santé de l'activité.
+    \item \feat{Copilote IA} — assistant conversationnel connaissant les chiffres de l'entreprise
+    (Groq / Llama 3.3 70B).
+    \item \feat{Graphiques} — courbes CA vs charges, donuts, cartes KPI animées (Recharts).
+\end{itemize}
+
+\section{Acquisition, monétisation et parcours utilisateur}
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Landing page marketing} — page d'accueil longue, sections éducatives, CTA essai gratuit.
+    \item \feat{Assistant IA landing} — chat commercial pour répondre aux questions (réforme, tarifs, produit).
+    \item \feat{Authentification} — inscription, connexion, Google OAuth, vérification e-mail.
+    \item \feat{Abonnement Stripe} — plans Indépendant (15\,€/mois HT) et Pro (49\,€/mois HT),
+    essai 14 jours sans carte, checkout et webhooks.
+    \item \feat{Espace admin} — gestion utilisateurs, MRR, suspension de comptes.
+\end{itemize}
+
+\section{Contexte réglementaire (argument marketing central)}
+
+\begin{table}[h]
+\centering
+\caption{Calendrier réforme facturation électronique (France)}
+\begin{tabular}{@{}llp{8.5cm}@{}}
+\toprule
+\textbf{Date} & \textbf{Obligation} & \textbf{Impact communication} \\
+\midrule
+1\textsuperscript{er} sept.\ 2026 & Réception obligatoire & Toutes les entreprises assujetties TVA doivent pouvoir recevoir des factures électroniques. \\
+1\textsuperscript{er} sept.\ 2027 & Émission obligatoire (TPE/PME) & Les petites structures devront émettre via une Plateforme Agréée. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Copifi transforme cette contrainte en \textbf{opportunité marketing} : la conformité est gérée
+automatiquement, l'utilisateur continue de facturer comme avant.
+
+% ============================================================
+\chapter{Univers visuel existant — direction artistique}
+\label{ch:univers}
+% ============================================================
+
+\section{Style global : \emph{Dark Fintech Premium}}
+
+L'interface actuelle suit une esthétique inspirée des sites primés (Awwwards) :
+\begin{itemize}[leftmargin=*]
+    \item fond \textbf{obsidian} profond, quasi noir ;
+    \item lueurs néon \textbf{diffuses} (emerald et sky), jamais agressives ;
+    \item cartes en \textbf{glassmorphism} : bordures fines blanches semi-transparentes, fonds dégradés sombres ;
+    \item coins très arrondis (\texttt{border-radius} 2\,rem typique) ;
+    \item animations fluides avec courbe \texttt{cubic-bezier(0.22, 1, 0.36, 1)} (effet ressort amorti) ;
+    \item typographie éditoriale : titres massifs + mots-clés en \textbf{serif italique} avec dégradé.
+\end{itemize}
+
+\section{Registre émotionnel à transmettre}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}p{4cm}p{5cm}p{5cm}@{}}
+\toprule
+\textbf{Oui} & \textbf{Non} \\
+\midrule
+Clarté, sérénité, modernité & Froideur bancaire institutionnelle \\
+Confiance, sérieux, innovation maîtrisée & Startup gadget / crypto flashy \\
+Premium accessible, entrepreneur-friendly & Corporate costume-cravate \\
+Data-driven, précision & Illustrations stock cliché finance \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Références d'ambiance (non copies)}
+
+\begin{itemize}[leftmargin=*]
+    \item SaaS fintech dark mode (Linear, Stripe docs dark, Vercel marketing).
+    \item Sites Awwwards : micro-interactions, profondeur, glass cards.
+    \item Dashboards financiers épurés : lisibilité des chiffres, hiérarchie forte.
+\end{itemize}
+
+% ============================================================
+\chapter{Palette chromatique — CONSERVER TELLE QUELLE}
+\label{ch:couleurs}
+% ============================================================
+
+\section{Règle impérative}
+
+\textbf{Les couleurs ci-dessous sont celles du site en production.}
+Le designer \textbf{ne doit pas les remplacer} par une autre palette.
+Il peut proposer des nuances \emph{à l'intérieur} de cette famille (opacités, dégradés),
+mais les teintes principales restent fixes.
+
+\section{Fonds et surfaces}
+
+\begin{table}[h]
+\centering
+\caption{Couleurs de fond}
+\rowcolors{2}{white}{gray!5}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Échantillon} & \textbf{Hex} & \textbf{Nom} & \textbf{Usage} \\
+\midrule
+\colorrow{\swatch{copifiobsidian}{}}{050505}{Obsidian}{Fond principal page, body}
+\colorrow{\swatch{copifidark}{}}{09090B}{Obsidian alt.}{Zones app (Tailwind \texttt{obsidian})}
+\colorrow{\swatch{copificardA}{}}{121A26}{Card A}{Dégradé cartes (haut)}
+\colorrow{\swatch{copificardB}{}}{0F1520}{Card B}{Dégradé cartes (milieu)}
+\colorrow{\swatch{copificardC}{}}{0D1825}{Card C}{Dégradé cartes (bas)}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Surfaces glass : blanc à \textbf{2--8\,\%} d'opacité (\texttt{rgba(255,255,255,0.02--0.08)}).
+Bordures glass : blanc à \textbf{10\,\%} (\texttt{border-white/10}).
+
+\section{Accent Pilier 1 — Emerald (facturation / conformité)}
+
+\begin{table}[h]
+\centering
+\caption{Famille emerald — NE PAS REMPLACER}
+\rowcolors{2}{white}{gray!5}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Échantillon} & \textbf{Hex} & \textbf{Tailwind} & \textbf{Usage} \\
+\midrule
+\colorrow{\swatch{copifiemerald}{}}{10B981}{emerald-500}{Badges, icônes, sélection texte, CTA secondaires}
+\colorrow{\swatch{copifiemeraldlight}{}}{34D399}{emerald-400}{Contours logo, hover cartes, labels}
+\colorrow{\swatch{copifiemeraldsoft}{}}{A7F3D0}{emerald-200}{Dégradés titres (avec sky-300)}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Lueurs d'ambiance : \texttt{rgba(16,185,129,0.15--0.25)} en radial blur.
+
+\section{Accent Pilier 2 — Sky (pilotage / data)}
+
+\begin{table}[h]
+\centering
+\caption{Famille sky — NE PAS REMPLACER}
+\rowcolors{2}{white}{gray!5}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Échantillon} & \textbf{Hex} & \textbf{Tailwind} & \textbf{Usage} \\
+\midrule
+\colorrow{\swatch{copifisky}{}}{0EA5E9}{sky-500}{Section pilotage, KPIs, graphiques}
+\colorrow{\swatch{copifiskylight}{}}{38BDF8}{sky-400}{Courbes graphiques, hovers}
+\colorrow{\swatch{copifiskysoft}{}}{BAE6FD}{sky-300}{Dégradés titres, accents doux}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Lueurs : \texttt{rgba(56,189,248,0.1--0.15)}.
+
+\section{CTA et highlight}
+
+\begin{table}[h]
+\centering
+\caption{Couleur d'action primaire}
+\rowcolors{2}{white}{gray!5}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Échantillon} & \textbf{Hex} & \textbf{Nom} & \textbf{Usage} \\
+\midrule
+\colorrow{\swatch{copifilime}{}}{CCFF00}{Lime CTA}{Boutons «\,Démarrer l'essai gratuit\,»}
+\colorrow{\swatch{copifilimehover}{}}{B8E600}{Lime hover}{État survol CTA}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cette lime est \textbf{signature conversion} : haute visibilité sur fond sombre, texte noir dessus.
+
+\section{Accents complémentaires}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Bleu} \hex{3B82F6} — courbes secondaires graphiques, dégradés internes cartes.
+    \item \textbf{Teal marque historique} \hex{11534D} — présent dans la sidebar app (dégradé radial) ;
+    peut subsister en accent secondaire mais \textbf{ne remplace pas} emerald/sky de la landing.
+    \item \textbf{Ambre} \texttt{\#F59E0B} — alertes «\,en attente\,», warnings légers.
+    \item \textbf{Rose} — messages d'erreur flash uniquement.
+\end{itemize}
+
+\section{Texte et neutres}
+
+\begin{table}[h]
+\centering
+\rowcolors{2}{white}{gray!5}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Échantillon} & \textbf{Hex} & \textbf{Rôle} & \textbf{Usage} \\
+\midrule
+\colorrow{\swatch{white}{}}{FFFFFF}{Titres}{H1, H2, H3, navigation}
+\colorrow{\swatch{copifizinc400}{}}{A1A1AA}{Corps}{Paragraphes, descriptions (zinc-400)}
+\colorrow{\swatch{copifizinc500}{}}{71717A}{Labels}{Kickers, métadonnées (zinc-500/600)}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Dégradé signature des titres éditoriaux}
+
+Mots en italique serif sur la landing :
+\[
+\texttt{from-emerald-200}\ (#A7F3D0) \;\rightarrow\; \texttt{to-sky-300}\ (#BAE6FD)
+\]
+Appliqué en \texttt{background-clip: text} sur fond sombre.
+
+% ============================================================
+\chapter{Typographie}
+% ============================================================
+
+\section{Polices actuellement utilisées}
+
+\begin{table}[h]
+\centering
+\caption{Hiérarchie typographique}
+\begin{tabular}{@{}p{3.5cm}p{4cm}p{7cm}@{}}
+\toprule
+\textbf{Rôle} & \textbf{Police} & \textbf{Usage} \\
+\midrule
+UI / corps & Inter & Application, formulaires, tableaux, boutons \\
+Titres app & Syne (+ Inter fallback) & En-têtes modules facturation (\texttt{font-display}) \\
+Éditorial landing & Instrument Serif & Accroches italiques : \emph{décidez.}, \emph{sans friction.} \\
+Labels techniques & IBM Plex Mono & Badges, stats, compte à rebours, marquee trust \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Recommandations pour le wordmark «\,Copifi\,»}
+
+\begin{itemize}[leftmargin=*]
+    \item Lisible, moderne, légèrement tech sans agressivité futuriste.
+    \item Cohérent avec Instrument Serif (landing) \textbf{ou} Inter/Syne (app) — le designer choisit
+    une personnalité propre au logo tout en restant compatible.
+    \item Le «\,C\,» peut porter une légère personnalité (référence au symbole) sans devenir illisible.
+    \item Éviter les serifs classiques type Times : trop institutionnel banque.
+\end{itemize}
+
+\section{Principes de mise en page}
+
+\begin{itemize}[leftmargin=*]
+    \item Titres landing : \texttt{tracking-tighter}, tailles XXL (48--72\,px desktop).
+    \item Kickers : uppercase, letterspacing 0.18--0.28\,em, 11\,px, mono.
+    \item Chiffres KPI : chasse tabulaire (\texttt{tabular-nums}), police mono.
+\end{itemize}
+
+% ============================================================
+\chapter{Logo et symbole — pistes et contraintes}
+% ============================================================
+
+\section{État actuel (provisoire)}
+
+Un logo temporaire existe : icône \emph{document à coin plié} + courbe de flux (emerald $\rightarrow$ lime),
+wordmark «\,Copifi\,» en Instrument Serif, avec animation au survol (micro-rotations, glow emerald).
+\textbf{Ce logo est un placeholder technique}, pas la identité finale.
+
+\section{Concepts à explorer (liberté créative)}
+
+Le designer est libre d'interpréter, en restant dans l'univers décrit :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Flux / courbe} — croissance maîtrisée, pas une flèche stock market cliché.
+    \item \textbf{Document / facture stylisée} — lien avec la facturation, forme épurée.
+    \item \textbf{Pilotage / jauge / signal} — clarté, mesure, décision.
+    \item \textbf{Monogramme C} — si lisible en 16\,px.
+    \item \textbf{Combinaison symbole + wordmark} — horizontal (nav) et empilé (carré app).
+\end{itemize}
+
+\section{À éviter absolument}
+
+\begin{itemize}[leftmargin=*]
+    \item Calculatrice, pièces de monnaie, symboles \$ € £.
+    \item Graphiques en barres ou camemberts littéraux (trop BI générique).
+    \item Bouclier ou cadenas seul (cybersécurité, pas clarté financière).
+    \item Costume-cravate, poignée de main (corporate banque).
+    \item Néons agressifs type crypto — le glow Copifi reste \textbf{subtil et diffus}.
+    \item Logo surchargé illisible en favicon 16\,px.
+    \item Palette hors charte (violet, orange vif, rose néon comme couleur primaire).
+\end{itemize}
+
+\section{Contraintes techniques logo}
+
+\begin{itemize}[leftmargin=*]
+    \item 100\,\% vectoriel (SVG source obligatoire).
+    \item Lisible sur \textbf{fond \hex{050505}} (usage principal) et fond blanc (e-mails, PDF).
+    \item Version monochrome blanche pour sidebar et footer.
+    \item Zone de protection = hauteur du symbole minimum de chaque côté.
+    \item Taille minimale web : 24\,px hauteur symbole ; favicon 16\,px reconnaissable.
+\end{itemize}
+
+% ============================================================
+\chapter{Composants UI — langage graphique à respecter}
+% ============================================================
+
+\section{Vocabulaire visuel des composants}
+
+\begin{description}[leftmargin=3.5cm, style=nextline]
+    \item[GlassCard] Carte avec bordure \texttt{white/10}, fond dégradé \hex{121A26}$\rightarrow$\hex{0D1825},
+    ombre profonde, hover avec halo emerald ou sky.
+    \item[Nav pill] Barre flottante centrée, \texttt{rounded-full}, glass + blur.
+    \item[Badge] Pill coloré semi-transparent (emerald ou sky), texte mono uppercase.
+    \item[CTA primaire] Pill lime \hex{CCFF00}, texte noir, glow néon au hover.
+    \item[CTA secondaire] Bordure glass, fond \texttt{white/5--10\%}, texte blanc.
+    \item[Marquee] Bandeau défilant trust items, mono, zinc-500, séparateurs emerald.
+\end{description}
+
+\section{Iconographie}
+
+\begin{itemize}[leftmargin=*]
+    \item Style : \textbf{SVG outline}, trait 1.8--2\,px, coins arrondis.
+    \item Pas d'illustrations 3D ni de pictos remplis lourds.
+    \item Couleur héritée du contexte (emerald = facturation, sky = pilotage).
+    \item Icônes clés : document, bouclier, jauge, cloche, cerveau (IA), flèche, sparkles.
+\end{itemize}
+
+\section{Motion design (référence, pas à produire en logo statique)}
+
+\begin{itemize}[leftmargin=*]
+    \item Easing signature : \texttt{cubic-bezier(0.22, 1, 0.36, 1)}.
+    \item Entrées scroll : fade + translate Y, délais échelonnés.
+    \item Hover cartes : élévation $-4$\,px + halo coloré.
+    \item Logo nav : micro-animation au survol (référence comportementale).
+\end{itemize}
+
+% ============================================================
+\chapter{Contexts d'application de la marque}
+% ============================================================
+
+\begin{table}[h]
+\centering
+\caption{Touchpoints où le logo et la charte seront utilisés}
+\begin{tabular}{@{}p{4cm}p{4cm}p{6cm}@{}}
+\toprule
+\textbf{Support} & \textbf{Fond} & \textbf{Contrainte} \\
+\midrule
+Landing page (nav) & Obsidian \hex{050505} & Logo horizontal, animation hover \\
+Sidebar application & Dégradé teal sombre & Symbole 40$\times$40\,px + label \\
+Favicon navigateur & Obsidian ou transparent & 16$\times$16 reconnaissable \\
+Page connexion & Split : photo + glass clair & Logo couleur sur fond clair \\
+E-mails transactionnels & Blanc ou gris clair & Version noir ou couleur \\
+Factures PDF & Blanc & Monochrome ou couleur sobre \\
+Stripe Checkout & Blanc (Stripe) & Logo compact \\
+Réseaux sociaux & Obsidian & Carré 1080$\times$1080 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\chapter{Structure de la landing page (référence contenu)}
+% ============================================================
+
+Pour que le designer comprenne le \textbf{volume et le rythme visuel} du site :
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Hero} — titre XXL, dashboard 3D flottant, 2 cartes animées (facture / marge).
+    \item \textbf{Marquee} — 12 garanties défilantes.
+    \item \textbf{La différence} — 2 piliers côte à côte (emerald vs sky).
+    \item \textbf{Stats} — 4 chiffres animés.
+    \item \textbf{Facturation} — cycle devis $\rightarrow$ facture $\rightarrow$ paiement.
+    \item \textbf{Conformité 2026} — compte à rebours, timeline 2026/2027, 3 cartes Factur-X / PA / archivage.
+    \item \textbf{Pilotage} — checklist + graphique + 3 cartes (KPIs, alertes, copilote IA).
+    \item \textbf{Assistant IA} — chat widget + CTA.
+    \item \textbf{Tarifs} — 2 plans (15\,€ / 49\,€).
+    \item \textbf{FAQ} — 6 questions accordion.
+    \item \textbf{CTA final} — urgence réforme + essai gratuit.
+    \item \textbf{Footer} — logo, liens légaux.
+\end{enumerate}
+
+% ============================================================
+\chapter{Tarification (cohérence communication)}
+% ============================================================
+
+\begin{table}[h]
+\centering
+\caption{Offres commerciales}
+\begin{tabular}{@{}llp{7.5cm}@{}}
+\toprule
+\textbf{Plan} & \textbf{Prix} & \textbf{Contenu} \\
+\midrule
+Indépendant & 15\,€/mois HT & 30 factures/mois, devis illimités, conformité 2026, archivage, dashboard CA/marge/trésorerie. \\
+Pro (populaire) & 49\,€/mois HT & Factures illimitées, pilotage avancé (CAC, LTV, DSO), alertes + copilote IA, multi-devises, support prioritaire. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Règle marketing :} les deux piliers sont inclus dans \emph{chaque} plan — ce n'est pas une option.
+
+% ============================================================
+\chapter{North star — synthèse pour le designer}
+% ============================================================
+
+\begin{quote}
+\large\itshape
+Copifi, c'est la clarté financière enfin accessible : facturer conforme à la loi,
+piloter son entreprise comme un dirigeant équipé, décider sans tableur ni jargon.
+L'identité visuelle doit dire \textbf{confiance + modernité + intelligence},
+dans un univers \textbf{dark premium} aux accents \textbf{emerald}, \textbf{sky} et \textbf{lime},
+sans clichés comptables.
+\end{quote}
+
+\vspace{1em}
+\noindent\textbf{Checklist avant livraison :}
+\begin{itemize}[leftmargin=*]
+    \item[\checkmark] Palette \hex{050505} / emerald / sky / \hex{CCFF00} respectée ?
+    \item[\checkmark] Logo lisible en 16\,px ?
+    \item[\checkmark] Versions fond sombre + fond clair ?
+    \item[\checkmark] Cohérent avec les deux piliers (facturation vs pilotage) ?
+    \item[\checkmark] Évite les clichés listés au chapitre~8 ?
+    \item[\checkmark] Fichiers vectoriels + mini charte fournis ?
+\end{itemize}
+
+\vfill
+\begin{center}
+\rule{0.5\textwidth}{0.4pt}\\[0.5em]
+\small
+Contact projet : équipe Copifi — Document v1.0 — Juillet 2026\\
+Compilable avec \texttt{pdflatex} ou \texttt{xelatex}
+\end{center}
+
+\end{document}

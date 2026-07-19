@@ -53,7 +53,7 @@ class GoogleAuthController extends Controller
         if ($email === '' || ! data_get($googleUser->user, 'email_verified', false)) {
             return redirect()
                 ->route('login')
-                ->withErrors(['email' => 'Le compte Google doit avoir un email verifie.']);
+                ->withErrors(['email' => 'Le compte Google doit avoir un e-mail vérifié.']);
         }
 
         $googleId = (string) $googleUser->getId();

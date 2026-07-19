@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\CompanySettingsService;
+use App\Services\DeliveryDestinationService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -46,10 +48,19 @@ class HandleInertiaRequests extends Middleware
                         && in_array($user->stripe_status, ['active', 'trialing'], true),
                 ] : null,
             ],
+            'tax_rates' => config('taxes'),
+            'currencies' => config('currencies'),
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
+                'compliance_errors' => $request->session()->get('compliance_errors', []),
             ],
+            'company' => fn () => $user
+                ? app(CompanySettingsService::class)->forFrontend()
+                : null,
+            'delivery_destinations' => fn () => $user
+                ? app(DeliveryDestinationService::class)->forFrontend()
+                : [],
         ];
     }
 }

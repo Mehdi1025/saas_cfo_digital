@@ -1,0 +1,1311 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{ragged2e}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=cyan!60!black,
+    pdftitle={FinFlow / Mini CFO Digital — Catalogue des fonctionnalités},
+    pdfauthor={Équipe FinFlow}
+}
+
+\definecolor{finblue}{RGB}{79, 70, 229}
+\definecolor{sectionbg}{RGB}{245, 247, 250}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Catalogue fonctionnel — FinFlow / Mini CFO Digital}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries\color{finblue}}{\chaptertitlename\ \thechapter}{16pt}{\Huge}
+
+\newcommand{\route}[1]{\texttt{\small #1}}
+\newcommand{\ctrl}[1]{\texttt{\small #1}}
+\newcommand{\svc}[1]{\texttt{\small #1}}
+\newcommand{\model}[1]{\texttt{\small #1}}
+\newcommand{\feat}[1]{\textbf{#1}}
+
+\begin{document}
+
+% ── Page de garde ──────────────────────────────────────────────────
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+    {\Huge\bfseries\color{finblue} Catalogue des fonctionnalités\par}
+    \vspace{0.8cm}
+    {\LARGE FinFlow / Mini CFO Digital\par}
+    \vspace{0.5cm}
+    {\large Documentation exhaustive des fonctionnalités — intégralement rédigée en \LaTeX\par}
+    \vspace{0.3cm}
+    {\normalsize Application SaaS B2B — Gestion commerciale, facturation et pilotage financier\par}
+    \vspace{1.5cm}
+    \rule{0.75\textwidth}{1pt}
+    \vspace{1.2cm}
+    \begin{tabular}{>{\bfseries}r p{9cm}}
+        Projet & FinFlow (SaaS B2B) \\
+        Stack & Laravel~12, PHP~8.2+, MySQL, React~19, Inertia.js~v2, Tailwind CSS \\
+        Document & Inventaire exhaustif des fonctionnalités implémentées \\
+        Date d'analyse & Juillet 2026 \\
+        Source & Analyse du code source (\route{routes/web.php}, contrôleurs, services, modèles, pages React) \\
+    \end{tabular}
+    \vfill
+    {\normalsize Ce document recense \emph{toutes} les capacités métier et techniques du dépôt, avec le détail des règles de gestion, des flux utilisateur et des composants logiciels associés.\par}
+\end{titlepage}
+
+\tableofcontents
+\cleardoublepage
+
+% ============================================================
+\chapter{Vue d'ensemble de la plateforme}
+% ============================================================
+
+\section{Identité produit}
+
+FinFlow (également présenté sous la marque \emph{Mini CFO Digital}) est une plateforme SaaS destinée aux PME. Elle combine deux piliers :
+
+\begin{enumerate}[leftmargin=*]
+    \item \feat{Mini CFO Digital} — saisie mensuelle de données financières, KPI (CA, charges, marge, CAC, LTV), alertes automatiques et insights IA sur la santé de l'entreprise.
+    \item \feat{FinFlow Facturation} — cycle commercial complet : clients, catalogue, devis, factures, avoirs, paiements, PDF, e-mails, tracking et tableau de bord de trésorerie.
+\end{enumerate}
+
+\section{Architecture technique}
+
+\begin{table}[h]
+\centering
+\caption{Couches logicielles}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Couche} & \textbf{Technologies et rôle} \\
+\midrule
+Serveur & Laravel~12, Eloquent ORM, validation, transactions \texttt{DB::transaction()} \\
+Interface & React~19 + Inertia.js~v2 (SPA sans API REST séparée) \\
+Style & Tailwind CSS, thème sombre FinFlow, Framer Motion (animations) \\
+PDF & DomPDF via \svc{DocumentPdfService} \\
+E-mails & Laravel Mailable (\svc{DevisMailerService}, \svc{DocumentMailerService}) \\
+IA & API Groq — modèle \texttt{llama-3.3-70b-versatile} \\
+Paiement SaaS & Stripe Checkout (abonnements) + webhooks \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Acteurs et rôles}
+
+\begin{description}[leftmargin=3cm, style=nextline]
+    \item[Visiteur] Accède à la landing page, peut discuter avec l'assistant commercial IA (limité).
+    \item[Utilisateur abonné] Accède au dashboard CFO, à la facturation FinFlow, au copilote IA et au profil.
+    \item[Administrateur] Accède au panneau admin : gestion utilisateurs, MRR, suspension, édition des insights IA.
+    \item[Client externe] Reçoit devis/factures par e-mail (PDF) ; déclenche le pixel de tracking à l'ouverture.
+\end{description}
+
+\section{Middleware et contrôle d'accès}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{auth} — authentification Laravel Breeze obligatoire.
+    \item \texttt{verified} — adresse e-mail vérifiée pour les routes sensibles.
+    \item \texttt{active.subscription} — abonnement Stripe \texttt{active} ou \texttt{trialing}, compte non suspendu.
+    \item \texttt{admin} — rôle administrateur (\route{/admin}).
+    \item \texttt{throttle} — limitation de débit sur chat IA (12/min landing, 20/min dashboard/copilote) et webhooks Stripe (60/min).
+    \item CSRF — protection sur tous les formulaires ; exception \route{POST /stripe/webhook}.
+\end{itemize}
+
+% ============================================================
+\chapter{Authentification, compte utilisateur et abonnement}
+% ============================================================
+
+\section{Inscription et connexion (Laravel Breeze)}
+
+\begin{longtable}{@{}p{3.2cm}p{10.5cm}@{}}
+\toprule
+\textbf{Fonctionnalité} & \textbf{Détail d'implémentation} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Fonctionnalité} & \textbf{Détail d'implémentation} \\
+\midrule
+\endhead
+Inscription & \route{GET/POST /register} — création de compte avec nom, e-mail, mot de passe (haché Bcrypt). \\
+Connexion & \route{GET/POST /login} — session Laravel ; page split-screen premium (\texttt{Login.jsx} + \texttt{login-hero-panel.jsx}) avec glassmorphism et animation Ken Burns. \\
+Connexion Google OAuth & \route{GET /auth/google/redirect} et \route{/auth/google/callback} — authentification sociale via \ctrl{GoogleAuthController}. \\
+Déconnexion & \route{POST /logout} — destruction de session. \\
+\bottomrule
+\end{longtable}
+
+\section{Vérification e-mail et sécurité du compte}
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Prompt de vérification} — \route{GET /verify-email} affiche la notice si l'e-mail n'est pas vérifié.
+    \item \feat{Lien signé de vérification} — \route{GET /verify-email/\{id\}/\{hash\}} avec middleware \texttt{signed} et throttle 6/min.
+    \item \feat{Renvoi de l'e-mail} — \route{POST /email/verification-notification}.
+    \item \feat{Confirmation de mot de passe} — \route{GET/POST /confirm-password} pour actions sensibles.
+    \item \feat{Réinitialisation} — \route{GET/POST /forgot-password}, \route{GET/POST /reset-password/\{token\}}.
+    \item \feat{Mise à jour du mot de passe} — \route{PUT /password} (utilisateur connecté).
+\end{itemize}
+
+\section{Profil utilisateur}
+
+\route{GET /profile}, \route{PATCH /profile}, \route{DELETE /profile} — gérés par \ctrl{ProfileController} :
+\begin{itemize}[leftmargin=*]
+    \item Modification du nom et de l'e-mail (\texttt{ProfileUpdateRequest}).
+    \item Suppression du compte avec confirmation de mot de passe.
+    \item Page React \texttt{Profile/Edit.jsx} avec formulaires partiels.
+\end{itemize}
+
+\section{Abonnement Stripe (monétisation SaaS)}
+
+\begin{longtable}{@{}p{3.5cm}p{10.2cm}@{}}
+\toprule
+\textbf{Action} & \textbf{Comportement} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Action} & \textbf{Comportement} \\
+\midrule
+\endhead
+Démarrer checkout & \route{POST /billing/checkout} ou \route{GET /billing/checkout/start} — crée une session Stripe Checkout en mode \texttt{subscription}, redirige vers Stripe (\ctrl{StripeCheckoutController}). \\
+Succès & \route{GET /billing/success} — message flash ; abonnement vérifié via webhook. \\
+Annulation & \route{GET /billing/cancel} — retour landing avec message d'erreur. \\
+Webhook & \route{POST /stripe/webhook} — signature HMAC vérifiée ; idempotence via \model{ProcessedStripeEvent}. \\
+Événements traités & \texttt{checkout.session.completed}, \texttt{customer.subscription.updated}, \texttt{customer.subscription.deleted}. \\
+Champs utilisateur & \texttt{stripe\_customer\_id}, \texttt{stripe\_subscription\_id}, \texttt{stripe\_status}, \texttt{stripe\_price\_id}, \texttt{subscription\_amount}, \texttt{subscription\_currency}. \\
+Contrôle d'accès & Middleware \texttt{active.subscription} : statuts \texttt{active} ou \texttt{trialing} requis ; compte suspendu bloqué. \\
+\bottomrule
+\end{longtable}
+
+\section{Redirection intelligente à l'accueil}
+
+\route{GET /} — logique de routage :
+\begin{itemize}[leftmargin=*]
+    \item Admin connecté $\rightarrow$ redirection \route{/admin}.
+    \item Utilisateur abonné actif $\rightarrow$ redirection \route{/dashboard}.
+    \item Sinon $\rightarrow$ page \texttt{Welcome.jsx} (landing marketing).
+\end{itemize}
+
+% ============================================================
+\chapter{Landing page et acquisition}
+% ============================================================
+
+\section{Page d'accueil marketing (\texttt{Welcome.jsx})}
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Hero section} — présentation produit, CTA inscription/connexion, graphiques Recharts (données de démonstration).
+    \item \feat{Sections produit} — mise en avant des modules CFO et Facturation.
+    \item \feat{Animations scroll} — composant \texttt{ScrollReveal} (Intersection Observer).
+    \item \feat{Effet magnétique} — boutons CTA avec \texttt{useMagnetic}.
+    \item \feat{Grille décorative} — fond SVG en motif.
+    \item \feat{Intégration Stripe} — bouton d'abonnement via \route{billing.checkout.start} pour utilisateurs connectés.
+\end{itemize}
+
+\section{Assistant commercial IA (landing)}
+
+\begin{itemize}[leftmargin=*]
+    \item \route{POST /landing/chat} — throttle 12 requêtes/minute.
+    \item Composant \texttt{LandingChatWidget.jsx} — widget de chat flottant.
+    \item Service \svc{LandingChatService} — appel Groq avec prompt orienté découverte produit (sans données client).
+    \item Validation : 1 à 20 messages, rôles \texttt{user}/\texttt{assistant}, contenu max 1200 caractères ; historique tronqué aux 12 derniers messages.
+    \item Réponse JSON \texttt{\{reply\}} ou erreur 503 si clé Groq absente.
+\end{itemize}
+
+\section{Pages de test (développement)}
+
+Routes protégées \texttt{auth + verified} :
+\begin{itemize}[leftmargin=*]
+    \item \route{/test} — \texttt{TestLanding.jsx}
+    \item \route{/dashboard\_test} — \texttt{TestDashboard.jsx}
+    \item \route{/dashboard\_test/saisie-mensuelle} — \texttt{TestSaisieMensuelle.jsx}
+    \item \route{/dashboard\_test/rapports} — \texttt{TestRapports.jsx}
+\end{itemize}
+
+% ============================================================
+\chapter{Mini CFO Digital — Pilotage financier mensuel}
+% ============================================================
+
+\section{Dashboard principal (\route{/dashboard})}
+
+Contrôleur \ctrl{DashboardController} — page \texttt{Dashboard.jsx} :
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{KPI mensuels} — CA, charges totales, marge nette, CAC (coût d'acquisition client), LTV (valeur vie client).
+    \item \feat{Graphique d'évolution} — série temporelle CA/charges sur tous les mois saisis.
+    \item \feat{Alertes automatiques} — calculées par \svc{FinancialService::buildAlert()} :
+    \begin{itemize}
+        \item Marge négative $\rightarrow$ niveau \texttt{critique}.
+        \item LTV $<$ CAC $\rightarrow$ niveau \texttt{critique}.
+        \item Charges $>$ 70\,\% du CA $\rightarrow$ niveau \texttt{attention}.
+        \item LTV/CAC $>$ 3 avec marge positive $\rightarrow$ niveau \texttt{sain}.
+    \end{itemize}
+    \item \feat{Insight IA mensuel} — généré automatiquement par \svc{AiInsightService} via \svc{GroqApiService} ; stocké en base (\model{AiInsight}) ; contenu éditable par l'admin.
+    \item \feat{Widget chat dashboard} — \texttt{DashboardChatWidget.jsx} appelle \route{POST /dashboard/chat}.
+\end{itemize}
+
+\section{Saisie mensuelle (\route{/saisie-mensuelle})}
+
+Page \texttt{FinancialEntry.jsx} — formulaire de saisie :
+
+\begin{itemize}[leftmargin=*]
+    \item Champs : mois (\texttt{Y-m}), chiffre d'affaires, charges, budget marketing, nombre de clients.
+    \item Pré-remplissage avec le dernier enregistrement (\model{FinancialRecord}).
+    \item Enregistrement via \route{POST /financial-records} (\ctrl{FinancialRecordController}) — upsert par mois.
+    \item API JSON \route{GET /mes-enregistrements-financiers} — liste tous les enregistrements de l'utilisateur.
+\end{itemize}
+
+\section{Formules de calcul (\svc{FinancialService})}
+
+\begin{align*}
+\text{marge\_nette} &= \text{revenue} - \text{charges} \\
+\text{CAC} &= \frac{\text{marketing\_budget}}{\text{clients\_count}} \quad (\text{si clients\_count} > 0) \\
+\text{LTV} &= \frac{\text{revenue}}{\text{clients\_count}} \quad (\text{si clients\_count} > 0)
+\end{align*}
+
+% ============================================================
+\chapter{Module FinFlow — Facturation B2B}
+% ============================================================
+
+\section{Tableau de bord facturation (\route{/facturation})}
+
+Contrôleur \ctrl{FacturationDashboardController} — page \texttt{Facturation/Dashboard.jsx} :
+
+\subsection{Indicateurs clés (KPI)}
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{CA encaissé} — somme TTC en EUR des factures \texttt{paid} du mois ; tendance vs mois précédent ; sparkline 7 mois.
+    \item \feat{Devis en attente} — montant et nombre de devis \texttt{sent} ; sparkline.
+    \item \feat{Factures en retard} — factures \texttt{sent} dont \texttt{due\_date} $<$ aujourd'hui ; sparkline du nombre.
+    \item \feat{Nouveaux clients} — tiers \texttt{type=client} créés ce mois ; tendance vs mois précédent.
+\end{itemize}
+
+\subsection{Visualisations}
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Graphique revenus} — CA facturé net d'avoirs sur 6 mois (en k€).
+    \item \feat{Donut répartition factures} — payées / en attente / en retard (pourcentages).
+    \item \feat{Activité récente} — 7 derniers documents modifiés avec client, montant, statut, date relative.
+\end{itemize}
+
+\subsection{Analyse financière IA à la demande}
+
+\begin{itemize}[leftmargin=*]
+    \item \route{POST /facturation/analyze} — agrégats \textbf{anonymisés} envoyés à \svc{FinancialAnalysisService} (Groq).
+    \item Données transmises : période, CA encaissé, tendance, factures en retard (count + montant), devis en attente, nouveaux clients.
+    \item \textbf{Aucune} donnée nominative (nom client, e-mail, référence document).
+    \item Réponse Markdown en français : synthèse trésorerie + 2--3 recommandations.
+    \item Composant \texttt{FinancialAnalysisCard.jsx} — affichage et bouton « Analyser ».
+\end{itemize}
+
+% ============================================================
+\section{Gestion des devis}
+% ============================================================
+
+Routes préfixe \route{/devis} — contrôleur \ctrl{DevisController} :
+
+\subsection{Liste et filtres (\route{GET /devis})}
+
+Page \texttt{Devis/Index.jsx} :
+\begin{itemize}[leftmargin=*]
+    \item Pagination 10 éléments ; tri par date d'émission décroissante.
+    \item Filtres : recherche (référence ou nom client), statut, plage de dates (\texttt{this\_month}, \texttt{last\_month}, \texttt{last\_90\_days}), tranche de montant (\texttt{under\_5000}, \texttt{5000\_15000}, \texttt{over\_15000}).
+    \item KPI : total TTC du mois, tendance, taux de conversion, devis expirant bientôt.
+    \item Pipeline visuel : brouillon / envoyé / accepté / refusé / expiré avec montants.
+    \item Alertes : devis expirant dans les 7 jours (top 3).
+\end{itemize}
+
+\subsection{Création et édition}
+
+\begin{itemize}[leftmargin=*]
+    \item \route{GET /devis/nouveau} — éditeur \texttt{Devis/Create.jsx}.
+    \item \route{POST /devis} — création brouillon avec numérotation auto \texttt{DEV-AAAA-NNNN} (\svc{ReferenceGeneratorService}).
+    \item \route{GET /devis/\{devis\}/edit} — édition si statut \texttt{draft} uniquement.
+    \item \route{PUT /devis/\{devis\}} — mise à jour brouillon ; recalcul TVA côté serveur.
+    \item \route{DELETE /devis/\{devis\}} — suppression si brouillon.
+\end{itemize}
+
+\subsection{Champs du devis}
+
+\begin{itemize}[leftmargin=*]
+    \item Client (\model{Tier}), titre projet, dates émission/validité, conditions de paiement.
+    \item Devise (\texttt{EUR}, \texttt{USD}, \texttt{GBP}, \texttt{CHF}) avec taux figé (\svc{ExchangeRateResolver}).
+    \item Type prestation : \texttt{service} ou \texttt{produit} (avec destination logistique et jours de stockage).
+    \item Options : signature en ligne (\texttt{online\_signature}), suivi d'ouverture (\texttt{open\_tracking}).
+    \item Lignes : article catalogue, quantité, prix HT, remise (\% ou fixe), TVA recalculée selon pays client.
+    \item Aperçu live des totaux HT/TVA/TTC côté React (\texttt{documentTotals.js}, \texttt{ligneAmounts.js}).
+\end{itemize}
+
+\subsection{Cycle de vie (machine à états)}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Transition} & \textbf{Route / méthode} & \textbf{Effet} \\
+\midrule
+\texttt{draft} $\rightarrow$ \texttt{sent} & \route{POST /devis/\{devis\}/send} & E-mail + PDF ; \texttt{open\_tracking=true} ; événement \texttt{SENT} \\
+\texttt{draft} $\rightarrow$ \texttt{sent} & \route{PATCH /devis/\{devis\}/sent} & Marquage manuel sans e-mail \\
+\texttt{sent} $\rightarrow$ \texttt{accepted} & \route{PATCH /devis/\{devis\}/accepted} & Événement \texttt{ACCEPTED} \\
+\texttt{sent} $\rightarrow$ \texttt{rejected} & \route{PATCH /devis/\{devis\}/rejected} & Événement \texttt{REJECTED} \\
+\texttt{accepted} $\rightarrow$ facture & \route{POST /devis/\{devis\}/convert} & Clone lignes ; \texttt{FAC-AAAA-NNNN} ; événement \texttt{CONVERTED} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{PDF et envoi e-mail}
+
+\begin{itemize}[leftmargin=*]
+    \item \route{GET /devis/\{devis\}/pdf} — génération inline DomPDF (\svc{DocumentPdfService}).
+    \item \route{POST /devis/\{devis\}/send} — \svc{DevisMailerService} : PDF en pièce jointe + pixel tracking dans le corps HTML (\texttt{emails/devis-sent.blade.php}).
+    \item Vérification : e-mail client obligatoire ; échec SMTP ne modifie pas le brouillon.
+\end{itemize}
+
+% ============================================================
+\section{Gestion des factures et avoirs}
+% ============================================================
+
+Routes préfixe \route{/factures} — contrôleur \ctrl{FactureController} :
+
+\subsection{Liste (\route{GET /factures})}
+
+Page \texttt{Factures/Index.jsx} :
+\begin{itemize}[leftmargin=*]
+    \item Factures \textbf{et} avoirs dans une vue unifiée.
+    \item Filtres identiques aux devis + filtre type document (\texttt{facture}/\texttt{avoir}).
+    \item KPI : total du mois, taux de recouvrement, encours, factures en retard (montant + count).
+    \item Pipeline : brouillon / envoyé / payé / annulé.
+    \item Top 3 factures en retard avec jours de retard et niveau d'urgence.
+    \item Actions contextuelles par ligne : envoyer, enregistrer paiement, générer avoir, PDF, éditer, supprimer.
+\end{itemize}
+
+\subsection{Création et édition}
+
+\begin{itemize}[leftmargin=*]
+    \item \route{GET /factures/nouveau} — éditeur \texttt{FinFlow/InvoiceCreate.jsx}.
+    \item \route{POST /factures} — création brouillon \texttt{FAC-AAAA-NNNN}.
+    \item \route{GET/PUT /factures/\{facture\}/edit|update} — modification si brouillon.
+    \item \route{DELETE /factures/\{facture\}} — suppression si brouillon.
+    \item Champs supplémentaires vs devis : escompte financier (\texttt{financial\_discount\_percent}, \texttt{financial\_discount\_days}).
+    \item Timeline d'audit (\texttt{DocumentTimeline.jsx}) — événements \model{DocumentEvent} affichés à l'édition.
+\end{itemize}
+
+\subsection{Envoi, PDF et paiement}
+
+\begin{itemize}[leftmargin=*]
+    \item \route{POST /factures/\{facture\}/send} — \svc{DocumentMailerService} ; passage \texttt{sent}.
+    \item \route{GET /factures/\{facture\}/pdf} — PDF personnalisé (logo, couleur marque).
+    \item \route{POST /factures/\{facture\}/payments} — enregistrement paiement avec :
+    \begin{itemize}
+        \item Méthodes : virement, CB, espèces, chèque (mappées vers \texttt{sepa}, \texttt{card}, \texttt{manual}).
+        \item Calcul escompte automatique (\svc{FinancialDiscount}) si paiement dans le délai.
+        \item Passage automatique \texttt{paid} si solde $\leq$ 0{,}01\,€.
+        \item Événement \texttt{PAID} dans l'audit trail.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Génération d'avoir}
+
+\begin{itemize}[leftmargin=*]
+    \item \route{POST /factures/\{facture\}/avoir} — réservé aux factures \texttt{sent} ou \texttt{paid}.
+    \item Crée un document \texttt{avoir} brouillon \texttt{AVO-AAAA-NNNN} lié par \texttt{parent\_id}.
+    \item Copie intégrale des lignes (snapshot prix/TVA).
+    \item Un seul avoir par facture ; événement \texttt{VOIDED} sur la facture source.
+\end{itemize}
+
+% ============================================================
+\section{Immutabilité et sécurité documentaire}
+% ============================================================
+
+Trait \ctrl{SecuresDocumentLifecycle} — appliqué à \ctrl{DevisController} et \ctrl{FactureController} :
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{canBeEdited()} — vrai uniquement si statut \texttt{draft} (devis, facture, avoir).
+    \item \texttt{rejectIfLocked()} — refuse toute modification post-envoi avec message flash.
+    \item \texttt{rejectImmutableFieldChanges()} — bloque changement de référence/type après brouillon.
+    \item \texttt{stripImmutableFields()} — ignore côté serveur : \texttt{reference}, \texttt{currency\_code}, \texttt{exchange\_rate}, etc.
+    \item \textbf{Pattern Snapshot} — prix HT, TVA et remises copiés dans \model{LigneDocument} à l'enregistrement ; indépendants du catalogue.
+\end{itemize}
+
+% ============================================================
+\section{Gestion des clients (\route{/clients})}
+% ============================================================
+
+Contrôleur \ctrl{ClientController} — page \texttt{FinFlow/Clients/Index.jsx} :
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Liste paginée} — 12 clients/page ; recherche nom/e-mail/adresse.
+    \item \feat{CRUD complet} — \route{POST}, \route{PUT /clients/\{client\}}, \route{DELETE}.
+    \item \feat{Champs} — nom, e-mail, adresse, code pays ISO (2 lettres), numéro TVA, type (\texttt{client} ou \texttt{prospect}).
+    \item \feat{TVA automatique} — le \texttt{country\_code} détermine le taux via \svc{TaxRateResolver} lors de la création de documents.
+    \item \feat{Protection suppression} — impossible si le client possède des documents.
+    \item \feat{Statistiques UI} — total clients, actifs, CA simulé, encours (indicateurs dérivés pour la démo UI).
+\end{itemize}
+
+% ============================================================
+\section{Catalogue produits et services (\route{/catalogue})}
+% ============================================================
+
+Contrôleur \ctrl{ArticleController} — page \texttt{FinFlow/Catalogue/Index.jsx} :
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Liste paginée} — 10 articles/page ; filtres recherche, catégorie, type.
+    \item \feat{Types d'articles} — \texttt{service}, \texttt{product}, \texttt{bundle}.
+    \item \feat{Champs} — SKU unique, désignation, description, catégorie, prix HT, type de prix (\texttt{year}, \texttt{fixed}, \texttt{hour}, \texttt{month}, \texttt{unit}).
+    \item \feat{Photo produit} — upload JPEG/PNG/WebP max 2 Mo ; stockage \texttt{storage/app/public/articles}.
+    \item \feat{CRUD} — création, mise à jour (avec suppression/remplacement image), suppression.
+    \item \feat{Protection suppression} — impossible si l'article est référencé dans des lignes de documents.
+    \item \feat{Export CSV} — \route{GET /catalogue/export} ; colonnes SKU, nom, type, catégorie, prix HT, unité.
+    \item \feat{Autocomplétion documents} — \svc{ArticleCatalog::forDocument()} alimente les éditeurs devis/factures.
+    \item \feat{Statistiques} — total SKU, ventes mensuelles, croissance, part bundles, graphique 6 mois.
+\end{itemize}
+
+% ============================================================
+\section{Suivi des paiements (\route{/paiements})}
+% ============================================================
+
+Contrôleur \ctrl{PaymentController} — page \texttt{FinFlow/Payments/Index.jsx} :
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Liste paginée} — recherche client ou référence facture.
+    \item \feat{Enregistrement manuel} — \route{POST /paiements} : client, facture optionnelle, type (\texttt{payment}/\texttt{refund}), montant, méthode (\texttt{sepa}, \texttt{card}, \texttt{direct\_debit}, \texttt{manual}), statut, date, notes.
+    \item \feat{Frais de transaction estimés} — taux : CB 1{,}2\,\%, prélèvement 0{,}8\,\%, SEPA 0{,}3\,\%.
+    \item \feat{Actions} — \route{PATCH /paiements/\{payment\}/success}, \route{PATCH /paiements/\{payment\}/retry}.
+    \item \feat{Synchronisation statut facture} — paiement réussi sur facture $\rightarrow$ statut \texttt{paid}.
+    \item \feat{Export CSV} — \route{GET /paiements/export}.
+    \item \feat{Statistiques trésorerie} — encaissements 30j, DSO moyen, impayés $>$ 30j, frais bancaires.
+    \item \feat{Graphiques} — encaissements 6 mois ; répartition par méthode de paiement (donut).
+    \item \feat{Alertes} — factures en retard $>$ 15j ; échecs de prélèvement.
+    \item \feat{Modal paiement} — composant \texttt{PaymentModal.jsx} pour saisie rapide depuis la liste factures.
+\end{itemize}
+
+% ============================================================
+\section{Paramètres entreprise (\route{/parametres})}
+% ============================================================
+
+Contrôleur \ctrl{ParametresController} — page \texttt{FinFlow/Settings/Index.jsx} :
+
+\subsection{Identité et branding (\svc{CompanySettingsService})}
+
+\begin{itemize}[leftmargin=*]
+    \item Nom entreprise, adresse, numéro d'immatriculation (SIRET), e-mail, téléphone.
+    \item Couleur de marque (\texttt{\#RRGGBB}) — appliquée aux PDF et à l'interface.
+    \item Logo — upload max 5 Mo ; suppression possible ; stocké et servi via \texttt{CompanyBrandLogo.jsx}.
+    \item Singleton \model{CompanySetting} (id=1) — partagé globalement via middleware \texttt{HandleInertiaRequests}.
+\end{itemize}
+
+\subsection{Destinations logistiques (\svc{DeliveryDestinationService})}
+
+\begin{itemize}[leftmargin=*]
+    \item Liste configurable : nom destination + frais par jour (\texttt{fee\_per\_day}).
+    \item Synchronisation atomique via \texttt{sync()} à la sauvegarde des paramètres.
+    \item Utilisées pour le calcul des frais de port sur documents \texttt{type\_prestation=produit}.
+    \item Formule : $\text{frais\_port} = \max(0, \text{jours\_stockage}) \times \text{fee\_per\_day}$.
+\end{itemize}
+
+\subsection{Informations affichées (lecture seule)}
+
+\begin{itemize}[leftmargin=*]
+    \item Configuration SMTP (mailer, host, port, expéditeur).
+    \item Grille des taux de TVA (\texttt{config/taxes.php}).
+    \item État intégration Groq (clé configurée, modèle utilisé).
+\end{itemize}
+
+% ============================================================
+\chapter{Moteur de calcul fiscal et financier}
+% ============================================================
+
+\section{TVA multi-pays (\svc{TaxRateResolver})}
+
+Taux configurés dans \texttt{config/taxes.php} :
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Pays} & \textbf{Taux TVA} \\
+\midrule
+FR & 20{,}0\,\% \\
+BE & 21{,}0\,\% \\
+DE & 19{,}0\,\% \\
+ES, IT, NL & 21--22\,\% \\
+CH & 8{,}1\,\% \\
+LU & 17{,}0\,\% \\
+PT & 23{,}0\,\% \\
+GB & 20{,}0\,\% \\
+Hors liste (US, MA\ldots) & 0{,}0\,\% (export) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Le serveur \textbf{recalcule} systématiquement la TVA dans \texttt{syncLignes()} — le formulaire ne fait pas foi.
+
+\section{Remises par ligne (\svc{LigneAmounts})}
+
+\begin{itemize}[leftmargin=*]
+    \item Remise en pourcentage (\texttt{percent}) — appliquée sur le montant HT de la ligne.
+    \item Remise fixe (\texttt{fixed}) — plafonnée au montant HT de la ligne (total jamais négatif).
+    \item Miroir JavaScript : \texttt{ligneAmounts.js} pour aperçu live ; PHP pour validation serveur.
+\end{itemize}
+
+\section{Multi-devises (\svc{ExchangeRateResolver})}
+
+Devises supportées (\texttt{config/currencies.php}) : EUR (1{,}0), USD (0{,}92), GBP (1{,}17), CHF (1{,}02).
+
+\begin{itemize}[leftmargin=*]
+    \item Taux figé à la création du document (\texttt{exchange\_rate} en base).
+    \item Conversion EUR pour agrégats dashboard via \svc{DocumentTotals::totalTtcInEur()}.
+    \item Taux conservé lors de la conversion devis $\rightarrow$ facture.
+\end{itemize}
+
+\section{Escompte financier (\svc{FinancialDiscount})}
+
+\begin{itemize}[leftmargin=*]
+    \item Paramètres document : \texttt{financial\_discount\_percent} et \texttt{financial\_discount\_days}.
+    \item À l'enregistrement du paiement : vérification du délai ; application automatique de la remise.
+    \item Montant escompte stocké sur \model{Payment} (\texttt{financial\_discount\_amount}).
+    \item Affichage du net à payer suggéré dans la liste des factures.
+\end{itemize}
+
+\section{Totaux document (\svc{DocumentTotals})}
+
+\begin{itemize}[leftmargin=*]
+    \item Agrégation lignes HT + remises + TVA + frais de port taxés au taux client.
+    \item Sous-requêtes SQL optimisées pour filtres montant et KPI (\texttt{lignesTtcInEurSql()}).
+    \item Soustraction des avoirs envoyés du CA mensuel.
+\end{itemize}
+
+% ============================================================
+\chapter{Traçabilité, PDF, e-mails et tracking}
+% ============================================================
+
+\section{Journal d'audit (\model{DocumentEvent})}
+
+Service \svc{DocumentEventRecorder} — table append-only \texttt{document\_events} :
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Type événement} & \textbf{Déclencheur} \\
+\midrule
+\texttt{CREATED} & Création document \\
+\texttt{SENT} & Envoi e-mail ou marquage envoyé \\
+\texttt{OPENED} & Pixel tracking (une seule fois) \\
+\texttt{ACCEPTED} / \texttt{REJECTED} & Décision sur devis \\
+\texttt{CONVERTED} & Conversion devis $\rightarrow$ facture \\
+\texttt{PAID} & Enregistrement paiement \\
+\texttt{VOIDED} & Génération d'avoir \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Composant UI \texttt{DocumentTimeline.jsx} — chronologie animée avec horodatage localisé en français.
+
+\section{Génération PDF (\svc{DocumentPdfService})}
+
+\begin{itemize}[leftmargin=*]
+    \item Template Blade \texttt{resources/views/pdf/facture.blade.php}.
+    \item Personnalisation : logo entreprise, couleur de marque, coordonnées, lignes, totaux, conditions.
+    \item Nom de fichier dynamique selon type et référence.
+    \item Rendu inline (affichage navigateur) ou pièce jointe e-mail.
+\end{itemize}
+
+\section{Envoi e-mail}
+
+\begin{itemize}[leftmargin=*]
+    \item \svc{DevisMailerService} — Mailable \texttt{DevisSentMail} ; vue \texttt{emails/devis-sent.blade.php}.
+    \item \svc{DocumentMailerService} — Mailable \texttt{DocumentSentMail} ; vue \texttt{emails/document-sent.blade.php}.
+    \item PDF attaché automatiquement ; sujet personnalisé avec référence document.
+\end{itemize}
+
+\section{Pixel de tracking (\ctrl{TrackingController})}
+
+\begin{itemize}[leftmargin=*]
+    \item Route publique \route{GET /tracking/\{document\}/pixel} (sans authentification).
+    \item Image PNG transparente 1$\times$1 encodée Base64 inline.
+    \item En-têtes anti-cache (\texttt{Cache-Control: no-cache, no-store}).
+    \item \texttt{recordOpenedOnce()} — un seul événement \texttt{OPENED} par document.
+    \item Actif pour factures ; pour devis si \texttt{open\_tracking=true}.
+\end{itemize}
+
+% ============================================================
+\chapter{Intelligence artificielle (Groq / Llama 3.3)}
+% ============================================================
+
+\section{Modules IA du projet}
+
+\begin{longtable}{@{}p{3.5cm}p{10.2cm}@{}}
+\toprule
+\textbf{Module} & \textbf{Rôle et données} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Module} & \textbf{Rôle et données} \\
+\midrule
+\endhead
+Landing chat & Assistant commercial public ; pas de données utilisateur ; \svc{LandingChatService}. \\
+Dashboard chat & Widget flottant ; contexte CFO ; \route{POST /dashboard/chat}. \\
+Copilote & Page dédiée \route{/copilote} ; contexte CFO \textbf{+} facturation ; \route{POST /copilote/chat}. \\
+Analyse facturation & Bouton « Analyser » ; agrégats anonymisés ; \route{POST /facturation/analyze}. \\
+Insight mensuel CFO & Génération auto au chargement dashboard ; persistance \model{AiInsight} ; \svc{AiInsightService}. \\
+Édition admin & \route{PATCH /admin/ai-insights/\{aiInsight\}} — l'admin peut corriger le contenu IA. \\
+\bottomrule
+\endlongtable}
+
+\section{Copilote financier (\route{/copilote})}
+
+\begin{itemize}[leftmargin=*]
+    \item Page \texttt{Copilot.jsx} — interface chat pleine page.
+    \item \svc{CopilotContextService} injecte à Groq :
+    \begin{itemize}
+        \item Identité client (nom, e-mail, statut abonnement).
+        \item Données \texttt{cfo\_digital} : KPI, alertes, historique mensuel.
+        \item Données \texttt{facturation} : CA encaissé, retards, devis en attente, encours, clients, catalogue, activité récente.
+        \item Flags \texttt{donnees\_disponibles} indiquant les sources renseignées.
+    \end{itemize}
+    \item Prompt système : réponses en français, markdown, 2--4 actions concrètes, pas d'invention de chiffres, pas de conseil fiscal/juridique.
+    \item Sidebar résumé : \texttt{buildUiSummary()} affiche les KPI clés sans appeler l'IA.
+    \item Indicateur \texttt{aiConfigured} si \texttt{GROQ\_API\_KEY} présente.
+\end{itemize}
+
+\section{Paramètres Groq}
+
+\begin{itemize}[leftmargin=*]
+    \item Variable \texttt{GROQ\_API\_KEY} — obligatoire pour toute fonctionnalité IA.
+    \item Modèle par défaut : \texttt{llama-3.3-70b-versatile}.
+    \item Température : 0{,}4 (copilote) à 0{,}6 (analyse financière).
+    \item Timeout : 45--60 secondes.
+    \item Option \texttt{GROQ\_VERIFY\_SSL=false} pour développement Windows/XAMPP.
+\end{itemize}
+
+% ============================================================
+\chapter{Administration plateforme}
+% ============================================================
+
+\section{Dashboard admin (\route{/admin})}
+
+Contrôleur \ctrl{AdminController} — page \texttt{Admin/Dashboard.jsx} :
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{Statistiques globales} — total utilisateurs, abonnements actifs/trial, MRR (somme \texttt{subscription\_amount}), revenu agrégé des \model{FinancialRecord}.
+    \item \feat{Liste utilisateurs} — nom, e-mail, rôle, statut Stripe, montant abonnement, date suspension, date inscription.
+    \item \feat{Journal d'audit admin} — 5 dernières actions (\model{AdminAuditLog}) : suspend, restore.
+    \item \feat{Actions utilisateur} — suspendre (\route{PATCH /admin/users/\{user\}/suspend}), restaurer (\route{PATCH /admin/users/\{user\}/restore}).
+    \item \feat{Protection} — un admin ne peut pas se suspendre lui-même.
+    \item \feat{Consultation dashboard utilisateur} — \route{GET /admin/users/\{user\}/dashboard} affiche le \texttt{Dashboard.jsx} de l'utilisateur cible avec bannière \texttt{viewedUser}.
+    \item \feat{Édition insight IA} — modification du contenu généré pour un utilisateur donné.
+\end{itemize}
+
+% ============================================================
+\chapter{Interface utilisateur et expérience}
+% ============================================================
+
+\section{Layouts et navigation}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{AppDashboardLayout.jsx} — sidebar navigation principale (Dashboard, Facturation, Copilote, Profil).
+    \item \texttt{FacturationLayout.jsx} — wrapper thème FinFlow sombre pour modules facturation.
+    \item \feat{Logo entreprise} — \texttt{CompanyBrandLogo.jsx} dynamique depuis paramètres.
+    \item \feat{Avatar utilisateur} — \texttt{UserAvatar.jsx}.
+    \item \feat{Messages flash} — \texttt{FlashMessages.jsx} pour succès/erreur.
+    \item \feat{Pages placeholder} — \texttt{FinFlow/Placeholder.jsx} pour sections « bientôt disponible » (\texttt{FinFlowComingSoon.jsx}).
+\end{itemize}
+
+\section{Composants dashboard FinFlow}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{DashboardHome.jsx}, \texttt{DashboardKpiCards.jsx} — cartes KPI avec sparklines.
+    \item \texttt{DonutChartCard.jsx} — graphique en anneau.
+    \item \texttt{KPICard.jsx} — carte indicateur réutilisable.
+    \item \texttt{FinFlowIcons.jsx} — iconographie cohérente.
+\end{itemize}
+
+\section{Données partagées Inertia (\texttt{HandleInertiaRequests})}
+
+Props globales injectées à chaque page pour utilisateurs connectés :
+\begin{itemize}[leftmargin=*]
+    \item \texttt{auth.user} — id, nom, e-mail, rôle, statut Stripe, suspension, \texttt{can\_access\_app}.
+    \item \texttt{tax\_rates}, \texttt{currencies} — configurations fiscales et devises.
+    \item \texttt{company} — paramètres entreprise (logo, couleur, coordonnées).
+    \item \texttt{delivery\_destinations} — destinations logistiques.
+    \item \texttt{flash.success}, \texttt{flash.error} — messages session.
+\end{itemize}
+
+\section{Design et animations}
+
+\begin{itemize}[leftmargin=*]
+    \item Thème sombre FinFlow — couleurs \texttt{finflow-bg}, \texttt{finflow-accent}, \texttt{finflow-teal}.
+    \item Glassmorphism — login hero panel (\texttt{backdrop-blur-md}, bordures \texttt{white/20}).
+    \item Framer Motion — animations d'entrée, hover, tap sur boutons et cartes.
+    \item Tailwind CSS — utilitaires responsive ; configuration \texttt{tailwind.config.js}.
+\end{itemize}
+
+% ============================================================
+\chapter{Modèle de données}
+% ============================================================
+
+\section{Entités principales}
+
+\begin{longtable}{@{}p{3.2cm}p{10.5cm}@{}}
+\toprule
+\textbf{Table / Modèle} & \textbf{Rôle et relations} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Table / Modèle} & \textbf{Rôle et relations} \\
+\midrule
+\endhead
+\texttt{users} & Comptes ; champs Stripe, rôle, suspension. \\
+\texttt{financial\_records} & Saisie mensuelle par utilisateur (CA, charges, marketing, clients). \\
+\texttt{ai\_insights} & Analyses IA mensuelles ; contenu généré + édité par admin. \\
+\texttt{tiers} & Clients/prospects ; \texttt{country\_code} pour TVA. \\
+\texttt{articles} & Catalogue ; SKU, prix, type, catégorie, image. \\
+\texttt{documents} & Entité centrale : devis, facture, avoir ; statuts, devise, escompte, prestation, parent\_id. \\
+\texttt{ligne\_documents} & Lignes comptables snapshotées. \\
+\texttt{document\_events} & Audit trail append-only. \\
+\texttt{payments} & Encaissements et remboursements liés aux documents. \\
+\texttt{company\_settings} & Singleton identité entreprise. \\
+\texttt{delivery\_destinations} & Destinations logistiques configurables. \\
+\texttt{admin\_audit\_logs} & Traçabilité actions admin. \\
+\texttt{processed\_stripe\_events} & Idempotence webhooks Stripe. \\
+\bottomrule
+\endlongtable}
+
+\section{Isolation multi-utilisateur}
+
+Trait \model{BelongsToAuthenticatedUser} — les entités facturation (tiers, documents, articles, paiements) sont filtrées par \texttt{user\_id} de l'utilisateur connecté (migration \texttt{2026\_06\_23\_100000}).
+
+% ============================================================
+\chapter{Sécurité et conformité}
+% ============================================================
+
+\begin{itemize}[leftmargin=*]
+    \item \feat{CSRF} — tokens vérifiés sur tous les POST/PATCH/PUT/DELETE (sauf webhook Stripe).
+    \item \feat{SQL Injection} — Eloquent ORM et requêtes préparées exclusivement.
+    \item \feat{XSS} — échappement React par défaut ; pas de \texttt{dangerouslySetInnerHTML} sur contenu utilisateur.
+    \item \feat{Mots de passe} — Bcrypt ; jamais stockés en clair.
+    \item \feat{Sessions} — Laravel session driver ; régénération à la connexion.
+    \item \feat{Anonymisation IA} — analyses facturation sans données nominatives.
+    \item \feat{Immutabilité documents} — intégrité post-envoi pour conformité facturation.
+    \item \feat{Transactions atomiques} — opérations multi-tables encapsulées dans \texttt{DB::transaction()}.
+    \item \feat{Validation stricte} — règles Laravel sur tous les contrôleurs ; tailles max sur champs texte.
+    \item \feat{Rate limiting} — protection endpoints IA et webhooks.
+\end{itemize}
+
+% ============================================================
+\chapter{Numérotation et références}
+% ============================================================
+
+Service \svc{ReferenceGeneratorService} :
+
+\begin{itemize}[leftmargin=*]
+    \item Formats : \texttt{DEV-2026-0001}, \texttt{FAC-2026-0042}, \texttt{AVO-2026-0003}.
+    \item Incrément annuel par type de document.
+    \item Verrouillage pessimiste \texttt{lockForUpdate()} — pas de collision en concurrence.
+    \item Unicité garantie en base sur \texttt{reference}.
+\end{itemize}
+
+% ============================================================
+\chapter{Récapitulatif des routes API et pages}
+% ============================================================
+
+\section{Cartographie complète des routes métier}
+
+\begingroup
+\footnotesize
+\begin{longtable}{@{}p{4.8cm}p{2.2cm}p{7.5cm}@{}}
+\toprule
+\textbf{Route} & \textbf{Méthode} & \textbf{Fonctionnalité} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Route} & \textbf{Méthode} & \textbf{Fonctionnalité} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+/ & GET & Landing ou redirection \\
+/landing/chat & POST & Chat IA landing \\
+/login, /register & GET/POST & Auth Breeze \\
+/auth/google/* & GET & OAuth Google \\
+/dashboard & GET & Dashboard CFO \\
+/dashboard/chat & POST & Chat IA dashboard \\
+/saisie-mensuelle & GET & Formulaire saisie \\
+/financial-records & POST & Enregistrer saisie \\
+/copilote & GET & Page copilote \\
+/copilote/chat & POST & Chat copilote \\
+/facturation & GET & Dashboard facturation \\
+/facturation/analyze & POST & Analyse IA facturation \\
+/devis/* & CRUD+ & Cycle devis complet \\
+/factures/* & CRUD+ & Cycle factures/avoirs \\
+/clients & CRUD & Gestion clients \\
+/catalogue/* & CRUD+ & Catalogue + export \\
+/paiements/* & CRUD+ & Paiements + export \\
+/parametres & GET/PUT & Paramètres entreprise \\
+/tracking/\{doc\}/pixel & GET & Pixel tracking \\
+/billing/* & GET/POST & Stripe checkout \\
+/stripe/webhook & POST & Webhooks Stripe \\
+/admin & GET & Dashboard admin \\
+/admin/users/* & PATCH/GET & Gestion utilisateurs \\
+/profile & GET/PATCH/DELETE & Profil utilisateur \\
+/mes-enregistrements-financiers & GET & API JSON records \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+% ============================================================
+\chapter{Fonctionnalités transverses et utilitaires}
+% ============================================================
+
+\section{Couche Support (\texttt{app/Support/})}
+
+\begin{itemize}[leftmargin=*]
+    \item \svc{LigneAmounts} — calculs ligne (base HT, remise, TVA, TTC).
+    \item \svc{DocumentTotals} — agrégation document + conversion EUR.
+    \item \svc{TaxRateResolver} — résolution taux TVA par pays.
+    \item \svc{ExchangeRateResolver} — devises et taux figés.
+    \item \svc{FinancialDiscount} — escompte et quote paiement.
+    \item \svc{DocumentPrestation} — normalisation service/produit + frais port.
+    \item \svc{ArticleCatalog} — articles disponibles pour éditeur document.
+\end{itemize}
+
+\section{Utilitaires JavaScript (\texttt{resources/js/utils/})}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{documentTotals.js}, \texttt{ligneAmounts.js} — miroir calculs PHP.
+    \item \texttt{taxRates.js}, \texttt{currency.js} — résolution côté client.
+    \item \texttt{financialDiscount.js} — simulation escompte.
+    \item \texttt{company.js}, \texttt{user.js} — helpers affichage.
+    \item Hook \texttt{useClientVatRate.js} — TVA dynamique selon client sélectionné.
+\end{itemize}
+
+\section{Seeders et données de démonstration}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{FacturationDemoSeeder} — jeu de données facturation pour démo/soutenance.
+    \item \texttt{DatabaseSeeder} — orchestration des seeders.
+\end{itemize}
+
+\section{Health check}
+
+\route{GET /up} — endpoint de santé Laravel (load balancer / monitoring).
+
+% ============================================================
+\chapter*{Synthèse quantitative}
+\addcontentsline{toc}{chapter}{Synthèse quantitative}
+% ============================================================
+
+\begin{table}[h]
+\centering
+\caption{Inventaire chiffré du périmètre fonctionnel}
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Élément} & \textbf{Quantité} \\
+\midrule
+Modules métier majeurs & 2 (CFO Digital + FinFlow Facturation) \\
+Contrôleurs HTTP dédiés & 20+ \\
+Services métier & 12+ \\
+Modèles Eloquent métier & 12+ \\
+Pages React (Inertia) & 25+ \\
+Routes web métier & 50+ \\
+Types de documents & 3 (devis, facture, avoir) \\
+Statuts document devis & 6 \\
+Statuts document facture & 4 \\
+Devises supportées & 4 \\
+Pays TVA configurés & 10 + défaut export \\
+Modules IA (Groq) & 5 \\
+Middleware de sécurité & 4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{1em}
+\noindent\textbf{Note :} Ce catalogue reflète l'état du code source au moment de l'analyse (juillet 2026). Certaines valeurs UI (statistiques clients, graphiques paiements/catalogue) utilisent des données de fallback de démonstration lorsque la base est vide — comportement visible dans les contrôleurs \ctrl{ClientController}, \ctrl{PaymentController} et \ctrl{ArticleController}.
+
+% ============================================================
+\appendix
+% ============================================================
+
+\chapter{Inventaire exhaustif des contrôleurs HTTP}
+\label{annexe:controllers}
+
+\begingroup
+\footnotesize
+\begin{longtable}{@{}p{3.8cm}p{5.5cm}p{5.2cm}@{}}
+\toprule
+\textbf{Contrôleur} & \textbf{Méthodes publiques} & \textbf{Fonctionnalité couverte} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Contrôleur} & \textbf{Méthodes publiques} & \textbf{Fonctionnalité couverte} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+AdminController & \texttt{\_\_invoke} & Stats admin, liste users, audit logs \\
+AdminUserController & \texttt{suspend}, \texttt{restore} & Suspension / réactivation compte \\
+AdminUserDashboardController & \texttt{\_\_invoke} & Vue dashboard d'un utilisateur \\
+AdminAiInsightController & \texttt{update} & Édition contenu insight IA \\
+ArticleController & \texttt{index}, \texttt{store}, \texttt{update}, \texttt{destroy}, \texttt{export} & Catalogue produits \\
+ClientController & \texttt{index}, \texttt{store}, \texttt{update}, \texttt{destroy} & CRM clients/prospects \\
+CopilotController & \texttt{\_\_invoke} & Page copilote IA \\
+DashboardController & \texttt{\_\_invoke} & Dashboard CFO mensuel \\
+DashboardChatController & \texttt{\_\_invoke} & API chat dashboard/copilote \\
+DevisController & 11 méthodes & Cycle devis complet \\
+FactureController & 10 méthodes & Factures, avoirs, paiements \\
+FacturationDashboardController & \texttt{index}, \texttt{analyze} & Dashboard + analyse IA \\
+FinancialRecordController & \texttt{store} & Saisie mensuelle CFO \\
+LandingChatController & \texttt{\_\_invoke} & Chat IA landing \\
+ParametresController & \texttt{index}, \texttt{update} & Paramètres entreprise \\
+PaymentController & \texttt{index}, \texttt{store}, \texttt{markSuccess}, \texttt{retry}, \texttt{export} & Trésorerie \\
+ProfileController & \texttt{edit}, \texttt{update}, \texttt{destroy} & Profil utilisateur \\
+StripeCheckoutController & \texttt{store}, \texttt{success}, \texttt{cancel} & Abonnement Stripe \\
+StripeWebhookController & \texttt{handle} & Webhooks Stripe \\
+TrackingController & \texttt{pixel} & Pixel tracking e-mail \\
+AuthenticatedSessionController & \texttt{create}, \texttt{store}, \texttt{destroy} & Login / logout \\
+RegisteredUserController & \texttt{create}, \texttt{store} & Inscription \\
+GoogleAuthController & \texttt{redirect}, \texttt{callback} & OAuth Google \\
+PasswordResetLinkController & \texttt{create}, \texttt{store} & Mot de passe oublié \\
+NewPasswordController & \texttt{create}, \texttt{store} & Réinitialisation MDP \\
+VerifyEmailController & \texttt{\_\_invoke} & Vérification e-mail \\
+EmailVerificationPromptController & \texttt{\_\_invoke} & Notice vérification \\
+EmailVerificationNotificationController & \texttt{store} & Renvoi e-mail vérif. \\
+ConfirmablePasswordController & \texttt{show}, \texttt{store} & Confirmation MDP \\
+PasswordController & \texttt{update} & Changement MDP \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\chapter{Inventaire exhaustif des services métier}
+\label{annexe:services}
+
+\begin{description}[leftmargin=4.5cm, style=nextline, font=\ttfamily\small]
+    \item[CompanySettingsService] Lecture/écriture singleton \model{CompanySetting} ; upload logo ; props frontend.
+    \item[DeliveryDestinationService] CRUD destinations logistiques ; \texttt{sync()} ; \texttt{forFrontend()}.
+    \item[ReferenceGeneratorService] Numérotation \texttt{DEV/FAC/AVO-AAAA-NNNN} avec \texttt{lockForUpdate()}.
+    \item[DocumentPdfService] Rendu DomPDF ; nom fichier ; template facture/devis/avoir.
+    \item[DevisMailerService] Envoi e-mail devis + PDF + pixel tracking.
+    \item[DocumentMailerService] Envoi e-mail facture + PDF personnalisé.
+    \item[DocumentEventRecorder] Enregistrement événements audit ; \texttt{recordOpenedOnce()}.
+    \item[FinancialService] KPI CFO ; marge ; CAC ; LTV ; alertes automatiques.
+    \item[FinancialAnalysisService] Appel Groq pour analyse facturation anonymisée.
+    \item[GroqApiService] Client HTTP Groq pour insights dashboard CFO.
+    \item[AiInsightService] Génération/cache insight mensuel ; payload dashboard ; statuts.
+    \item[CopilotContextService] Contexte JSON complet pour copilote ; résumé UI sidebar.
+    \item[DashboardChatService] Chat copilote/dashboard avec contexte utilisateur.
+    \item[LandingChatService] Chat commercial landing sans données client.
+\end{description}
+
+\chapter{Inventaire exhaustif des modèles Eloquent}
+\label{annexe:models}
+
+\begingroup
+\footnotesize
+\begin{longtable}{@{}p{2.8cm}p{5.5cm}p{5.2cm}@{}}
+\toprule
+\textbf{Modèle} & \textbf{Champs / constantes clés} & \textbf{Relations} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Modèle} & \textbf{Champs / constantes clés} & \textbf{Relations} \\
+\midrule
+\endhead
+User & name, email, password, google\_id, role, stripe\_*, suspended\_at & financialRecords \\
+FinancialRecord & month, revenue, charges, marketing\_budget, clients\_count & belongsTo User \\
+AiInsight & month, generated\_content, edited\_content, edited\_by\_admin\_id & belongsTo User \\
+Tier & name, email, address, country\_code, vat\_number, type, user\_id & documents, payments \\
+Article & sku, designation, price\_ht, type, category, image\_path, user\_id & lignes \\
+Document & type, reference, status, currency, exchange\_rate, prestation, escompte, parent\_id & tier, lignes, payments, events, parent, children \\
+LigneDocument & quantity, unit\_price\_ht, discount\_*, vat\_rate (snapshot) & document, article \\
+DocumentEvent & event\_type, description & document \\
+Payment & amount, kind, method, status, financial\_discount\_amount, transaction\_fee & tier, document \\
+CompanySetting & name, address, logo\_path, brand\_color, registration\_number & singleton \\
+DeliveryDestination & name, fee\_per\_day, sort\_order & — \\
+AdminAuditLog & admin\_id, target\_user\_id, action & admin, targetUser \\
+ProcessedStripeEvent & stripe\_event\_id, type, processed\_at & — \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\chapter{Inventaire exhaustif de l'interface React}
+\label{annexe:frontend}
+
+\section{Pages Inertia (\texttt{resources/js/Pages/})}
+
+\begingroup
+\footnotesize
+\begin{longtable}{@{}p{4.5cm}p{9.2cm}@{}}
+\toprule
+\textbf{Fichier page} & \textbf{Fonctionnalités UI} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Fichier page} & \textbf{Fonctionnalités UI} \\
+\midrule
+\endhead
+Welcome.jsx & Landing marketing, graphiques, CTA, chat widget \\
+Dashboard.jsx & KPI CFO, graphique évolution, insight IA, chat widget \\
+FinancialEntry.jsx & Formulaire saisie mensuelle \\
+Copilot.jsx & Interface chat copilote pleine page \\
+Facturation/Dashboard.jsx & KPI facturation, graphiques, analyse IA, activité \\
+Devis/Index.jsx & Liste devis, filtres, pipeline, KPI, actions cycle de vie \\
+Devis/Create.jsx & Éditeur devis, lignes, aperçu totaux live \\
+Factures/Index.jsx & Liste factures/avoirs, paiement modal, pipeline \\
+FinFlow/InvoiceCreate.jsx & Éditeur facture/avoir, timeline audit \\
+FinFlow/Clients/Index.jsx & CRM, modal création/édition client \\
+FinFlow/Catalogue/Index.jsx & Catalogue, upload photo, filtres, stats \\
+FinFlow/Payments/Index.jsx & Trésorerie, graphiques, alertes, export \\
+FinFlow/Settings/Index.jsx & Branding, destinations, infos mail/TVA/Groq \\
+FinFlow/Placeholder.jsx & Page module à venir \\
+Admin/Dashboard.jsx & Panel admin, users, suspend, MRR \\
+Auth/Login.jsx & Connexion split-screen premium \\
+Auth/Register.jsx & Inscription \\
+Auth/ForgotPassword.jsx & Demande reset MDP \\
+Auth/ResetPassword.jsx & Nouveau MDP \\
+Auth/VerifyEmail.jsx & Vérification e-mail \\
+Auth/ConfirmPassword.jsx & Confirmation MDP \\
+Profile/Edit.jsx & Profil, MDP, suppression compte \\
+TestLanding.jsx, TestDashboard.jsx, etc. & Pages sandbox développement \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\section{Composants réutilisables (\texttt{resources/js/Components/})}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{FinFlow/} — \texttt{DashboardHome}, \texttt{DashboardKpiCards}, \texttt{KPICard}, \texttt{DonutChartCard}, \texttt{FinancialAnalysisCard}, \texttt{DocumentTimeline}, \texttt{PaymentModal}, \texttt{FlashMessages}, \texttt{CompanyBrandLogo}, \texttt{UserAvatar}, \texttt{FinFlowIcons}, \texttt{FinFlowComingSoon}.
+    \item \textbf{Landing/} — \texttt{LandingChatWidget}.
+    \item \textbf{Dashboard/} — \texttt{DashboardChatWidget}.
+    \item \textbf{ui/} — \texttt{finflow-logo}, \texttt{login-hero-panel}, \texttt{login-with-listed-provider}.
+    \item \textbf{Breeze/} — \texttt{PrimaryButton}, \texttt{SecondaryButton}, \texttt{DangerButton}, \texttt{TextInput}, \texttt{InputLabel}, \texttt{InputError}, \texttt{Checkbox}, \texttt{Modal}, \texttt{Dropdown}, \texttt{NavLink}.
+\end{itemize}
+
+\section{Layouts}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{AppDashboardLayout.jsx} — navigation principale, sidebar, header.
+    \item \texttt{FacturationLayout.jsx} — wrapper thème FinFlow pour modules facturation.
+    \item \texttt{Auth/AuthShell.jsx} — coquille pages authentification.
+\end{itemize}
+
+\chapter{Inventaire exhaustif des routes}
+\label{annexe:routes}
+
+\section{Routes \texttt{routes/web.php}}
+
+\begingroup
+\scriptsize
+\begin{longtable}{@{}p{5.8cm}p{1cm}p{2.2cm}p{5.5cm}@{}}
+\toprule
+\textbf{URI} & \textbf{Verbe} & \textbf{Middleware} & \textbf{Nom / action} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{URI} & \textbf{Verbe} & \textbf{Middleware} & \textbf{Nom / action} \\
+\midrule
+\endhead
+/ & GET & — & Welcome ou redirect \\
+/test & GET & — & TestLanding \\
+/landing/chat & POST & throttle & landing.chat \\
+/dashboard & GET & auth, verified, active.subscription & dashboard \\
+/dashboard/chat & POST & auth, verified, active.subscription, throttle & dashboard.chat \\
+/copilote & GET & auth, verified, active.subscription & copilot.index \\
+/copilote/chat & POST & auth, verified, active.subscription, throttle & copilot.chat \\
+/saisie-mensuelle & GET & auth, verified, active.subscription & financial-entry.index \\
+/financial-records & POST & auth, verified, active.subscription & financial-records.store \\
+/admin & GET & auth, verified, admin & admin.dashboard \\
+/admin/users/\{user\}/dashboard & GET & auth, verified, admin & admin.users.dashboard \\
+/admin/users/\{user\}/suspend & PATCH & auth, verified, admin & admin.users.suspend \\
+/admin/users/\{user\}/restore & PATCH & auth, verified, admin & admin.users.restore \\
+/admin/ai-insights/\{aiInsight\} & PATCH & auth, verified, admin & admin.ai-insights.update \\
+/billing/checkout & POST & auth & billing.checkout \\
+/billing/checkout/start & GET & auth & billing.checkout.start \\
+/billing/success & GET & auth & billing.success \\
+/billing/cancel & GET & auth & billing.cancel \\
+/stripe/webhook & POST & throttle & stripe.webhook \\
+/tracking/\{document\}/pixel & GET & — & tracking.pixel \\
+/facturation & GET & auth, verified, active.subscription & facturation.dashboard \\
+/facturation/analyze & POST & auth, verified, active.subscription & facturation.analyze \\
+/factures/* & CRUD+ & auth, verified, active.subscription & factures.* \\
+/devis/* & CRUD+ & auth, verified, active.subscription & devis.* \\
+/clients & CRUD & auth, verified, active.subscription & clients.* \\
+/catalogue/* & CRUD+ & auth, verified, active.subscription & catalogue.* \\
+/paiements/* & CRUD+ & auth, verified, active.subscription & paiements.* \\
+/parametres & GET/PUT & auth, verified, active.subscription & parametres.* \\
+/profile & GET/PATCH/DELETE & auth & profile.* \\
+/mes-enregistrements-financiers & GET & auth, active.subscription & API JSON \\
+/dashboard\_test/* & GET & auth, verified & pages test \\
+/up & GET & — & health check Laravel \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\section{Routes \texttt{routes/auth.php}}
+
+\begingroup
+\scriptsize
+\begin{longtable}{@{}p{5.5cm}p{1cm}p{6.8cm}@{}}
+\toprule
+\textbf{URI} & \textbf{Verbe} & \textbf{Nom} \\
+\midrule
+/register & GET/POST & register \\
+/login & GET/POST & login \\
+/auth/google/redirect & GET & auth.google.redirect \\
+/auth/google/callback & GET & auth.google.callback \\
+/forgot-password & GET/POST & password.request / password.email \\
+/reset-password/\{token\} & GET/POST & password.reset / password.store \\
+/verify-email & GET & verification.notice \\
+/verify-email/\{id\}/\{hash\} & GET & verification.verify \\
+/email/verification-notification & POST & verification.send \\
+/confirm-password & GET/POST & password.confirm \\
+/password & PUT & password.update \\
+/logout & POST & logout \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\chapter{Schéma base de données — migrations}
+\label{annexe:migrations}
+
+\begingroup
+\footnotesize
+\begin{longtable}{@{}p{5.8cm}p{8.7cm}@{}}
+\toprule
+\textbf{Migration} & \textbf{Apport fonctionnel} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Migration} & \textbf{Apport fonctionnel} \\
+\midrule
+\endhead
+create\_users\_table & Comptes utilisateurs Breeze \\
+add\_access\_and\_stripe\_fields & Rôle, Stripe customer/subscription/status \\
+add\_subscription\_price\_fields & Montant et devise abonnement \\
+add\_google\_auth\_fields & OAuth Google (google\_id, avatar) \\
+create\_financial\_records & Saisie mensuelle CFO \\
+create\_ai\_insights & Persistance analyses IA mensuelles \\
+create\_admin\_audit\_logs & Journal actions administrateur \\
+create\_processed\_stripe\_events & Idempotence webhooks \\
+create\_tiers\_table & Clients et prospects \\
+add\_country\_code\_to\_tiers & TVA multi-pays \\
+create\_articles\_table & Catalogue produits/services \\
+add\_catalog\_fields & SKU, catégorie, type prix \\
+add\_is\_active & Activation articles \\
+remove\_vat\_rate\_from\_articles & TVA déléguée au client/document \\
+add\_image\_path & Photos catalogue \\
+create\_documents\_table & Entité centrale devis/facture/avoir \\
+add\_quote\_statuses & Statuts devis (accepted, rejected, expired) \\
+add\_devis\_fields & Titre projet, tracking, conditions paiement \\
+add\_currency & Multi-devises + taux figé \\
+create\_ligne\_documents & Lignes comptables snapshot \\
+add\_discount & Remises par ligne (\%, fixe) \\
+create\_document\_events & Audit trail append-only \\
+add\_prestation\_fields & Service/produit, destination, frais port \\
+add\_financial\_discount & Escompte financier sur documents \\
+create\_payments & Encaissements et remboursements \\
+add\_financial\_discount\_amount & Escompte appliqué sur paiement \\
+rename\_refused\_to\_rejected & Harmonisation statut devis \\
+create\_company\_settings & Identité entreprise singleton \\
+create\_delivery\_destinations & Destinations logistiques \\
+add\_user\_id\_to\_facturation\_tables & Isolation multi-utilisateur SaaS \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\chapter{Vues Blade, e-mails et PDF}
+\label{annexe:views}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{resources/views/app.blade.php} — template racine Inertia (Vite, meta, CSRF).
+    \item \texttt{resources/views/pdf/facture.blade.php} — template PDF DomPDF (devis, facture, avoir).
+    \item \texttt{resources/views/emails/devis-sent.blade.php} — corps e-mail devis + pixel 1$\times$1.
+    \item \texttt{resources/views/emails/document-sent.blade.php} — corps e-mail facture + pixel.
+\end{itemize}
+
+\chapter{Configuration métier (\texttt{config/})}
+\label{annexe:config}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{config/taxes.php} — grille TVA par pays ISO (FR 20\,\%, BE 21\,\%, default 0\,\%).
+    \item \texttt{config/currencies.php} — EUR, USD, GBP, CHF avec taux EUR figés.
+    \item \texttt{config/company.php} — constantes entreprise par défaut.
+    \item \texttt{config/services.php} — clés Stripe, Groq (api\_key, model, verify\_ssl).
+    \item \texttt{config/mail.php} — SMTP, expéditeur, test\_recipient.
+\end{itemize}
+
+\chapter{Tests automatisés}
+\label{annexe:tests}
+
+\section{Suite PHPUnit présente dans le dépôt}
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{tests/Unit/FinancialServiceTest.php} — marge, CAC, LTV, alertes.
+    \item \texttt{tests/Feature/Auth/*} — login, register, Google, reset MDP, vérification e-mail.
+    \item \texttt{tests/Feature/ProfileTest.php} — mise à jour et suppression profil.
+\end{itemize}
+
+\section{Tests métier documentés (rapport PFA)}
+
+Le rapport \texttt{app\_facturation/main.tex} référence 42 tests et 131 assertions incluant : \texttt{DocumentTotalsTest}, \texttt{DevisConversionTest}, \texttt{FactureVatTest}, \texttt{FactureFinancialDiscountTest}, \texttt{AvoirGenerationTest}, \texttt{ClientStoreTest}, \texttt{DashboardAnalyzeTest}.
+
+\chapter{Index fonctionnel alphabétique}
+\label{annexe:index}
+
+\begingroup
+\footnotesize
+\begin{longtable}{@{}p{3.5cm}p{10.2cm}@{}}
+\toprule
+\textbf{Terme} & \textbf{Localisation dans le projet} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Terme} & \textbf{Localisation dans le projet} \\
+\midrule
+\endhead
+Abonnement Stripe & \ctrl{StripeCheckoutController}, \ctrl{StripeWebhookController} \\
+Alertes CFO & \svc{FinancialService::buildAlert} \\
+Analyse IA facturation & \route{POST /facturation/analyze}, \svc{FinancialAnalysisService} \\
+Avoir & \ctrl{FactureController::generateAvoir} \\
+CAC / LTV & \svc{FinancialService} \\
+Catalogue & \route{/catalogue}, \ctrl{ArticleController} \\
+Chat copilote & \route{/copilote}, \svc{DashboardChatService} \\
+Clients & \route{/clients}, \ctrl{ClientController} \\
+Conversion devis & \ctrl{DevisController::convertToFacture} \\
+CSRF & \texttt{bootstrap/app.php} \\
+Devis & \route{/devis}, \ctrl{DevisController} \\
+Escompte financier & \svc{FinancialDiscount} \\
+Export CSV & \ctrl{ArticleController::export}, \ctrl{PaymentController::export} \\
+Factures & \route{/factures}, \ctrl{FactureController} \\
+Google OAuth & \ctrl{GoogleAuthController} \\
+Immutabilité document & \ctrl{SecuresDocumentLifecycle} \\
+Insight IA mensuel & \svc{AiInsightService}, \model{AiInsight} \\
+Landing page & \texttt{Welcome.jsx} \\
+Multi-devises & \svc{ExchangeRateResolver}, \texttt{config/currencies.php} \\
+Multi-tenant (partiel) & \model{BelongsToAuthenticatedUser}, migration user\_id \\
+Numérotation auto & \svc{ReferenceGeneratorService} \\
+Paiements & \route{/paiements}, \ctrl{PaymentController} \\
+Panel admin & \route{/admin}, \ctrl{AdminController} \\
+Paramètres entreprise & \route{/parametres}, \svc{CompanySettingsService} \\
+PDF & \svc{DocumentPdfService} \\
+Pixel tracking & \ctrl{TrackingController} \\
+Profil & \route{/profile}, \ctrl{ProfileController} \\
+Remises ligne & \svc{LigneAmounts} \\
+Saisie mensuelle & \route{/saisie-mensuelle}, \model{FinancialRecord} \\
+Snapshot prix/TVA & \model{LigneDocument}, \texttt{syncLignes()} \\
+Suspension user & \ctrl{AdminUserController::suspend} \\
+Timeline audit & \model{DocumentEvent}, \texttt{DocumentTimeline.jsx} \\
+TVA multi-pays & \svc{TaxRateResolver}, \texttt{config/taxes.php} \\
+Webhook Stripe & \route{POST /stripe/webhook} \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\end{document}

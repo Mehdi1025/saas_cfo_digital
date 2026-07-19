@@ -1,0 +1,666 @@
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{ragged2e}
+\usepackage{amssymb}
+
+\definecolor{finflowdark}{RGB}{20,25,40}
+\definecolor{finflowteal}{RGB}{20,140,130}
+\definecolor{finflowgray}{RGB}{90,90,90}
+\definecolor{statok}{RGB}{22,120,80}
+\definecolor{statpartial}{RGB}{180,120,20}
+\definecolor{statno}{RGB}{160,40,40}
+\definecolor{rowalt}{RGB}{248,250,252}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=finflowteal,
+    citecolor=finflowteal,
+    urlcolor=finflowteal,
+    pdftitle={État de recette — FinFlow},
+    pdfauthor={Équipe FinFlow},
+    pdfsubject={Audit d'avancement vs checklist de recette complète}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{finflowgray}{État de recette — FinFlow}}
+\fancyhead[R]{\small\textcolor{finflowgray}{\thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+    {\normalfont\Huge\bfseries\color{finflowdark}}
+    {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+    {\normalfont\Large\bfseries\color{finflowteal}}
+    {\thesection}{1em}{}
+\titleformat{\subsection}
+    {\normalfont\large\bfseries\color{finflowdark}}
+    {\thesubsection}{1em}{}
+
+\newcommand{\route}[1]{\texttt{\small #1}}
+\newcommand{\ctrl}[1]{\texttt{\small #1}}
+\newcommand{\svc}[1]{\texttt{\small #1}}
+\newcommand{\model}[1]{\texttt{\small #1}}
+
+\newcommand{\statimpl}{\textcolor{statok}{\textbf{Implémenté}}}
+\newcommand{\statpart}{\textcolor{statpartial}{\textbf{Partiel}}}
+\newcommand{\statmiss}{\textcolor{statno}{\textbf{Manquant}}}
+
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+\begin{document}
+
+% ── Page de garde ──────────────────────────────────────────────────
+\begin{titlepage}
+    \centering
+    \vspace*{1.2cm}
+    {\Huge\bfseries\color{finflowdark} État de recette FinFlow\par}
+    \vspace{0.6cm}
+    {\LARGE Avancement vs checklist complète de tests\par}
+    \vspace{0.4cm}
+    {\large Tests fonctionnels, techniques et réglementaires — Juillet 2026\par}
+    \vspace{1.2cm}
+    \rule{0.75\textwidth}{1pt}
+    \vspace{1cm}
+    \begin{tabular}{>{\bfseries}r p{9.2cm}}
+        Projet & FinFlow / Mini CFO Digital \\
+        Référence & Checklist de recette complète (document LaTeX associé) \\
+        Périmètre & Analyse du code source du dépôt \route{saas\_cfo\_digital} \\
+        Date d'analyse & 4 juillet 2026 \\
+        Méthode & Revue statique du code + recoupement fonctionnel (sans recette manuelle intégrale) \\
+    \end{tabular}
+    \vfill
+    \begin{minipage}{0.88\textwidth}
+        \small
+        \textbf{Légende des statuts}
+        \begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+            \item[\statimpl] Comportement présent et testable ; recette manuelle/automatisée encore à exécuter.
+            \item[\statpart] Fondations en place, incomplet, non validé en conditions réelles ou écarts UX/sécurité.
+            \item[\statmiss] Absent du dépôt ou non exploitable.
+        \end{itemize}
+    \end{minipage}
+\end{titlepage}
+
+\tableofcontents
+\cleardoublepage
+
+% ============================================================
+\chapter{Synthèse exécutive}
+% ============================================================
+
+\section{Vue d'ensemble par domaine}
+
+\begin{table}[htbp]
+    \centering
+    \renewcommand{\arraystretch}{1.25}
+    \begin{tabular}{@{}L{5.2cm}C{2.2cm}L{6.8cm}@{}}
+        \toprule
+        \textbf{Domaine} & \textbf{Avancement} & \textbf{Commentaire} \\
+        \midrule
+        Produit métier (clients, devis, factures, paiements) & 75--80\,\% & Cœur fonctionnel solide ; quelques trous (expiration devis, etc.) \\
+        Pilotage CFO + IA & 70\,\% & Présent ; dépend de Groq et de la saisie mensuelle \\
+        Conformité réforme \textbf{[BLOQUANT]} & 35--45\,\% & Architecture posée ; pas prêt production PA \\
+        Recette / QA automatisée & 10\,\% & 13 tests PHP, surtout auth ; quasi rien sur la facturation \\
+        Mise en vente France (2026) & Non prêt & Chapitre~5 de la checklist largement incomplet \\
+        \bottomrule
+    \end{tabular}
+    \caption{Estimation globale d'avancement (juillet 2026)}
+\end{table}
+
+\section{Conclusion en une phrase}
+
+FinFlow est \textbf{utilisable comme outil de facturation SaaS}, mais \textbf{n'est pas encore une solution conforme commercialisable} pour la réforme de la facturation électronique en France. L'écart principal avec la checklist porte sur le chapitre~\emph{Conformité réglementaire} et sur l'absence de recette formalisée.
+
+\section{Matrice de lecture rapide}
+
+\begin{itemize}[leftmargin=1.3em, itemsep=4pt]
+    \item \textbf{Usage interne / démo commerciale} : acceptable avec réserves (PA simulée, archivage absent).
+    \item \textbf{Commercialisation France avec promesse conformité} : \textbf{bloqué} tant que le chapitre~5 n'est pas validé.
+    \item \textbf{Priorité immédiate} : brancher une PA sandbox, recette bout en bout, archivage légal, tests automatisés.
+\end{itemize}
+
+% ============================================================
+\chapter{Authentification, compte et abonnement}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 85\,\% — majoritairement implémenté.
+
+\section{Inscription et connexion}
+
+\renewcommand{\arraystretch}{1.2}
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Inscription nom, e-mail, mot de passe & \statimpl & \ctrl{RegisteredUserController}, \route{Register.jsx} \\
+    Mot de passe haché en base & \statimpl & Laravel Breeze / \model{User} \\
+    Connexion : message générique si échec & \statimpl & \ctrl{AuthenticatedSessionController} \\
+    OAuth Google & \statimpl & \ctrl{GoogleAuthController}, \route{AuthShell.jsx} \\
+    Déconnexion détruit la session & \statimpl & \route{logout} \\
+    Notice vérification e-mail & \statimpl & \model{User} implements \texttt{MustVerifyEmail} \\
+    Lien de vérification signé & \statimpl & \ctrl{VerifyEmailController} \\
+    Throttle renvoi e-mail vérification & \statimpl & \route{verification.send} \\
+    Reset mot de passe bout en bout & \statimpl & \ctrl{PasswordResetLinkController}, \ctrl{NewPasswordController} \\
+    Confirmation mot de passe (actions sensibles) & \statimpl & \ctrl{ConfirmPasswordController} \\
+    \bottomrule
+\end{longtable}
+
+\section{Profil utilisateur}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Modification nom / e-mail + revalidation & \statimpl & \ctrl{ProfileController}, \route{UpdateProfileInformationForm.jsx} \\
+    Suppression compte avec confirmation MDP & \statimpl & \route{DeleteUserForm.jsx} \\
+    RGPD : suppression / anonymisation & \statpart & Suppression compte ; politique formelle non documentée \\
+    Avatar Google non éditable en profil & \statpart & \model{User.avatar} stocké, UI absente \\
+    \bottomrule
+\end{longtable}
+
+\section{Abonnement SaaS}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Checkout Stripe + redirection & \statimpl & \ctrl{StripeCheckoutController}, \route{Welcome.jsx} \\
+    Webhook idempotent & \statpart & \ctrl{StripeWebhookController}, \model{ProcessedStripeEvent} ; pas de tests auto \\
+    Statut abonnement bloque / débloque accès & \statimpl & \ctrl{EnsureUserHasActiveSubscription} \\
+    Compte suspendu : accès bloqué & \statimpl & \model{User.suspended\_at}, middleware \\
+    Annulation abonnement + message landing & \statpart & Webhook \texttt{subscription.deleted} ; pas de billing portal UI \\
+    Événements \texttt{invoice.payment\_failed} & \statmiss & Non géré \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Clients, catalogue et données de base}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 80\,\%.
+
+\section{Gestion des clients}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    CRUD complet (nom, e-mail, adresse, pays, TVA) & \statimpl & \ctrl{ClientController}, \route{FinFlow/Clients/Index.jsx} \\
+    TVA selon code pays & \statimpl & \svc{TaxRateResolver}, hook \route{useClientVatRate.js} \\
+    Modification sans impact docs émis & \statimpl & Snapshot lignes à la création \\
+    Suppression bloquée si documents & \statimpl & \ctrl{ClientController::destroy} \\
+    Recherche et filtres & \statimpl & UI clients \\
+    CA / encours client réels & \statpart & Données partiellement synthétiques en liste \\
+    \bottomrule
+\end{longtable}
+
+\section{Catalogue produits et services}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    SKU unique, doublon rejeté & \statimpl & \ctrl{ArticleController}, \model{Article} \\
+    Types bien / service / mixte & \statimpl & \model{Article.operation\_category} \\
+    Upload photo (taille, formats) & \statimpl & Validation image \\
+    Suppression si référencé & \statpart & À valider manuellement en recette \\
+    Export CSV catalogue & \statimpl & Route export catalogue \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Devis}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 75\,\%.
+
+\section{Cycle de vie}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Référence unique & \statimpl & \svc{ReferenceGeneratorService} \\
+    Brouillon modifiable ; envoyé immuable & \statimpl & \ctrl{DevisController}, trait \ctrl{SecuresDocumentLifecycle} \\
+    Envoi e-mail + PDF & \statimpl & \svc{DevisMailerService} \\
+    Pixel tracking (une seule ouverture) & \statimpl & \ctrl{TrackingController}, \svc{DocumentEventRecorder} \\
+    Accepté / refusé journalisé & \statimpl & \model{DocumentEvent} \\
+    Conversion devis $\rightarrow$ facture (snapshot) & \statimpl & \ctrl{DevisController} \\
+    Expiration automatique après validité & \statmiss & Statut \texttt{expired} en base ; pas de job \\
+    Suppression brouillon uniquement & \statimpl & Règles lifecycle \\
+    Signature en ligne & \statmiss & Champ stocké, non branché \\
+    \bottomrule
+\end{longtable}
+
+\section{Calculs}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    HT / TVA / TTC recalculés serveur & \statimpl & \svc{DocumentTotals}, \route{documentTotals.js} \\
+    Remise pourcentage sur HT ligne & \statimpl & \svc{LigneAmounts} \\
+    Remise fixe : total ligne $\geq 0$ & \statimpl & Validation côté serveur \\
+    Devise : taux figé à la création & \statimpl & \svc{ExchangeRateResolver} \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Factures et avoirs}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 80\,\%.
+
+\section{Cycle de vie et immutabilité}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Référence séquentielle unique & \statimpl & \svc{ReferenceGeneratorService} \\
+    Immutabilité post-envoi & \statimpl & \ctrl{SecuresDocumentLifecycle} \\
+    Champs immuables protégés API & \statpart & Serveur OK ; audit complet requis \\
+    Paiement partiel : statut + solde & \statimpl & \ctrl{PaymentController} \\
+    Solde $\leq$ 0{,}01\,\€ $\rightarrow$ payée & \statpart & Logique présente ; recette chiffrée à faire \\
+    Avoir sur facture envoyée / payée & \statimpl & \ctrl{FactureController} \\
+    Un seul avoir par facture & \statimpl & Contrôle \texttt{has\_avoir} \\
+    Snapshot lignes indépendant & \statimpl & Copie à la génération \\
+    Journalisation transitions & \statimpl & \svc{DocumentEventRecorder} \\
+    Annulation facture (\texttt{cancelled}) & \statmiss & Statut modèle ; pas d'endpoint \\
+    \bottomrule
+\end{longtable}
+
+\section{Escompte financier}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Escompte si paiement dans le délai & \statimpl & \svc{FinancialDiscount} \\
+    Pas d'escompte après délai & \statimpl & \route{PaymentModal.jsx} \\
+    Montant escompte sur paiement & \statimpl & \model{Payment.financial\_discount\_amount} \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Paiements et trésorerie}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 75\,\%.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Paiement manuel (virement, CB, espèces, chèque) & \statimpl & \ctrl{PaymentController}, \route{PaymentModal.jsx} \\
+    Prélèvement & \statpart & Méthode listée ; flux SEPA limité \\
+    Frais transaction estimés & \statpart & À confirmer selon config métier \\
+    Sync statut facture & \statimpl & \ctrl{PaymentController} \\
+    Échec prélèvement : alerte & \statpart & \route{Payments/Index.jsx} alertes \\
+    Export CSV paiements & \statimpl & \ctrl{PaymentController} \\
+    KPI trésorerie (DSO, impayés, encaissements) & \statimpl & \ctrl{FacturationDashboardController} \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Conformité réglementaire — facturation électronique}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ \textbf{35--45\,\%}.\\
+\textbf{Statut global : \textcolor{statno}{BLOQUANT pour mise en vente conforme.}}
+
+\section{Format Factur-X}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    PDF/A-3 + XML CII embarqué & \statpart & \svc{FacturXAssembler}, \svc{FacturXCiiGenerator} ; PDF download + PA, pas e-mail \\
+    PDF lisible humain & \statimpl & \svc{DocumentPdfService} \\
+    XML extractible / parsable tiers & \statpart & Dépendance \texttt{atgp/factur-x} ; recette outil externe \\
+    Validation Schematron BR-FR & \statmiss & XSD partiel ; pas de Schematron automatisé \\
+    \bottomrule
+\end{longtable}
+
+\section{Mentions obligatoires}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Catégorie opération (bien / service / mixte) & \statimpl & Migration + UI devis/facture \\
+    TVA sur les débits & \statimpl & \model{Document.vat\_on\_debits} \\
+    Adresse livraison si différente & \statimpl & Champs document / tiers \\
+    SIRET + TVA émetteur et client & \statimpl & \model{CompanySetting}, \model{Tier} \\
+    Blocage envoi si mention manquante & \statimpl & \svc{InvoiceComplianceValidator}, \ctrl{FactureController::send} \\
+    Tests unitaires validateur & \statimpl & \route{tests/Unit/InvoiceComplianceValidatorTest.php} \\
+    \bottomrule
+\end{longtable}
+
+\section{Intégration Plateforme Agréée (PA)}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Sandbox PA bout en bout & \statmiss & \svc{RestPaApiClient} : endpoints placeholder \\
+    Transmission facture test & \statpart & \ctrl{TransmitInvoiceToPaJob} ; jamais validé PA réelle \\
+    Réception facture fournisseur & \statpart & \ctrl{PaWebhookController}, \route{FacturesFournisseurs/Index.jsx} \\
+    Sync statuts CDAR & \statpart & Webhook + badge ; \texttt{checkInvoiceStatus} inutilisé \\
+    Coupure PA : file / retry & \statpart & Queue Laravel ; pas de backoff dédié \\
+    Webhooks idempotents & \statpart & Signature \texttt{X-PA-Signature} ; recette rejeu à faire \\
+    Mandat + activation service & \statimpl & \route{ModalMandatFacturation.jsx}, \ctrl{ParametresController} \\
+    Gating : PA si service inactif & \statimpl & \ctrl{TransmitInvoiceToPaJob} (early return) \\
+    Client simulé dev & \statimpl & \svc{GenericPaApiClient} (non bindé par défaut) \\
+    \bottomrule
+\end{longtable}
+
+\section{E-reporting}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    B2C hors périmètre FE classique & \statpart & \svc{EReportingService} \\
+    Agrégation période / régime TVA & \statpart & Commande \route{finflow:process-ereporting} \\
+    Transmission e-reporting PA & \statpart & \svc{RestPaApiClient::submitEreporting} ; non testé \\
+    Marquage \texttt{ereported\_at} & \statimpl & Migration documents / payments \\
+    \bottomrule
+\end{longtable}
+
+\section{Archivage légal}
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Archivage auto à création / émission & \statmiss & PDF généré à la volée \\
+    Intégrité après modif paramètres & \statmiss & Pas de coffre-fort immuable \\
+    Conservation 10 ans & \statmiss & Aucune politique de rétention \\
+    Restitution identique document ancien & \statmiss & Non implémenté \\
+    \bottomrule
+\end{longtable}
+
+\section{Bilan chapitre conformité}
+
+\noindent\textbf{Aucune case \emph{[BLOQUANT RÉFORME]} du chapitre~5 n'est cochable en recette réelle à ce stade.}
+
+% ============================================================
+\chapter{TVA, devises et calculs financiers}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 85\,\%.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Grille TVA pays (\route{config/taxes.php}) & \statimpl & Partagée Inertia \\
+    Recalcul serveur (jamais confiance client) & \statimpl & Contrôleurs + services \\
+    Frais de port (jours $\times$ tarif) & \statimpl & \svc{DeliveryDestinationService} \\
+    TTC EUR documents multi-devise & \statimpl & \svc{ExchangeRateResolver} \\
+    Avoirs soustraits du CA dashboard & \statimpl & \ctrl{FacturationDashboardController} \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{PDF, e-mails et tracking}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 70\,\%.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Logo + couleur marque PDF & \statimpl & \svc{CompanySettingsService}, vue \route{pdf/facture.blade.php} \\
+    Nom fichier PDF cohérent & \statimpl & \ctrl{FactureController::pdf} \\
+    E-mail + PDF + HTML & \statimpl & \svc{DocumentMailerService}, templates Blade \\
+    Factur-X en pièce jointe e-mail & \statmiss & PJ = PDF visuel classique \\
+    Échec SMTP ne change pas statut & \statpart & À valider en recette SMTP réelle \\
+    Pixel tracking 1$\times$1 anti-cache & \statimpl & \ctrl{TrackingController} \\
+    Timeline événements UI & \statpart & \route{DocumentTimeline.jsx} peu branché \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Mini CFO — pilotage financier}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 75\,\%.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Saisie mensuelle upsert & \statimpl & \ctrl{FinancialRecordController} \\
+    Formules marge, CAC, LTV & \statimpl & \svc{FinancialService} ; test unitaire partiel \\
+    Alertes automatiques & \statimpl & \route{Dashboard.jsx} \\
+    Graphique CA / charges & \statimpl & Dashboard CFO \\
+    Insight IA mensuel éditable admin & \statimpl & \svc{AiInsightService}, \ctrl{AdminAiInsightController} \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Intelligence artificielle}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 70\,\% (nécessite \texttt{GROQ\_API\_KEY}).
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Chat landing sans données utilisateur & \statimpl & \svc{LandingChatService} \\
+    Chat dashboard / copilote contextualisé & \statimpl & \svc{DashboardChatService}, \svc{CopilotContextService} \\
+    Analyse financière anonymisée & \statpart & \svc{FinancialAnalysisService} ; audit RGPD à formaliser \\
+    Rate limiting chat IA & \statimpl & Throttle routes chat \\
+    Absence clé API gérée proprement & \statimpl & Messages d'erreur config \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Administration}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 60\,\%.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Stats admin (users, MRR, abonnements) & \statimpl & \ctrl{AdminController} \\
+    Suspension / restauration & \statimpl & \ctrl{AdminUserController} \\
+    Admin ne se suspend pas lui-même & \statpart & À vérifier en recette \\
+    Journal audit admin & \statimpl & \model{AdminAuditLog} \\
+    Vue dashboard utilisateur cible & \statimpl & \ctrl{AdminUserDashboardController} \\
+    Gestion abonnements / billing admin & \statmiss & Absente \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Sécurité}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 65\,\%.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Routes : auth + verified + abonnement & \statimpl & \route{routes/web.php}, middleware \\
+    Isolation multi-tenant & \statpart & \model{BelongsToAuthenticatedUser} ; documents via \model{Tier} \\
+    CSRF (except. webhooks documentées) & \statimpl & \route{bootstrap/app.php} \\
+    Injection SQL recherche & \statpart & Eloquent ; pentest recommandé \\
+    XSS champs texte & \statpart & React échappe ; recette manuelle \\
+    Rate limiting chat + webhooks & \statpart & Pas sur tout le CRUD facturation \\
+    Pixel tracking public sans auth & \statpart & \route{/tracking/\{document\}/pixel} \\
+    Régénération session à connexion & \statimpl & Laravel standard \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Interface et expérience utilisateur}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 80\,\%.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Fichiers / remarques} \\
+    \midrule
+    \endhead
+    Navigation cohérente modules & \statimpl & \route{AppDashboardLayout.jsx}, \route{FacturationLayout.jsx} \\
+    Messages flash succès / erreur & \statimpl & \route{FlashMessages.jsx} \\
+    Formulaires longs : pas de perte saisie & \statimpl & Inertia \texttt{useForm} \\
+    Responsive mobile & \statimpl & Tailwind breakpoints \\
+    Données Inertia partagées & \statimpl & \ctrl{HandleInertiaRequests} (\texttt{company}, TVA, devises) \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Tests de bout en bout (scénarios complets)}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 50\,\% en code, 0\,\% en recette documentée.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Scénario checklist} & \textbf{Statut} & \textbf{Remarques} \\
+    \midrule
+    \endhead
+    Client $\rightarrow$ devis $\rightarrow$ facture $\rightarrow$ paiement & \statpart & Code complet ; pas de test E2E auto \\
+    Avoir + CA recalculé & \statpart & Code complet ; recette manuelle \\
+    Réception PA $\rightarrow$ boîte fournisseurs & \statpart & Webhook simulable \\
+    Multi-devise + dashboard EUR & \statpart & À valider chiffré \\
+    Essai $\rightarrow$ blocage $\rightarrow$ paiement & \statpart & Stripe + middleware \\
+    Conformité $\rightarrow$ PA $\rightarrow$ CDAR & \statmiss & Bloqué sans PA réelle \\
+    Suite Playwright / Dusk & \statmiss & Absente \\
+    \bottomrule
+\end{longtable}
+
+\section{Couverture tests automatisés actuelle}
+
+\begin{table}[htbp]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{@{}L{6cm}L{8.5cm}@{}}
+        \toprule
+        \textbf{Fichier de tests} & \textbf{Périmètre} \\
+        \midrule
+        \route{tests/Feature/Auth/*} & Inscription, login, Google, e-mail, MDP \\
+        \route{tests/Feature/ProfileTest.php} & Profil \\
+        \route{tests/Unit/FinancialServiceTest.php} & Formules CFO \\
+        \route{tests/Unit/InvoiceComplianceValidatorTest.php} & Validateur BR-FR (3 tests) \\
+        \textbf{Absents} & Facturation, PA, e-reporting, paiements, PDF, webhooks \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ============================================================
+\chapter{Validation finale avant mise en vente}
+% ============================================================
+
+\textbf{Avancement chapitre :} environ 5--10\,\%.
+
+\begin{longtable}{@{}L{7.8cm}C{2.4cm}L{4.4cm}@{}}
+    \toprule
+    \textbf{Item checklist} & \textbf{Statut} & \textbf{Remarques} \\
+    \midrule
+    \endhead
+    Toutes cases \textbf{[BLOQUANT RÉFORME]} cochées & \statmiss & Chapitre~5 incomplet \\
+    Test de charge & \statmiss & Non réalisé \\
+    Backup / restore BDD testés & \statmiss & Non documenté \\
+    Plan mode dégradé PA & \statmiss & Non documenté \\
+    CGU/CGV validées juridiquement & \statmiss & Hors dépôt code \\
+    Documentation utilisateur & \statmiss & Guide démarrage absent \\
+    \bottomrule
+\end{longtable}
+
+% ============================================================
+\chapter{Plan de rattrapage recommandé}
+% ============================================================
+
+\section{Priorités par ordre décroissant}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=6pt]
+    \item \textbf{Brancher une PA sandbox} (JeFacture, Cegedim, etc.) et aligner \svc{RestPaApiClient} sur la doc Swagger/Postman du prestataire.
+    \item \textbf{Recette PA} : émission facture, webhooks statut, réception fournisseur, rejeu idempotent.
+    \item \textbf{Factur-X dans les e-mails} + validation Schematron BR-FR automatisée en CI.
+    \item \textbf{Archivage légal} : stockage immuable, rétention 10 ans, restitution byte-identique.
+    \item \textbf{Tests automatisés} : compliance, PA (mock + intégration), scénarios E2E facturation.
+    \item \textbf{Finitions produit} : expiration auto devis, retry/backoff job PA, timeline UI, durcissement sécurité (tracking, rate limit).
+\end{enumerate}
+
+\section{Feuille de route indicative}
+
+\begin{table}[htbp]
+    \centering
+    \renewcommand{\arraystretch}{1.25}
+    \begin{tabular}{@{}C{1.2cm}L{5.5cm}L{7.5cm}@{}}
+        \toprule
+        \textbf{Sprint} & \textbf{Objectif} & \textbf{Impact checklist} \\
+        \midrule
+        S1 & PA sandbox + recette transmission & Ch.~5 PA (partiel $\rightarrow$ impl.) \\
+        S2 & Webhooks CDAR + polling + UI timeline & Ch.~5 sync statuts \\
+        S3 & Factur-X mail + Schematron CI & Ch.~5 Factur-X \\
+        S4 & Archivage 10 ans & Ch.~5 archivage \\
+        S5 & Tests Feature + E2E + charge & Ch.~13--14 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Plan indicatif 5 sprints (ajuster selon ressources)}
+\end{table}
+
+\section{Variables d'environnement critiques}
+
+\begin{verbatim}
+PA_API_URL=
+PA_API_KEY=
+PA_WEBHOOK_SECRET=
+GROQ_API_KEY=
+STRIPE_KEY / STRIPE_SECRET / STRIPE_WEBHOOK_SECRET
+QUEUE_CONNECTION=redis   # recommandé pour TransmitInvoiceToPaJob
+\end{verbatim}
+
+\vfill
+\noindent\rule{\textwidth}{0.4pt}\\[0.5em]
+\small\textcolor{finflowgray}{Document généré pour le projet FinFlow — état au 4 juillet 2026.\\
+À mettre à jour après chaque sprint de conformité ou campagne de recette.}
+
+\end{document}

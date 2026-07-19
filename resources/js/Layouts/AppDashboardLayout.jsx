@@ -74,6 +74,107 @@ function IconBell({ className }) {
     );
 }
 
+function IconSettings({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden>
+            <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M10 3v1.5M10 15.5V17M3 10h1.5M15.5 10H17M5.05 5.05l1.06 1.06M13.89 13.89l1.06 1.06M5.05 14.95l1.06-1.06M13.89 6.11l1.06-1.06" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+function IconFile({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden>
+            <path d="M6 3.5h5.5L15 7v9.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M11.5 3.5V7H15" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+    );
+}
+
+function IconFilePlus({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden>
+            <path d="M6 3.5h5.5L15 7v9.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M10 9.5v4M8 11.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+function IconUsers({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden>
+            <circle cx="7.5" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M3.5 16c.5-2.2 2-3.5 4-3.5s3.5 1.3 4 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="13.5" cy="7.5" r="2" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M12 14.5c1.2-.2 2.4.5 3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+function IconCube({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden>
+            <path d="M10 3.5 16 7v6l-6 3.5L4 13V7l6-3.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M10 10 16 7M10 10V16.5M10 10 4 7" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+    );
+}
+
+function IconInbox({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden>
+            <path
+                d="M3.5 5.5A2 2 0 0 1 5.5 3.5h9A2 2 0 0 1 16.5 5.5V14.5A2 2 0 0 1 14.5 16.5H5.5A2 2 0 0 1 3.5 14.5V5.5Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+            />
+            <path d="M3.5 8.5h3l1 2h5l1-2h3" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+function IconBanknotes({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden>
+            <rect x="2.5" y="5.5" width="15" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="10" cy="10" r="2" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+    );
+}
+
+function IconChart({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden>
+            <path d="M4 15V9M8 15V6M12 15v-4M16 15V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+function NavSectionLabel({ children }) {
+    return (
+        <p className="mb-2 mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 first:mt-0">
+            {children}
+        </p>
+    );
+}
+
+function pathMatches(path, href, exact = false) {
+    if (exact) {
+        return path === href;
+    }
+
+    return path === href || path.startsWith(`${href}/`);
+}
+
+function IconSparkles({ className }) {
+    return (
+        <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+            <path d="M9.2 12.5a1.2 1.2 0 0 0-1-1.04l-3.7-.95a.3.3 0 0 1 0-.58l3.7-.95a1.2 1.2 0 0 0 1-1.04l.95-3.7a.3.3 0 0 1 .58 0l.95 3.7a1.2 1.2 0 0 0 1 1.04l3.7.95a.3.3 0 0 1 0 .58l-3.7.95a1.2 1.2 0 0 0-1 1.04l-.95 3.7a.3.3 0 0 1-.58 0l-.95-3.7Z" />
+        </svg>
+    );
+}
+
 function IconMenu({ className }) {
     return (
         <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -90,34 +191,72 @@ function IconClose({ className }) {
     );
 }
 
-function SidebarContent({ navItems, onNavigate }) {
+function SidebarContent({ navSections, onNavigate }) {
     return (
         <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
             <div className="border-b border-white/5 px-5 pb-5 pt-6">
                 <div className="flex items-center gap-3">
                     <LogoIcon />
                     <span className="truncate text-xl font-display font-bold tracking-tight text-white">
-                        Mini CFO
+                        Copifi
                     </span>
                 </div>
             </div>
 
-            <nav className="flex flex-1 flex-col gap-1.5 px-3 py-5">
-                {navItems.map((item) => {
-                    const Icon = item.icon;
+            <nav className="flex flex-1 flex-col overflow-y-auto px-3 py-5">
+                {navSections.map((section) => (
+                    <div key={section.label}>
+                        <NavSectionLabel>{section.label}</NavSectionLabel>
+                        <div className="flex flex-col gap-1.5">
+                            {section.items.map((item) => {
+                                const Icon = item.icon;
+                                const [itemPath, itemHash] = item.href.split('#');
+                                const isHashLink = Boolean(itemHash);
 
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={navItemClass(item.active)}
-                            onClick={onNavigate}
-                        >
-                            <Icon className={navIconClass(item.active)} />
-                            {item.label}
-                        </Link>
-                    );
-                })}
+                                const handleHashClick = (event) => {
+                                    onNavigate?.();
+                                    const currentPath = (window.location.pathname || '/').replace(/\/$/, '') || '/';
+                                    const normalizedItemPath = (itemPath || '/').replace(/\/$/, '') || '/';
+
+                                    if (currentPath === normalizedItemPath) {
+                                        event.preventDefault();
+                                        const target = document.getElementById(itemHash);
+                                        if (target) {
+                                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            window.history.replaceState(null, '', item.href);
+                                        }
+                                    }
+                                };
+
+                                if (isHashLink) {
+                                    return (
+                                        <a
+                                            key={item.href}
+                                            href={item.href}
+                                            className={navItemClass(item.active)}
+                                            onClick={handleHashClick}
+                                        >
+                                            <Icon className={navIconClass(item.active)} />
+                                            {item.label}
+                                        </a>
+                                    );
+                                }
+
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={navItemClass(item.active)}
+                                        onClick={onNavigate}
+                                    >
+                                        <Icon className={navIconClass(item.active)} />
+                                        {item.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
             </nav>
         </div>
     );
@@ -135,15 +274,46 @@ export default function AppDashboardLayout({ children, title, badge }) {
     const isAdmin = userRole === 'admin';
     const headerBadge = badge ?? (isAdmin ? 'Espace admin' : 'Abonnement : actif');
 
-    const navItems = isAdmin
+    const navSections = isAdmin
         ? [
-              { href: '/admin', label: 'Admin', active: path === '/admin', icon: IconGrid },
-              { href: '/profile', label: 'Profil', active: path === '/profile', icon: IconUser },
+              {
+                  label: 'Administration',
+                  items: [
+                      { href: '/admin', label: 'Admin', active: path === '/admin', icon: IconGrid },
+                      { href: '/profile', label: 'Profil', active: path === '/profile', icon: IconUser },
+                  ],
+              },
           ]
         : [
-              { href: '/dashboard', label: 'Tableau de bord', active: path === '/dashboard', icon: IconGrid },
-              { href: '/saisie-mensuelle', label: 'Saisie mensuelle', active: path === '/saisie-mensuelle', icon: IconClipboard },
-              { href: '/profile', label: 'Profil', active: path === '/profile', icon: IconUser },
+              {
+                  label: 'Pilotage',
+                  items: [
+                      { href: '/dashboard', label: 'Tableau de bord', active: path === '/dashboard', icon: IconGrid },
+                      { href: '/copilote', label: 'Copilote IA', active: path === '/copilote', icon: IconSparkles },
+                      { href: '/saisie-mensuelle', label: 'Saisie mensuelle', active: path === '/saisie-mensuelle', icon: IconClipboard },
+                  ],
+              },
+              {
+                  label: 'Facturation',
+                  items: [
+                      { href: '/facturation', label: 'Vue facturation', active: path === '/facturation', icon: IconChart },
+                      { href: '/factures', label: 'Liste des factures', active: pathMatches(path, '/factures', true) || (path.startsWith('/factures/') && path !== '/factures/nouveau'), icon: IconFile },
+                      { href: '/factures/nouveau', label: 'Création de facture', active: path === '/factures/nouveau', icon: IconFilePlus },
+                      { href: '/devis', label: 'Liste des devis', active: pathMatches(path, '/devis', true) || (path.startsWith('/devis/') && path !== '/devis/nouveau'), icon: IconClipboard },
+                      { href: '/devis/nouveau', label: 'Création de devis', active: path === '/devis/nouveau', icon: IconFilePlus },
+                      { href: '/achats/factures-fournisseurs', label: 'Factures fournisseurs', active: pathMatches(path, '/achats/factures-fournisseurs'), icon: IconInbox },
+                      { href: '/clients', label: 'Gestion des clients', active: pathMatches(path, '/clients'), icon: IconUsers },
+                      { href: '/catalogue', label: 'Catalogue produits', active: pathMatches(path, '/catalogue'), icon: IconCube },
+                      { href: '/paiements', label: 'Suivi des paiements', active: pathMatches(path, '/paiements'), icon: IconBanknotes },
+                      { href: '/parametres', label: 'Paramètres', active: path === '/parametres', icon: IconSettings },
+                  ],
+              },
+              {
+                  label: 'Compte',
+                  items: [
+                      { href: '/profile', label: 'Profil', active: path === '/profile', icon: IconUser },
+                  ],
+              },
           ];
 
     return (
@@ -168,7 +338,7 @@ export default function AppDashboardLayout({ children, title, badge }) {
                             <IconClose className="h-5 w-5" />
                         </button>
                         <SidebarContent
-                            navItems={navItems}
+                            navSections={navSections}
                             onNavigate={() => setIsMobileMenuOpen(false)}
                         />
                     </aside>
@@ -176,7 +346,7 @@ export default function AppDashboardLayout({ children, title, badge }) {
             )}
 
             <aside className="relative hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-white/5 bg-[radial-gradient(ellipse_at_top_left,_rgba(17,83,77,0.4)_0%,_#050505_72%)] lg:flex">
-                <SidebarContent navItems={navItems} />
+                <SidebarContent navSections={navSections} />
             </aside>
 
             <div className="relative flex min-w-0 flex-1 flex-col">
@@ -241,14 +411,6 @@ export default function AppDashboardLayout({ children, title, badge }) {
                 </header>
 
                 <main className="relative flex-1 overflow-y-auto bg-obsidian p-8">
-                    <div
-                        className="pointer-events-none absolute inset-0 overflow-hidden"
-                        aria-hidden
-                        style={{
-                            background:
-                                'radial-gradient(circle at 0% 0%, rgba(17, 83, 77, 0.22) 0%, transparent 38%), radial-gradient(ellipse 90% 70% at 0% 0%, rgba(17, 83, 77, 0.38) 0%, transparent 55%)',
-                        }}
-                    />
                     <div className="relative z-[1]">{children}</div>
                 </main>
             </div>

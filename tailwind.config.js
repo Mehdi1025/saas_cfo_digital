@@ -11,18 +11,35 @@ export default {
 
     theme: {
         extend: {
-            fontFamily: {
-                /** Inter : corps, données, UI — chargée via Bunny dans `app.blade.php`. */
-                sans: ['Inter', 'sans-serif'],
-                /** PP Neue Montreal : titres — fichiers locaux + `@font-face` requis (voir doc équipe). */
-                display: ['Syne', 'Inter', 'sans-serif'],
-            },
             colors: {
                 obsidian: '#09090B',
                 neonBlue: '#00F0FF',
                 neonMint: '#00FF9D',
                 glass: 'rgba(255, 255, 255, 0.03)',
                 glassBorder: 'rgba(255, 255, 255, 0.08)',
+                finflow: {
+                    bg: '#0b1120',
+                    sidebar: '#151d2c',
+                    surface: '#1e293b',
+                    border: '#334155',
+                    text: '#f8fafc',
+                    muted: '#94a3b8',
+                    accent: '#3b82f6',
+                    teal: '#6ee7b7',
+                    success: '#10b981',
+                    warning: '#f59e0b',
+                    danger: '#ef4444',
+                },
+            },
+            boxShadow: {
+                'finflow-glow': '0 0 20px rgba(59, 130, 246, 0.15)',
+            },
+            fontFamily: {
+                /** Inter : corps, données, UI — chargée via Bunny dans `app.blade.php`. */
+                sans: ['Inter', 'sans-serif'],
+                /** PP Neue Montreal : titres — fichiers locaux + `@font-face` requis (voir doc équipe). */
+                display: ['Syne', 'Inter', 'sans-serif'],
+                finflow: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
             },
             backgroundImage: {
                 'neon-gradient':

@@ -117,6 +117,8 @@ class DatabaseSeeder extends Seeder
             )
             ->create();
 
+        $this->call(FacturationDemoSeeder::class);
+
         User::factory()->create([
             'name' => 'Client Suspendu',
             'email' => 'suspendu@minicfo.test',

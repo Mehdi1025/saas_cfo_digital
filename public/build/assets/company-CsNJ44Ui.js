@@ -1,0 +1,1 @@
+function t(r){if(!r)return[];const i=[];return r.address?.trim()&&i.push(r.address.trim()),r.registration_number?.trim()&&i.push(r.registration_number.trim()),r.email?.trim()&&i.push(r.email.trim()),r.phone?.trim()&&i.push(r.phone.trim()),i}function e(r,i="#3B82F6"){return r?.brand_color||i}export{e as a,t as c};

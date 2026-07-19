@@ -1,0 +1,1355 @@
+\documentclass[12pt,a4paper]{report}
+
+% ============================================================
+% PRÉAMBULE COMPLET
+% ============================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{longtable}
+\usepackage{ragged2e}
+\usepackage{xltabular}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{adjustbox}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc, shadows, matrix}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=green!50!black,
+    urlcolor=cyan!60!black,
+    breaklinks=true,
+    pdftitle={FinFlow — Rapport de Projet de Fin d'Études},
+    pdfauthor={Bachiri Mahdi \& Makhlouf Sana}
+}
+\newcommand{\biburl}[1]{\par\smallskip\noindent{\footnotesize\url{#1}}\par}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codeframe}{RGB}{220,220,220}
+\definecolor{keywordblue}{RGB}{0,0,180}
+\definecolor{commentgreen}{RGB}{0,128,0}
+\definecolor{stringred}{RGB}{163,21,21}
+\definecolor{finblue}{RGB}{79, 70, 229} % Couleur Indigo-600
+
+\lstdefinestyle{phpstyle}{
+    language=PHP,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordblue}\bfseries,
+    commentstyle=\color{commentgreen}\itshape,
+    stringstyle=\color{stringred},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    captionpos=b,
+    morekeywords={declare, strict_types, readonly, match, fn, nullsafe},
+    literate={=>}{{$\Rightarrow$}}1
+}
+
+\lstdefinestyle{jsstyle}{
+    language=JavaScript,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{keywordblue}\bfseries,
+    commentstyle=\color{commentgreen}\itshape,
+    stringstyle=\color{stringred},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=2,
+    captionpos=b,
+    morekeywords={const, let, export, default, import, from, async, await}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{FinFlow — Rapport PFA 2025-2026}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+
+% ============================================================
+% DÉBUT DU DOCUMENT
+% ============================================================
+\begin{document}
+
+% ── Page de garde ──────────────────────────────────────────────────
+\begin{titlepage}
+    % Logos en haut : FinFlow à gauche, UHA à droite (taille modérée)
+    \noindent
+    \begin{minipage}[t]{0.5\textwidth}
+        \raggedright
+        \includegraphics[height=1.9cm,keepaspectratio]{image1.png}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[t]{0.5\textwidth}
+        \raggedleft
+        \includegraphics[height=1.9cm,keepaspectratio]{logouha.png}
+    \end{minipage}
+
+    \vspace{0.7cm}
+    \centering
+
+    % Contexte académique
+    {\Large\textsc{Projet de Fin d'Année}\par}
+    \vspace{0.4cm}
+    {\large Année Universitaire 2025-2026\par}
+    \vspace{1.5cm}
+
+    % Titre du projet
+    {\Huge\bfseries\color{finblue} FinFlow\par}
+    \vspace{0.6cm}
+    {\LARGE Application web de gestion commerciale\\et de facturation B2B pour PME\par}
+    \vspace{1.2cm}
+
+    \rule{0.75\textwidth}{1.2pt}
+    \vspace{1.5cm}
+
+    % Informations (Tableau aligné)
+    \begin{tabular}{>{\bfseries\raggedleft\arraybackslash}p{4.5cm} p{8.5cm}}
+        Projet : & FinFlow (SaaS B2B) \\
+        Équipe : & Bachiri Mahdi \& Makhlouf Sanad \\
+        Jury : & Lionel Signolet \& Adam Bruno \\
+        Encadrants : & Lionel Signolet \& Frédéric Cordier \\
+        Soutenance : & Juin 2026 \\
+    \end{tabular}
+
+    \vfill
+
+    % Stack technique
+    {\large\textbf{Stack technique}\par}
+    \vspace{0.4cm}
+    {\normalsize Laravel 12 \textbullet{} PHP 8.2+ \textbullet{} MySQL \textbullet{} React \textbullet{} Inertia.js \\ Tailwind CSS \textbullet{} Framer Motion \textbullet{} DomPDF \textbullet{} Groq API (Llama 3.3)\par}
+
+    \vspace{1.5cm}
+    \textit{Document rédigé pour la soutenance du projet de fin d'année}
+\end{titlepage}
+
+% ============================================================
+% REMERCIEMENTS, RÉSUMÉ ET ABSTRACT
+% ============================================================
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Nous adressons nos sincères remerciements à l'ensemble de l'équipe pédagogique, ainsi qu'à notre encadrant, pour la qualité de son suivi, la disponibilité dont il a fait preuve et la pertinence de ses conseils tout au long de cette année universitaire. Nous remercions également les membres du jury d'avoir accepté d'évaluer ce travail et d'y consacrer leur temps. Enfin, ce projet de fin d'études constitue l'aboutissement d'un travail d'équipe enrichissant, fondé sur la complémentarité, la rigueur et une ambition commune : concevoir un outil métier utile, moderne et fiable.
+
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Ce projet de fin d'études présente la conception et la réalisation de FinFlow, une plateforme SaaS de facturation B2B moderne destinée aux PME. Face à l'obligation progressive de la facturation électronique en France et en Europe, l'application répond à un besoin concret : centraliser le cycle commercial, de la création du devis à l'encaissement, dans un environnement unique, traçable et conforme.
+
+FinFlow propose un cycle de vie documentaire sécurisé (devis, factures, avoirs) fondé sur une machine à états et une immutabilité post-envoi garantissant l'intégrité des documents transmis aux clients. Développée en architecture full-stack avec Laravel~12 côté serveur et React via Inertia.js côté client, la solution intègre un moteur fiscal dynamique (TVA multi-pays), un système de remises et de multi-devises, ainsi qu'un journal d'audit complet.
+
+Des fonctionnalités avancées viennent enrichir le cœur métier : génération automatique de PDF personnalisés, pixel de tracking invisible pour le suivi des ouvertures d'e-mails, et module d'intelligence artificielle (API Groq, modèle Llama~3.3) produisant une analyse financière automatisée et anonymisée. L'ensemble a été validé par une suite de tests PHPUnit (42 tests, 131 assertions), témoignant de la fiabilité du moteur de calcul et des flux documentaires.
+
+\vspace{1em}
+\noindent\textbf{Mots-clés :} SaaS, Facturation B2B, Laravel~12, React, Intelligence Artificielle, Conformité légale, Full-Stack.
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+This final-year project presents the design and implementation of FinFlow, a modern B2B invoicing SaaS platform aimed at small and medium-sized enterprises. In response to the progressive mandatory shift towards electronic invoicing in France and Europe, the application addresses a concrete need: to centralize the entire commercial cycle---from quotation creation to payment collection---within a single, traceable, and compliant environment.
+
+FinFlow delivers a secure document lifecycle (quotations, invoices, credit notes) based on a finite state machine and post-send immutability, ensuring the integrity of documents shared with clients. Built on a full-stack architecture with Laravel~12 on the server side and React through Inertia.js on the client side, the solution integrates a dynamic tax engine (multi-country VAT), discount handling, multi-currency support, and a comprehensive audit trail.
+
+Advanced features extend the core business logic: automated generation of branded PDF documents, an invisible email tracking pixel to monitor message openings, and an artificial intelligence module (Groq API, Llama~3.3 model) producing automated, anonymized financial analysis. The system was validated through a PHPUnit test suite (42 tests, 131 assertions), demonstrating the reliability of the calculation engine and document workflows.
+
+\vspace{1em}
+\noindent\textbf{Keywords:} SaaS, B2B Invoicing, Laravel~12, React, Artificial Intelligence, Legal Compliance, Full-Stack.
+
+\cleardoublepage
+
+\pagenumbering{roman}
+\tableofcontents
+\listoffigures
+\listoftables
+\renewcommand{\lstlistlistingname}{Liste des extraits de code}
+\lstlistoflistings
+\cleardoublepage
+\pagenumbering{arabic}
+
+% ============================================================
+% GLOSSAIRE ET ACRONYMES
+% ============================================================
+\chapter*{Glossaire et Acronymes}
+\addcontentsline{toc}{chapter}{Glossaire et Acronymes}
+
+Ce glossaire rassemble les termes techniques et acronymes employés dans ce rapport. Il est destiné aux lecteurs issus d'autres disciplines (gestion, comptabilité, mathématiques\ldots) qui souhaitent appréhender le vocabulaire de l'ingénierie logicielle mobilisé dans FinFlow.
+
+\begin{description}[
+    leftmargin=2.8cm,
+    labelwidth=2.6cm,
+    labelsep=0.6em,
+    style=nextline,
+    align=left
+]
+    \item[\textbf{API (Application Programming Interface)}]
+    Interface de programmation permettant à deux applications distinctes (ex.~: FinFlow et Groq) de communiquer et d'échanger des données de manière sécurisée.
+
+    \item[\textbf{B2B (Business to Business)}]
+    Modèle commercial où une entreprise vend ses services ou produits à d'autres entreprises, contrairement au B2C (\emph{Business to Consumer}).
+
+    \item[\textbf{LLM (Large Language Model)}]
+    Modèle d'intelligence artificielle entraîné sur de vastes quantités de textes, capable de comprendre et de générer du langage naturel (ex.~: Llama~3.3).
+
+    \item[\textbf{MVP (Minimum Viable Product)}]
+    Version d'un produit (ici notre SaaS) comportant uniquement les fonctionnalités essentielles nécessaires pour valider son utilité sur le marché.
+
+    \item[\textbf{ORM (Object-Relational Mapping)}]
+    Technique de programmation (ici Eloquent dans Laravel) permettant de manipuler une base de données relationnelle en utilisant des objets du code, sans écrire de requêtes SQL brutes.
+
+    \item[\textbf{SaaS (Software as a Service)}]
+    Modèle de distribution logiciel où l'application est hébergée sur le cloud et accessible via un navigateur web, souvent sous forme d'abonnement.
+
+    \item[\textbf{SPA (Single Page Application)}]
+    Application web (réalisée ici avec React et Inertia.js) qui charge une seule page HTML et met à jour son contenu dynamiquement, offrant une fluidité proche d'une application native.
+
+    \item[\textbf{UI / UX (User Interface / User Experience)}]
+    Désigne respectivement l'interface utilisateur (le design visuel) et l'expérience utilisateur (la logique, la fluidité et la facilité d'utilisation de l'application).
+\end{description}
+
+\cleardoublepage
+
+% ============================================================
+% CHAPITRE 1 — INTRODUCTION GÉNÉRALE
+% ============================================================
+\chapter{Introduction Générale}
+
+\section{Contexte macro-économique}
+
+Imaginez une PME qui gère ses devis dans Excel, ses factures dans Word, et le suivi de ses paiements sur un post-it. Ce scénario, encore très répandu, coûte du temps, génère des erreurs et empêche d'avoir une vision claire de son activité. C'est précisément dans ce contexte que s'inscrit FinFlow.
+
+Aujourd'hui, la transformation digitale n'est plus un luxe : c'est une nécessité. Les PME européennes adoptent de plus en plus des logiciels en ligne (\textit{Software as a Service}, ou SaaS) qui centralisent leurs données, automatisent les tâches répétitives et restent accessibles depuis n'importe quel navigateur, sans installation.
+
+Parallèlement, la loi accélère ce mouvement. La facturation électronique devient progressivement obligatoire en France et en Europe : réception dès le 1\textsuperscript{er} septembre 2026, émission généralisée au 1\textsuperscript{er} septembre 2027. Concrètement, les entreprises devront prouver que leurs documents sont traçables, fiables et conformes fiscalement. Les outils artisanaux ne suffisent plus.
+
+FinFlow est notre réponse à ce double défi : une plateforme web unifiée, pensée pour une PME francophone, qui couvre tout le cycle commercial --- du premier devis au dernier encaissement.
+
+\section{Problématique métier}
+
+Avant d'écrire la moindre ligne de code, nous nous sommes posé une question simple : \emph{qu'est-ce qui fait vraiment mal au quotidien d'un dirigeant de PME ?} Quatre irritants majeurs sont ressortis :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{La ressaisie, ce fléau silencieux.} Un devis accepté doit devenir une facture --- mais recopier manuellement chaque ligne, chaque remise et chaque taux de TVA, c'est une perte de temps et une source d'erreurs garantie.
+    \item \textbf{La TVA, un casse-tête international.} Vendre en France (20\,\%), en Belgique (21\,\%) ou exporter aux États-Unis (0\,\%) ne relève pas du même calcul. L'application doit le faire automatiquement, sans que l'utilisateur ait à y penser.
+    \item \textbf{L'invisibilité commerciale.} Envoyer un devis, c'est bien. Savoir s'il a été ouvert, c'est mieux. Le dirigeant a besoin de signaux discrets pour relancer au bon moment.
+    \item \textbf{Le pilotage sans expert-comptable dédié.} Toutes les PME n'ont pas un directeur financier à plein temps. Leur donner accès à une analyse intelligente de leur trésorerie, c'est leur offrir un avantage décisionnel concret.
+\end{itemize}
+
+\section{Objectifs du projet FinFlow}
+
+Face à ces constats, FinFlow poursuit cinq objectifs clairs --- chacun traduit en bénéfice direct pour l'utilisateur final :
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Centraliser} : un seul endroit pour gérer clients, catalogue, devis, factures, avoirs et paiements. Fini la dispersion entre fichiers et outils.
+    \item \textbf{Automatiser} : les calculs (HT, TVA, remises, frais logistiques), la numérotation, la génération PDF et l'envoi par e-mail se font seuls. L'utilisateur se concentre sur son métier.
+    \item \textbf{Protéger} : une fois un document envoyé au client, il est verrouillé. Personne ne peut le modifier dans son dos --- ni par erreur, ni volontairement.
+    \item \textbf{Piloter} : un tableau de bord vivant, enrichi d'une analyse financière générée par l'IA Groq (modèle \texttt{llama-3.3-70b-versatile}), comme si un DAF virtuel commentait la santé de l'entreprise.
+    \item \textbf{Personnaliser} : logo, couleurs, coordonnées --- l'identité de l'entreprise se retrouve partout : interface, PDF et e-mails.
+\end{enumerate}
+
+\section{Plan du rapport}
+
+Ce rapport vous emmène pas à pas dans la conception et la réalisation de FinFlow. Le chapitre~\ref{ch:besoins} traduit les règles métier en besoins fonctionnels concrets. Le chapitre~\ref{ch:conception} explique \emph{pourquoi} nous avons structuré l'application ainsi. Le chapitre~\ref{ch:realisation} raconte les défis techniques les plus marquants --- ceux qui font la différence. Le chapitre~\ref{ch:demo} propose un scénario de démonstration complet. Le chapitre~\ref{ch:tests} montre comment nous garantissons la fiabilité du système. Enfin, les chapitres~\ref{ch:bilan} et~\ref{ch:conclusion} dressent un bilan honnête et ouvrent la voie aux évolutions futures.
+
+\section{Méthodologie de Travail et Collaboration}
+
+Construire un SaaS de facturation complet, ce n'est pas empiler des fonctionnalités en espérant que tout tienne debout à la fin. C'est un projet dense --- des dizaines de fichiers, des règles métier exigeantes, une stack moderne (Laravel, React, Inertia.js) --- que deux développeurs doivent faire évoluer en parallèle sans se perdre. Pour y parvenir, nous n'avons pas seulement « codé » : nous avons organisé notre travail avec la rigueur d'une petite équipe produit. Cette section expose les deux piliers de notre démarche : l'itération et le versioning.
+
+\subsection{L'approche itérative (inspiration Agile)}
+
+Face à la complexité d'un SaaS, un plan figé sur six mois aurait été une illusion. Nous avons préféré une \textbf{démarche itérative}, inspirée de l'Agile : des cycles courts (sprints d'une à deux semaines), chacun avec un objectif clair et une démo interne à la clé --- « est-ce que ça marche, est-ce que c'est utile ? »
+
+Notre progression s'est structurée en trois temps complémentaires. D'abord, nous avons \textbf{sécurisé le cœur} : authentification Laravel Breeze, schéma MySQL, migrations, entités Eloquent (\texttt{Document}, \texttt{Tier}, \texttt{LigneDocument}\ldots). Sans cette fondation, rien d'autre ne tient. Ensuite, nous avons construit les \textbf{flux métiers vitaux} : cycle devis $\rightarrow$ facture, moteur de calcul HT/TVA/remises, immutabilité post-envoi, génération PDF et envoi par e-mail --- le cœur \emph{métier} pour lequel un utilisateur paierait réellement. Enfin, nous avons intégré les \textbf{fonctionnalités à haute valeur ajoutée} : pixel de tracking invisible, analyse financière via l'API Groq (Llama~3.3), interface premium avec Framer Motion et glassmorphism.
+
+Cette montée en puissance progressive nous a épargné le piège classique du projet étudiant : une belle maquette sans logique derrière, ou un backend solide avec une interface injouable. À chaque itération, nous avions quelque chose de \emph{testable} --- et c'est cette discipline qui nous a menés à un MVP cohérent, prêt à être présenté au jury.
+
+\subsection{Versioning et sécurité du code (Git \& GitHub)}
+
+Travailler à deux sur le même dépôt sans se marcher dessus exige de la discipline. Nous avons adopté une utilisation \textbf{rigoureuse de Git} pour le contrôle de version, avec \textbf{GitHub} comme point central de collaboration. Chaque modification --- même minime --- laisse une trace : qui l'a faite, quand, et pourquoi, grâce à des messages de commit explicites.
+
+GitHub nous a permis de centraliser l'intégralité du code source, de conserver un \textbf{historique propre} de nos avancées, et de travailler en parallèle en toute sécurité. Chaque fonctionnalité se développait sur une branche dédiée (\texttt{feature/...}, \texttt{fix/...}), puis fusionnait vers \texttt{main} après relecture mutuelle. En cas de régression, l'historique des commits servait de filet de sécurité : identifier le changement fautif, revenir en arrière proprement, repartir. La branche principale restait la référence stable du projet --- personne n'y poussait de code non relu, évitant le scénario où l'un écrase le travail de l'autre la veille de la soutenance.
+
+Au-delà du versioning, GitHub était notre tableau de bord de collaboration : issues, pull requests, revues croisées. Ces rituels nous ont forcés à \emph{communiquer} sur ce que nous livrions, pas seulement à coder en silo.
+
+% ============================================================
+% CHAPITRE 2 — ANALYSE DES BESOINS
+% ============================================================
+\chapter{Analyse des Besoins et Règles de Gestion}
+\label{ch:besoins}
+
+Ce chapitre traduit le terrain métier en exigences concrètes pour FinFlow. Il identifie les acteurs du système, formalise les dix besoins fonctionnels majeurs (BF1 à BF10) et expose les règles de gestion qui gouvernent le cycle commercial --- de la création du devis à l'encaissement.
+
+\section{Acteurs du système}
+
+\begin{table}[H]
+\centering
+\caption{Acteurs identifiés dans l'application FinFlow}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Acteur} & \textbf{Rôle} \\
+\midrule
+Administrateur / gérant & Configure l'entreprise, consulte le dashboard, pilote l'activité \\
+Utilisateur commercial & Crée devis et factures, gère les clients et le catalogue \\
+Client externe & Reçoit devis/factures par e-mail (PDF en pièce jointe) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Besoins fonctionnels détaillés}
+
+Chaque fonctionnalité de FinFlow répond à une règle métier précise. Nous les avons formalisées en dix besoins fonctionnels (BF1 à BF10), directement issus de notre code source. L'objectif ici n'est pas de lister des cases cochées, mais d'expliquer \emph{pourquoi} chaque règle existe et \emph{comment} elle protège l'utilisateur.
+
+\subsection{BF1 — Cycle de vie documentaire (machine à états finis)}
+
+Dans FinFlow, un document commercial --- devis, facture ou avoir --- vit comme dans un entonnoir sécurisé. Tant qu'il est en brouillon, on peut le modifier librement. Dès qu'il est envoyé au client, il entre dans un parcours verrouillé : plus question de changer les montants dans son dos.
+
+Techniquement, tout repose sur le modèle \texttt{App\textbackslash Models\textbackslash Document} et sur les contrôleurs \texttt{DevisController} et \texttt{FactureController}, qui encadrent chaque transition autorisée.
+
+\paragraph{Le parcours d'un devis.} Un devis commence sa vie en \texttt{draft} (brouillon). L'utilisateur le peaufine, ajoute des lignes, ajuste les remises. Quand il est prêt, il passe à \texttt{sent} (envoyé) --- c'est le point de non-retour. Ensuite, le client répond : \texttt{accepted} (accepté) ou \texttt{rejected} (refusé). Si le devis est accepté, un clic suffit pour le transformer en facture brouillon, sans recopier quoi que ce soit.
+\begin{itemize}[leftmargin=*]
+    \item \texttt{draft} $\rightarrow$ \texttt{sent} : envoi par e-mail (\texttt{sendEmail()}), activation du suivi de lecture (\texttt{open\_tracking = true}).
+    \item \texttt{sent} $\rightarrow$ \texttt{accepted} ou \texttt{rejected} : décision commerciale enregistrée dans l'historique.
+    \item \texttt{accepted} $\rightarrow$ facture \texttt{draft} : conversion automatique (\texttt{convertToFacture()}), lignes copiées à l'identique.
+\end{itemize}
+
+\paragraph{Le parcours d'une facture.} Une facture suit une logique plus simple : brouillon, envoi, paiement.
+\begin{itemize}[leftmargin=*]
+    \item \texttt{draft} $\rightarrow$ \texttt{sent} : le PDF personnalisé part par e-mail au client.
+    \item \texttt{sent} $\rightarrow$ \texttt{paid} : dès que le solde tombe à zéro (à 0{,}01\,€ près), la facture est marquée payée.
+    \item \texttt{sent}/\texttt{paid} $\rightarrow$ avoir : en cas d'erreur ou de remboursement, un avoir est généré et lié à la facture d'origine.
+\end{itemize}
+
+Le trait \texttt{SecuresDocumentLifecycle} joue le rôle de gardien : la méthode \texttt{canBeEdited()} n'autorise toute modification que tant que le document est en brouillon.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    scale=0.92, transform shape,
+    node distance=1.4cm and 2.2cm,
+    state/.style={
+        rectangle, rounded corners=4pt,
+        minimum width=2.5cm, minimum height=1cm,
+        draw=blue!80, fill=blue!5,
+        align=center, font=\small
+    },
+    success/.style={state, fill=green!8, draw=green!60!black},
+    reject/.style={state, fill=red!6, draw=red!70!black},
+    factstate/.style={state, fill=orange!8, draw=orange!70!black},
+    arrow/.style={-{Stealth[length=2.2mm, width=1.8mm]}, thick, draw=gray!65},
+    edgelbl/.style={
+        font=\scriptsize, fill=white, inner sep=2pt,
+        text=gray!30!black, align=center
+    }
+]
+    % Nœuds principaux
+    \node[state] (draft) {Brouillon\\{\scriptsize\texttt{draft}}};
+    \node[state, right=of draft] (sent) {Envoyé\\{\scriptsize\texttt{sent}}};
+    \node[success, above right=0.8cm and 1.5cm of sent] (accepted) {Accepté\\{\scriptsize\texttt{accepted}}};
+    \node[reject, below right=0.8cm and 1.5cm of sent] (rejected) {Refusé\\{\scriptsize\texttt{rejected}}};
+    \node[factstate, right=of accepted] (factdraft) {Facture\\{\scriptsize\texttt{draft}}};
+
+    % Transitions
+    \draw[arrow] (draft) -- node[edgelbl, above, pos=0.45] {Envoi e-mail\\{\scriptsize\texttt{sendEmail()}}} (sent);
+    \draw[arrow] (sent) -- node[edgelbl, above left, pos=0.55] {Validation\\{\scriptsize\texttt{markAsAccepted()}}} (accepted);
+    \draw[arrow] (sent) -- node[edgelbl, below left, pos=0.55] {Refus\\{\scriptsize\texttt{markAsRejected()}}} (rejected);
+    \draw[arrow] (accepted) -- node[edgelbl, above, pos=0.5] {Conversion\\{\scriptsize\texttt{convertToFacture()}}} (factdraft);
+
+    % Point de non-retour (annotation)
+    \node[edgelbl, text width=3.8cm, above=0.55cm of draft] {Verrouillage via \texttt{SecuresDocumentLifecycle}};
+    \draw[dashed, gray!50, thick] (draft.north) -- ++(0,0.35);
+\end{tikzpicture}
+\caption{Diagramme d'états du cycle de vie d'un devis (\texttt{DevisController}) --- transitions contrôlées et conversion atomique en facture brouillon}
+\label{fig:devis-lifecycle}
+\end{figure}
+
+\subsection{BF2 — Immutabilité post-envoi}
+
+Pourquoi verrouiller un document après l'envoi ? Parce qu'un client qui reçoit une facture à 1\,200\,€ ne doit jamais découvrir le lendemain qu'elle affiche soudain 1\,500\,€. C'est une question de confiance, mais aussi de conformité légale.
+
+Le trait \texttt{SecuresDocumentLifecycle} met en place trois barrières complémentaires :
+\begin{enumerate}[leftmargin=*]
+    \item \texttt{rejectIfLocked()} : toute tentative de modification sur un document verrouillé est refusée avec un message clair.
+    \item \texttt{rejectImmutableFieldChanges()} : la référence et le type du document ne peuvent plus changer après le brouillon.
+    \item \texttt{stripImmutableFields()} : même si quelqu'un tente de tricher via les outils du navigateur, les champs sensibles (\texttt{reference}, \texttt{currency\_code}, \texttt{exchange\_rate}\ldots) sont ignorés côté serveur.
+\end{enumerate}
+
+En résumé : ce que le client a reçu, c'est ce qui reste. Point final.
+
+\subsection{BF3 — Moteur fiscal dynamique}
+
+La TVA, c'est le genre de calcul qui semble simple jusqu'au jour où on facture un client belge depuis la France. FinFlow résout ce problème automatiquement : il suffit de renseigner le pays du client, et le bon taux s'applique.
+
+Le fichier \texttt{config/taxes.php} contient la « carte des taux » par pays :
+\begin{itemize}[leftmargin=*]
+    \item France (\texttt{FR}) : 20{,}0\,\%
+    \item Belgique (\texttt{BE}) : 21{,}0\,\%
+    \item Allemagne, Espagne, Italie\ldots : chacun son taux
+    \item Pays hors liste (ex. \texttt{US}, \texttt{MA}) : 0{,}0\,\% --- export sans TVA
+\end{itemize}
+
+La classe \texttt{TaxRateResolver} fait le lien entre le \texttt{country\_code} du client et le taux applicable. Lors de l'enregistrement des lignes (\texttt{syncLignes()}), le serveur recalcule systématiquement la TVA --- le formulaire ne fait pas foi. Même logique pour les frais de port : ils sont taxés au taux du pays client.
+
+\subsection{BF4 — Frais de logistique et port}
+
+Certaines entreprises vendent des services (conseil, maintenance). D'autres expédient des produits physiques qui nécessitent stockage et livraison. FinFlow distingue ces deux mondes via \texttt{type\_prestation} : \texttt{service} ou \texttt{produit}.
+
+Pour un produit, l'utilisateur indique une destination et un nombre de jours de stockage. L'application calcule alors les frais de port automatiquement :
+\[
+\text{frais\_port} = \max(0, \text{jours\_stockage}) \times \text{fee\_per\_day}
+\]
+
+Par défaut, chaque jour coûte 10\,€ (\texttt{FRAIS\_PORT\_PAR\_JOUR = 10.0}). Les destinations (France, USA, Belgique\ldots) peuvent avoir un tarif personnalisé, configurable dans les paramètres. Exemple concret validé par nos tests : 3 jours de stockage aux USA = 30\,€ HT, sans TVA pour un client américain.
+
+\subsection{BF5 — Remises par ligne (pourcentage et montant fixe)}
+
+Les remises font partie du quotidien commercial. FinFlow les gère ligne par ligne, de deux façons :
+\begin{itemize}[leftmargin=*]
+    \item \textbf{En pourcentage} (\texttt{percent}) : 10\,\% sur une ligne de 200\,€ HT = 20\,€ de remise.
+    \item \textbf{En montant fixe} (\texttt{fixed}) : 50\,€ de remise sur une ligne de 150\,€ --- mais jamais plus que le montant de la ligne elle-même.
+\end{itemize}
+La classe \texttt{LigneAmounts} garantit que le total HT ne descend jamais en dessous de zéro. Nos tests le prouvent : 2 $\times$ 100\,€ avec 10\,\% de remise donnent bien 180\,€ HT ; 150\,€ avec 50\,€ de remise fixe donnent 100\,€ HT.
+
+\subsection{BF6 — Multi-devises avec taux de change figé}
+
+Facturer un client en dollars ou en livres sterling, c'est courant en B2B. Mais le taux de change fluctue : si on recalculait les anciennes factures à chaque variation, le chiffre d'affaires serait un mirage.
+
+FinFlow fige le taux de change au moment de la création du document, un peu comme on graverait la valeur du dollar du jour sur la facture. Le fichier \texttt{config/currencies.php} définit les devises (EUR, USD, GBP, CHF). La classe \texttt{ExchangeRateResolver} s'occupe du reste. Lors de la conversion devis $\rightarrow$ facture, la devise et le taux voyagent avec. Le dashboard, lui, reconvertit tout en euros pour donner une vision unifiée (\texttt{DocumentTotals::totalTtcInEur()}).
+
+\subsection{BF7 — Historique d'audit complet (\texttt{document\_events})}
+
+Chaque document commercial a sa propre « boîte noire ». Création, envoi, ouverture, acceptation, paiement\ldots chaque événement est horodaté dans la table \texttt{document\_events} par le service \texttt{DocumentEventRecorder}. L'utilisateur visualise cette chronologie dans une timeline animée (\texttt{DocumentTimeline.jsx}).
+
+Pourquoi c'est important ? Parce que lors d'un contrôle fiscal ou d'un litige client, pouvoir reconstituer l'historique exact d'un document, c'est une assurance précieuse.
+
+\subsection{BF8 — Pixel de tracking invisible}
+
+Comment savoir si un client a ouvert votre devis, sans lui envoyer de notification intrusive ? FinFlow glisse discrètement une image invisible de 1$\times$1 pixel dans l'e-mail (\texttt{emails/devis-sent.blade.php}). Quand le client ouvre le message, son logiciel de messagerie charge cette image depuis notre serveur --- et nous le savons, une seule fois, grâce à \texttt{TrackingController::pixel()}.
+
+Le client ne voit rien. L'entreprise, elle, gagne un signal commercial précieux pour relancer au bon moment.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture14.png}
+\caption{Aperçu de l'e-mail contenant la facture en pièce jointe et le pixel de tracking invisible.}
+\label{fig:capture14}
+\end{figure}
+
+\subsection{BF9 — Génération automatique de références uniques sans collision}
+
+Numéroter manuellement les factures, c'est le meilleur moyen d'avoir deux fois « FAC-2026-0042 ». FinFlow génère automatiquement des références uniques au format \texttt{DEV-2026-0001}, \texttt{FAC-2026-0042}, \texttt{AVO-2026-0003}\ldots Le service \texttt{ReferenceGeneratorService} verrouille la dernière référence de l'année avant d'en créer une nouvelle (\texttt{lockForUpdate()}), même si deux utilisateurs cliquent en même temps.
+
+\subsection{BF10 — Escompte financier et gestion des paiements}
+
+Encourager le paiement rapide, c'est bon pour la trésorerie. FinFlow permet de configurer un escompte : « Payez sous 10 jours, bénéficiez de 2\,\% de remise. » Les champs \texttt{financial\_discount\_percent} et \texttt{financial\_discount\_days} définissent cette règle. Lors de l'enregistrement d'un paiement (\texttt{FactureController::recordPayment()}), l'application vérifie si le client a payé à temps et applique automatiquement la remise. Le modèle \texttt{Payment} conserve la trace de tout : montant, méthode (\texttt{sepa}, \texttt{card}, \texttt{cheque}\ldots), escompte éventuel. Quand le solde atteint zéro, la facture passe en \texttt{paid}.
+
+% ============================================================
+% CHAPITRE 3 — CONCEPTION ET ARCHITECTURE
+% ============================================================
+\chapter{Conception et Architecture}
+\label{ch:conception}
+
+Ce chapitre expose les choix d'architecture logicielle ayant présidé au développement de FinFlow. Il détaille la modélisation relationnelle de la base de données, justifie les design patterns adoptés pour garantir la robustesse des règles métier, et aborde enfin les mesures de sécurité applicative et de conformité aux données personnelles.
+
+\section{Architecture globale}
+
+Pour construire FinFlow, nous avons fait un choix délibéré : une seule application, un seul dépôt de code, une seule équipe qui parle le même langage. Laravel~12 gère la logique métier côté serveur ; React affiche l'interface côté client. Inertia.js fait le pont entre les deux, sans avoir besoin d'une API REST séparée.
+
+Pourquoi ce choix ? Parce qu'il évite la duplication. Quand on valide un montant de TVA en PHP, on n'a pas à le re-valider dans une API JSON distincte. Le contrôleur Laravel prépare les données, Inertia les transmet à React, et l'utilisateur voit le résultat. Simple, cohérent, maintenable.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    zone/.style={draw=gray!50, dashed, rounded corners=6pt, inner sep=14pt},
+    block/.style={
+        rectangle, rounded corners=3pt,
+        minimum width=2.5cm, minimum height=0.85cm,
+        align=center, font=\small,
+        drop shadow={shadow xshift=0.4pt, shadow yshift=-0.4pt, opacity=0.2}
+    },
+    clientblock/.style={block, draw=blue!70, fill=blue!8},
+    serverblock/.style={block, draw=green!60!black, fill=green!8},
+    datablock/.style={block, draw=orange!70!black, fill=orange!8},
+    arrow/.style={-{Stealth[length=2.2mm]}, thick, draw=gray!60},
+    edgelbl/.style={font=\scriptsize, fill=white, inner sep=2pt, text=gray!25!black}
+]
+    % --- Couche Client ---
+    \node[clientblock] (browser) {Navigateur};
+    \node[clientblock, below=0.5cm of browser] (react) {React 19};
+    \node[clientblock, below=0.5cm of react] (inertia) {Inertia.js v2};
+
+    \begin{scope}[on background layer]
+        \node[zone, fit=(browser)(inertia), label={[font=\bfseries\small]above:Couche Client}] (clientzone) {};
+    \end{scope}
+
+    % --- Couche Serveur ---
+    \node[serverblock, right=4.8cm of react] (laravel) {Laravel 12\\Controllers};
+    \node[serverblock, below=0.45cm of laravel] (services) {Services métier};
+    \node[serverblock, below=0.35cm of services, font=\scriptsize] (pdfsvc) {DocumentPdfService};
+    \node[serverblock, right=0.35cm of pdfsvc, font=\scriptsize] (mailsvc) {DevisMailerService};
+    \node[serverblock, left=0.35cm of pdfsvc, font=\scriptsize] (groqsvc) {FinancialAnalysisService};
+
+    \begin{scope}[on background layer]
+        \node[zone, fit=(laravel)(pdfsvc)(mailsvc), label={[font=\bfseries\small]above:Couche Serveur (PHP)}] (serverzone) {};
+    \end{scope}
+
+    % --- Données & API externes ---
+    \node[datablock, right=4.2cm of laravel] (mysql) {MySQL};
+    \node[datablock, below=0.5cm of mysql] (dompdf) {DomPDF};
+    \node[datablock, below=0.5cm of dompdf] (groq) {API Groq\\Llama 3.3};
+    \node[datablock, below=0.5cm of groq, font=\scriptsize] (storage) {Stockage fichiers\\logos / images};
+
+    \begin{scope}[on background layer]
+        \node[zone, fit=(mysql)(storage), label={[font=\bfseries\small]above:Données \& Services externes}] (datazone) {};
+    \end{scope}
+
+    % --- Flèches ---
+    \draw[arrow] (inertia.east) -- node[edgelbl, above] {Requêtes HTTP / Props JSON} (laravel.west);
+    \draw[arrow] (laravel.west) -- node[edgelbl, below] {Pages Inertia + données} (inertia.east);
+    \draw[arrow] (laravel.east) -- node[edgelbl, above] {Eloquent ORM} (mysql.west);
+    \draw[arrow] (services.east) -- node[edgelbl, above=8pt] {Génération PDF} (dompdf.west);
+    \draw[arrow] (groqsvc.east) -- ++(0.6,0) |- node[edgelbl, pos=0.35, right] {Appel async.\\POST /chat/completions} (groq.west);
+    \draw[arrow] (mailsvc.east) -- ++(0.3,0) |- node[edgelbl, pos=0.25, above] {SMTP + PDF} (dompdf.north);
+    \draw[arrow] (pdfsvc.south) -- ++(0,-0.25) -| (storage.north);
+\end{tikzpicture}%
+}
+\caption{Architecture globale de FinFlow --- flux monolithique Laravel/Inertia avec services métier et intégrations externes (MySQL, DomPDF, Groq)}
+\label{fig:architecture-globale}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Architecture en couches de FinFlow}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Couche} & \textbf{Composants} \\
+\midrule
+Client & Navigateur $\rightarrow$ React + Inertia.js + Tailwind CSS + Framer Motion \\
+Serveur & Laravel~12 $\rightarrow$ Services métier $\rightarrow$ DomPDF / Mail / Groq API \\
+Données & MySQL + stockage fichiers (logos, images catalogue) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Modélisation de la base de données}
+
+Pour organiser toutes ces règles métier, nous avons conçu un schéma relationnel centré sur une entité pivot : le \texttt{document}. Devis, facture ou avoir --- tout passe par cette table. Autour d'elle gravitent les clients (\texttt{tiers}), les lignes comptables, les paiements et le journal d'audit.
+
+\textit{Cas particulier :} la table \texttt{company\_settings} n'est reliée à aucune autre entité par une clé étrangère. Elle fonctionne en \textbf{singleton} (\texttt{id = 1}, via \texttt{CompanySetting::current()}) et alimente l'interface, les PDF et les e-mails de manière \textbf{logique} --- par le service \texttt{CompanySettingsService} et le middleware \texttt{HandleInertiaRequests} --- sans lien formel en base. La figure~\ref{fig:mcd-finflow} distingue cette relation applicative (trait pointillé) des relations relationnelles (traits pleins).
+
+\begin{figure}[H]
+\centering
+\begingroup
+\arrayrulecolor{teal!55!black}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.12}
+\newlength{\EntH}
+\setlength{\EntH}{1.22em}
+\newcommand{\EntRow}[1]{\rule{0pt}{\EntH}\footnotesize\texttt{#1}}
+\newcommand{\EntBox}[5]{%
+    \begin{tabular}{|>{\raggedright\arraybackslash}p{2.95cm}|}
+        \hline
+        \rowcolor{teal!22}
+        \rule{0pt}{1.35em}\hfill\textbf{\small #1}\hfill \\
+        \hline
+        \EntRow{#2} \\
+        \EntRow{#3} \\
+        \EntRow{#4} \\
+        \EntRow{#5} \\
+        \hline
+    \end{tabular}%
+}
+\adjustbox{max width=\linewidth,center}{%
+\begin{tikzpicture}[
+    every node/.style={inner sep=0pt, outer sep=0pt, anchor=center},
+    rel/.style={-{Stealth[length=2.2mm, width=1.6mm]}, line width=0.8pt, draw=teal!50!black},
+    logrel/.style={-{Stealth[length=1.8mm, width=1.4mm]}, line width=0.7pt, draw=orange!65!black, dashed},
+    lbl/.style={
+        font=\scriptsize\sffamily, fill=white, inner sep=2pt,
+        rounded corners=1pt, draw=gray!30, text=gray!15!black
+    }
+]
+    \matrix (m) [
+        matrix of nodes,
+        column sep=1.35cm,
+        row sep=1.65cm,
+        ampersand replacement=\&,
+        nodes={anchor=center}
+    ] {
+        \& |[name=lignes]| {\EntBox{ligne\_documents}{id (PK)}{document\_id (FK)}{quantity, unit\_price\_ht}{vat\_rate, discount\_type}} \& \\[1pt]
+        |[name=tiers]| {\EntBox{tiers}{id (PK)}{name, email}{country\_code}{vat\_number}} \&
+        |[name=documents]| {\EntBox{documents}{id (PK)}{type, reference, status}{tiers\_id (FK), parent\_id (FK)}{currency\_code, exchange\_rate}} \&
+        |[name=events]| {\EntBox{document\_events}{id (PK)}{document\_id (FK)}{event\_type}{description}} \\[1pt]
+        |[name=company]| {\EntBox{company\_settings}{id (PK, singleton)}{name, address}{logo\_path, brand\_color}{registration\_number}} \&
+        |[name=payments]| {\EntBox{payments}{id (PK)}{document\_id (FK)}{tiers\_id (FK)}{amount, paid\_at}} \&
+        {} \\
+    };
+
+    % Entité centrale mise en évidence
+    \node[draw=teal!65!black, line width=1pt, rounded corners=3pt,
+          inner sep=3pt, fill=none, fit=(documents)] {};
+
+    % Jonctions pour des angles droits propres
+    \coordinate (Jlr) at ($(tiers.east)!0.5!(documents.west)$);
+    \coordinate (Jrr) at ($(documents.east)!0.5!(events.west)$);
+    \coordinate (Jtb) at ($(lignes.south)!0.5!(documents.north)$);
+    \coordinate (Jbt) at ($(documents.south)!0.5!(payments.north)$);
+
+    % Relations FK
+    \draw[rel] (tiers.east) -- (Jlr) -- node[lbl, above=0pt] {1,N} (documents.west);
+    \draw[rel] (documents.east) -- (Jrr) -- node[lbl, above=0pt] {1,N} (events.west);
+    \draw[rel] (lignes.south) -- (Jtb) -- node[lbl, right=1pt] {1,N} (documents.north);
+    \draw[rel] (documents.south) -- (Jbt) -- node[lbl, right=1pt] {1,N} (payments.north);
+    \draw[rel] (tiers.south) -- ++(0,-0.85) -| node[lbl, pos=0.08, above] {1,N} (payments.west);
+
+    % company_settings : singleton + lien logique
+    \node[draw=orange!55!black, dashed, rounded corners=3pt, inner sep=5pt,
+          line width=0.7pt, fit=(company)] {};
+    \node[lbl, text=orange!55!black, below=2pt of company]
+        {Singleton --- aucune FK};
+
+    \draw[logrel]
+        (company.north east) -- ++(0.25,0.55) --
+        node[lbl, pos=0.45, fill=orange!5, draw=orange!35, text width=1.6cm, align=center]
+            {PDF / e-mails / UI}
+        ($(documents.south west)+(-0.1,-0.1)$) -- (documents.south west);
+
+\end{tikzpicture}%
+}%
+\vspace{4pt}
+{\scriptsize\sffamily
+\tikz[baseline=-0.5ex]{\draw[rel] (0,0) -- (0.6,0);} relation FK en base \hspace{1.2em}
+\tikz[baseline=-0.5ex]{\draw[logrel] (0,0) -- (0.6,0);} usage applicatif (sans FK)
+}
+\endgroup
+\caption{Modèle conceptuel de données (MCD) de FinFlow --- entités Eloquent principales et cardinalités issues des migrations Laravel. \textit{Note :} \texttt{company\_settings} est volontairement isolée en base ; le trait orange pointillé indique son usage logique transversal.}
+\label{fig:mcd-finflow}
+\end{figure}
+
+\begingroup
+\setlength{\tabcolsep}{8pt}
+\renewcommand{\arraystretch}{1.35}
+\newlength{\EntRoleW}
+\setlength{\EntRoleW}{\dimexpr\linewidth-3.6cm-3.4cm-2\tabcolsep\relax}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}m{3.6cm}>{\centering\arraybackslash}m{3.4cm}>{\raggedright\arraybackslash}m{\EntRoleW}@{}}
+\caption{Entités principales de la base de données FinFlow}
+\label{tab:entites-principales} \\
+\toprule
+\textbf{Table} & \textbf{Cardinalité} & \textbf{Rôle et champs clés} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{c}{\textit{(suite du tableau~\ref{tab:entites-principales})}} \\
+\toprule
+\textbf{Table} & \textbf{Cardinalité} & \textbf{Rôle et champs clés} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+\texttt{users} & 1 & Comptes utilisateurs Laravel Breeze (\texttt{name}, \texttt{email}, \texttt{password}) \\
+\texttt{tiers} & 1,N $\rightarrow$ documents & Clients et prospects (\texttt{name}, \texttt{email}, \texttt{address}, \texttt{country\_code}, \texttt{vat\_number}, \texttt{type}) \\
+\texttt{articles} & 1,N $\rightarrow$ ligne\_documents & Catalogue produits/services (\texttt{sku}, \texttt{designation}, \texttt{price\_ht}, \texttt{type}, \texttt{category}) \\
+\texttt{documents} & 1,N lignes, events, payments & Entité centrale : devis, factures, avoirs (\texttt{type}, \texttt{reference}, \texttt{status}, \texttt{currency\_code}, \texttt{exchange\_rate}, \texttt{type\_prestation}, \texttt{frais\_port}, \texttt{parent\_id}) \\
+\texttt{ligne\_documents} & N,1 document, article & Lignes comptables (\texttt{quantity}, \texttt{unit\_price\_ht}, \texttt{discount\_type}, \texttt{discount\_value}, \texttt{vat\_rate}) \\
+\texttt{document\_events} & N,1 document & Journal d'audit append-only (\texttt{event\_type}, \texttt{description}) \\
+\texttt{payments} & N,1 document, tier & Encaissements (\texttt{amount}, \texttt{payment\_method}, \texttt{financial\_discount\_amount}, \texttt{paid\_at}) \\
+\texttt{company\_settings} & Singleton (id=1) & Identité entreprise (\texttt{name}, \texttt{address}, \texttt{logo\_path}, \texttt{brand\_color}, \texttt{registration\_number}) \\
+\texttt{delivery\_destinations} & Configurable & Destinations logistiques (\texttt{name}, \texttt{fee\_per\_day}, \texttt{sort\_order}) \\
+\end{longtable}
+\endgroup
+
+\section{Justification du Snapshot Pattern}
+
+Voici un problème concret : vous émettez une facture en janvier à 500\,€ HT pour un produit. En mars, vous augmentez le prix du catalogue à 600\,€. Que doit afficher la facture de janvier ? Toujours 500\,€, évidemment.
+
+C'est exactement ce que fait le \textit{Snapshot Pattern} dans FinFlow. Au moment où une ligne est enregistrée dans \texttt{ligne\_documents}, le prix (\texttt{unit\_price\_ht}), le taux de TVA (\texttt{vat\_rate}) et les remises sont « photographiés » et copiés en dur. Ils ne dépendent plus du catalogue \texttt{articles}, qui peut évoluer librement par la suite. Même principe pour la devise et le taux de change sur le document parent.
+
+Cette isolation apporte trois garanties essentielles :
+\begin{itemize}[leftmargin=*]
+    \item Les factures passées restent exactes, même si les prix changent demain.
+    \item Un taux de change fluctuant ne fausse pas rétroactivement le chiffre d'affaires.
+    \item La conformité fiscale est préservée : la TVA appliquée à l'émission reste celle du jour J.
+\end{itemize}
+
+\section{Patterns architecturaux}
+
+\subsection{Couche Support (calculs purs)}
+
+Les calculs financiers ne doivent jamais dépendre d'une requête HTTP ou d'un écran. C'est pourquoi nous avons isolé toute la logique dans \texttt{app/Support/}, avec deux classes phares :
+
+\texttt{LigneAmounts.php} calcule le montant d'une seule ligne (base HT, remise, TVA, TTC). \texttt{DocumentTotals.php} agrège toutes les lignes, ajoute les frais de port, et produit les totaux du document. Ces classes sont pures : on leur donne des chiffres, elles renvoient des chiffres. Point.
+
+\subsection{Services d'orchestration découplés}
+
+Quand une action devient complexe --- générer un PDF, envoyer un e-mail, interroger l'IA ---, elle sort du contrôleur et entre dans un service dédié (\texttt{app/Services/}). Les contrôleurs restent légers : ils reçoivent la requête, appellent le bon service, renvoient la réponse. C'est la différence entre un chef d'orchestre et un musicien qui joue tous les instruments en même temps.
+
+\subsection{Transactions de base de données}
+
+Certaines opérations touchent plusieurs tables à la fois. Convertir un devis en facture, par exemple, crée un document, copie des lignes, et enregistre deux événements d'audit. Si l'une de ces étapes échoue, tout doit être annulé --- sinon on se retrouve avec une facture à moitié créée.
+
+FinFlow utilise \texttt{DB::transaction()} à 14 endroits stratégiques du code. L'analogie est celle d'un virement bancaire : soit tout passe, soit rien ne passe. Pas de demi-mesure.
+
+\section{Sécurité applicative et Conformité RGPD}
+
+La sécurité n'a pas été traitée comme une option de dernière minute, mais comme une propriété inhérente à la stack choisie. FinFlow s'appuie sur les protections natives de Laravel : les formulaires Inertia bénéficient de jetons CSRF vérifiés à chaque requête POST, les requêtes SQL transitent par Eloquent et ses requêtes préparées (éliminant les injections SQL), et React échappe par défaut les contenus affichés (protection XSS). Côté authentification, Laravel Breeze assure la gestion des sessions, tandis que les mots de passe sont hachés en Bcrypt avant tout stockage en base --- aucun secret en clair ne quitte le champ de saisie.
+
+Sur le plan de la protection des données, FinFlow adopte une logique de minimisation compatible avec un usage B2B. Le module d'intelligence artificielle (Groq) illustre cette démarche : le \texttt{FinancialAnalysisService} n'envoie strictement aucune donnée nominative à l'API externe --- ni nom de client, ni adresse e-mail, ni référence de document. Seuls des agrégats financiers anonymisés (chiffre d'affaires encaissé, nombre de factures en retard, montants globaux) composent le payload transmis au modèle Llama~3.3. De même, le pixel de tracking invisible intégré aux e-mails de devis et factures constitue un outil analytique légitime dans le cadre d'une relation commerciale B2B : il signale l'ouverture du message, sans collecter de données personnelles supplémentaires au-delà de ce qui est déjà engagé contractuellement entre l'entreprise et son client.
+
+% ============================================================
+% CHAPITRE 4 — RÉALISATION ET DÉFIS TECHNIQUES
+% ============================================================
+\chapter{Réalisation et Défis Techniques Relevés}
+\label{ch:realisation}
+
+Ce chapitre raconte les défis techniques les plus marquants de FinFlow --- ceux qui font la différence entre une démo et un produit crédible. Il détaille la synchronisation du moteur de calcul, l'implémentation du pixel de tracking, l'intégration de l'intelligence artificielle Groq et la conception de l'interface premium.
+
+\section{Défi 1 — Synchronisation bi-couche du moteur de calcul}
+
+Imaginez que vous remplissez un devis en ligne. Vous ajoutez une ligne, une remise, et vous voyez immédiatement le total se mettre à jour. C'est l'aperçu live --- et c'est essentiel pour l'expérience utilisateur.
+
+Mais voici le piège : si seul le navigateur calcule les montants, un utilisateur mal intentionné pourrait ouvrir les outils de développement et modifier les chiffres avant de soumettre le formulaire. FinFlow résout ce dilemme avec une architecture « miroir » :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Côté React} (\texttt{ligneAmounts.js}, \texttt{documentTotals.js}) : calcul instantané pour l'aperçu.
+    \item \textbf{Côté PHP} (\texttt{LigneAmounts}, \texttt{DocumentTotals}) : recalcul systématique à la soumission, avec écrasement des valeurs reçues.
+\end{itemize}
+
+L'utilisateur voit exactement ce qui sera enregistré. Et personne ne peut tricher. Les deux couches disent la même chose --- parce qu'elles appliquent la même logique.
+
+\section{Défi 2 — Implémentation du pixel de tracking invisible}
+
+\subsection{L'idée en une phrase}
+
+Savoir qu'un client a ouvert votre devis, sans qu'il le sache et sans lui envoyer de notification gênante.
+
+\subsection{Comment ça marche, concrètement}
+
+Quand FinFlow envoie un devis par e-mail, il glisse une image minuscule --- invisible à l'œil nu --- dans le corps du message. Cette image mesure 1 pixel sur 1 pixel. Elle est transparente. Le client ne la voit pas.
+
+Mais son logiciel de messagerie (Gmail, Outlook\ldots), lui, essaie de l'afficher. Pour cela, il contacte notre serveur à une adresse du type \texttt{/tracking/42/pixel}. À ce moment précis, nous savons que le devis numéro 42 vient d'être ouvert.
+
+Voici le code qui rend cette magie possible :
+
+\begin{lstlisting}[style=phpstyle,caption={TrackingController::pixel() — Pixel PNG transparent 1×1 avec anti-cache}]
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Models\Document;
+use App\Services\DocumentEventRecorder;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
+class TrackingController extends Controller
+{
+    private const TRANSPARENT_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+    public function pixel(Request $request, Document $document, DocumentEventRecorder $recorder): Response
+    {
+        if ($document->isFacture() || ($document->isDevis() && $document->open_tracking)) {
+            $recorder->recordOpenedOnce($document);
+        }
+
+        return response(base64_decode(self::TRANSPARENT_PNG), 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
+    }
+}
+\end{lstlisting}
+
+Le flux se déroule en quatre temps :
+\begin{enumerate}[leftmargin=*]
+    \item Le client ouvre l'e-mail. Son logiciel de messagerie charge l'image depuis notre serveur.
+    \item \texttt{recordOpenedOnce()} vérifie qu'aucune ouverture n'a déjà été enregistrée --- on ne compte qu'une seule fois, pour éviter les faux positifs.
+    \item Des en-têtes anti-cache (\texttt{Cache-Control: no-cache}) empêchent Gmail ou Outlook de réutiliser une ancienne version de l'image. Chaque ouverture compte vraiment.
+    \item Le serveur renvoie un petit PNG transparent, encodé directement dans le code (Base64). Le client ne voit rien ; nous, nous avons notre signal.
+\end{enumerate}
+
+C'est discret, léger, et redoutablement efficace pour le suivi commercial.
+
+\section{Défi 3 — Intelligence artificielle financière (Groq / Llama 3.3)}
+
+\subsection{Le problème que l'IA résout}
+
+Un dirigeant de PME consulte son tableau de bord : chiffre d'affaires, factures en retard, devis en attente. Il voit les chiffres. Mais que signifient-ils vraiment ? Faut-il relancer tel client ? La trésorerie est-elle saine ?
+
+Un directeur financier répondrait à ces questions en quelques minutes. FinFlow propose l'équivalent --- un DAF virtuel --- grâce à l'intelligence artificielle.
+
+\subsection{Comment nous l'avons implémenté, sans compromettre la confidentialité}
+
+Le principe est simple et prudent :
+
+\begin{enumerate}[leftmargin=*]
+    \item Le \texttt{DashboardController} compile les indicateurs clés (CA encaissé, retards, évolution mensuelle).
+    \item Ces chiffres sont \textbf{anonymisés} : aucun nom de client, aucune adresse e-mail ne quitte l'application.
+    \item Le service \texttt{FinancialAnalysisService} envoie ces agrégats à l'API Groq, avec le modèle \texttt{llama-3.3-70b-versatile}.
+    \item L'IA répond en français, en Markdown, avec 2 à 3 recommandations concrètes --- comme le ferait un conseiller financier expérimenté.
+\end{enumerate}
+
+Techniquement, l'appel se fait vers \texttt{POST https://api.groq.com/openai/v1/chat/completions}, avec une température de 0{,}6 (un bon équilibre entre créativité et rigueur) et un timeout de 45 secondes. Le prompt système positionne l'IA comme un Directeur Financier virtuel : direct, professionnel, sans blabla inutile.
+
+Le résultat apparaît directement dans le dashboard. L'utilisateur clique sur « Analyser », et en quelques secondes, il obtient une synthèse qu'il aurait mis une heure à rédiger seul.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture5.png}
+\caption{Exemple d'analyse financière et de recommandations générées par l'IA Groq.}
+\label{fig:capture5}
+\end{figure}
+
+\section{Défi 4 — Interface premium (Split-Screen et Glassmorphism)}
+
+La première impression compte. L'écran de connexion de FinFlow (\texttt{Login.jsx}) est conçu pour marquer les esprits dès la première seconde.
+
+L'écran est divisé en deux : à gauche, un formulaire épuré sur fond blanc ; à droite, un panneau sombre avec une photographie de bureau comptable qui « respire » lentement --- un effet Ken Burns où l'image s'agrandit et se réduit sur 20 secondes, en boucle infinie. C'est subtil, presque hypnotique.
+
+Par-dessus cette image, une carte en verre dépoli (glassmorphism) glisse vers le haut avec un témoignage client. L'effet \texttt{backdrop-blur-md} donne l'impression d'un panneau de verre posé sur la photo --- une esthétique premium, inspirée des sites primés aux Awwwards.
+
+Les micro-animations Framer Motion (\texttt{whileHover}, \texttt{whileTap}) sur le bouton de connexion complètent l'expérience : l'interface ne se contente pas d'être belle, elle \emph{réagit} au toucher de l'utilisateur.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture2.png}
+\caption{Écran de connexion asymétrique avec effet Glassmorphism et image animée.}
+\label{fig:capture2}
+\end{figure}
+
+Plutôt que d'utiliser des transitions CSS classiques, nous avons opté pour Framer Motion. Cette bibliothèque nous permet de manipuler les animations comme des états réactifs de React. Nous utilisons notamment des \emph{variants} pour orchestrer l'apparition en cascade des éléments et des propriétés de \texttt{backdrop-filter} pour l'effet de verre dépoli.
+
+L'extrait ci-dessous provient du composant \texttt{LoginHeroPanel} : il montre l'effet Ken Burns sur la photographie de fond et la montée en fondu de la carte témoignage, avec les classes Tailwind \texttt{border-white/20}, \texttt{bg-white/10} et \texttt{backdrop-blur-md} qui composent le glassmorphism.
+
+\begin{lstlisting}[style=jsstyle,caption={Implémentation du Glassmorphism et des animations d'entrée avec Framer Motion (\texttt{login-hero-panel.jsx})}]
+import { motion } from 'framer-motion';
+
+const HERO_IMAGE =
+    'https://images.unsplash.com/photo-1554224155-6726b3ff858f?...';
+
+export default function LoginHeroPanel() {
+    return (
+        <div className="relative hidden h-full w-full overflow-hidden bg-gray-900 lg:flex">
+            <motion.img
+                src={HERO_IMAGE}
+                className="absolute inset-0 h-full w-full object-cover opacity-60"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+            />
+
+            <motion.div
+                className="absolute bottom-12 left-12 right-12 rounded-2xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-md"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.8, ease: 'easeOut' }}
+            >
+                <p className="text-lg leading-relaxed text-white/90">
+                    {/* Temoignage client */}
+                </p>
+            </motion.div>
+        </div>
+    );
+}
+\end{lstlisting}
+
+Sur le panneau gauche, le même principe s'applique autrement : des \texttt{containerVariants} et \texttt{itemVariants} déclenchent une apparition décalée (\texttt{staggerChildren}) de chaque champ du formulaire, tandis que le bouton « Se connecter » réagit au survol et au clic via \texttt{whileHover} et \texttt{whileTap}. Résultat : une page de connexion qui \emph{bouge} avec intention, sans sacrifier la lisibilité ni les performances.
+
+% ============================================================
+% CHAPITRE 5 — SCÉNARIO DE DÉMONSTRATION
+% ============================================================
+\chapter{Scénario de Démonstration}
+\label{ch:demo}
+
+Ce chapitre met FinFlow en action à travers un scénario de démonstration complet, du paramétrage initial à l'analyse financière par IA. Il présente d'abord le Happy Path en quinze étapes, puis une visite guidée de l'interface illustrée par des captures d'écran commentées.
+
+\section{Happy Path — De la configuration à l'analyse IA}
+
+Pour la soutenance, nous avons préparé un scénario complet qui raconte l'histoire d'une vente, de A à Z. Le tableau~\ref{tab:happy-path} en détaille les 15 étapes : de la configuration de l'entreprise jusqu'à l'analyse financière générée par l'IA. Chaque ligne montre ce que l'utilisateur voit, ce que le serveur fait en coulisses, et l'effet à l'écran.
+
+{\footnotesize
+\renewcommand{\arraystretch}{1.32}
+\setlength{\tabcolsep}{10pt}
+\begin{xltabular}{\linewidth}{@{}
+    >{\bfseries\centering\arraybackslash}p{0.8cm}
+    >{\RaggedRight\arraybackslash\hsize=0.85\hsize}X
+    >{\RaggedRight\arraybackslash\hsize=1.30\hsize}X
+    >{\RaggedRight\arraybackslash\hsize=0.85\hsize}X
+@{}}
+\caption{Scénario de démonstration — Happy Path FinFlow (15 étapes)}
+\label{tab:happy-path} \\
+\toprule
+\textbf{Étape} & \textbf{Action UI} & \textbf{Traitement Backend} & \textbf{Impact Visuel} \\
+\midrule
+\endfirsthead
+\multicolumn{4}{c}{\textit{(suite du tableau~\ref{tab:happy-path})}} \\
+\toprule
+\textbf{Étape} & \textbf{Action UI} & \textbf{Traitement Backend} & \textbf{Impact Visuel} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+1 & Connexion (\texttt{test@example.com}) & Laravel Breeze authentifie l'utilisateur via session & Dashboard sombre FinFlow avec KPI \\
+2 & Paramètres $\rightarrow$ Profil \& Branding & \texttt{CompanySettingsService} persiste logo, nom, couleur & Logo visible sur sidebar et aperçu PDF \\
+3 & Paramètres $\rightarrow$ Destinations livraison & \texttt{DeliveryDestinationService} enregistre frais/jour & Liste destinations (Belgique : 10\,€/jour) \\
+4 & Clients $\rightarrow$ Créer client belge & \texttt{Tier} créé avec \texttt{country\_code = 'BE'} & Fiche client avec TVA 21\,\% auto-résolue \\
+5 & Catalogue $\rightarrow$ Ajouter article & \texttt{Article} créé (\texttt{price\_ht}, \texttt{type}) & Article disponible dans l'autocomplétion devis \\
+6 & Devis $\rightarrow$ Nouveau devis & \texttt{ReferenceGeneratorService} génère \texttt{DEV-2026-XXXX} & Éditeur avec aperçu live des totaux \\
+7 & Ajouter lignes + client belge & \texttt{syncLignes()} applique TVA 21\,\% via \texttt{TaxRateResolver} & Totaux HT/TTC recalculés en temps réel \\
+8 & Enregistrer brouillon & \texttt{DB::transaction} : document + lignes + \texttt{TYPE\_CREATED} & Statut « Brouillon », timeline initialisée \\
+9 & Envoyer par e-mail & \texttt{DevisMailerService} + PDF DomPDF + pixel tracking & Statut « Envoyé », \texttt{open\_tracking = true} \\
+10 & Client ouvre l'e-mail & \texttt{TrackingController::pixel()} $\rightarrow$ \texttt{TYPE\_OPENED} & Timeline : « Document ouvert » (unique) \\
+11 & Marquer comme accepté & \texttt{markAsAccepted()} $\rightarrow$ \texttt{TYPE\_ACCEPTED} & Badge vert « Accepté », bouton conversion actif \\
+12 & Convertir en facture & \texttt{convertToFacture()} : clone lignes, \texttt{FAC-2026-XXXX}, \texttt{TYPE\_CONVERTED} & Redirection vers éditeur facture brouillon \\
+13 & Envoyer facture & \texttt{DocumentMailerService} + PDF personnalisé & Statut « Envoyée », e-mail client avec logo entreprise \\
+14 & Enregistrer paiement & \texttt{recordPayment()} : \texttt{Payment} + \texttt{TYPE\_PAID} + statut \texttt{paid} & Facture « Payée », KPI CA encaissé mis à jour \\
+15 & Dashboard $\rightarrow$ Analyse IA & \texttt{FinancialAnalysisService} $\rightarrow$ Groq Llama 3.3 & Synthèse Markdown en français dans le dashboard \\
+\end{xltabular}
+}
+
+\section{Visite Guidée de l'Interface}
+
+Cette section illustre l'interface utilisateur (UI) sombre et moderne de FinFlow à travers une série de captures d'écran commentées. Chaque figure met en évidence un écran clé de l'application : du tableau de bord aux modules de gestion commerciale, en passant par le paramétrage et le suivi de trésorerie.
+
+\subsection{Tableau de Bord et KPI}
+
+Le dashboard constitue le point d'entrée de FinFlow. Il offre une vision synthétique de la santé financière de l'entreprise grâce à des indicateurs clés (KPI), des graphiques d'évolution et le module d'analyse financière par intelligence artificielle.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture3.png}
+\caption{Vue globale du Dashboard FinFlow.}
+\label{fig:capture3}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{capture4.png}
+\caption{Focus sur les indicateurs clés de performance (KPI).}
+\label{fig:capture4}
+\end{figure}
+
+\subsection{Paramétrage de l'Entreprise}
+
+La page Paramètres centralise l'identité visuelle et les informations légales de l'entreprise. L'utilisateur y configure son logo, sa couleur de marque et ses coordonnées, qui seront automatiquement intégrés aux documents PDF générés.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture13.png}
+\caption{Page des paramètres de l'entreprise.}
+\label{fig:capture13}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{capture1.png}
+\caption{Focus sur le logo et le branding de l'entreprise.}
+\label{fig:capture1}
+\end{figure}
+
+\subsection{Référentiels (Clients et Catalogue)}
+
+Les référentiels constituent la base de données commerciale de FinFlow. La gestion des clients et le catalogue produits alimentent directement les éditeurs de devis et de factures via l'autocomplétion.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture10.png}
+\caption{Liste et gestion des clients.}
+\label{fig:capture10}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture11.png}
+\caption{Catalogue de produits et services.}
+\label{fig:capture11}
+\end{figure}
+
+\subsection{Gestion Commerciale (Devis et Factures)}
+
+Le cœur métier de FinFlow réside dans le cycle commercial complet : création de devis, conversion en facture, envoi par e-mail et suivi des paiements. Les captures ci-dessous montrent les interfaces de listage et d'édition de ces documents.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture8.png}
+\caption{Liste des devis en cours.}
+\label{fig:capture8}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture9.png}
+\caption{Interface de création/édition d'un devis avec aperçu des totaux.}
+\label{fig:capture9}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture6.png}
+\caption{Liste des factures émises.}
+\label{fig:capture6}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture7.png}
+\caption{Interface de création/édition d'une facture.}
+\label{fig:capture7}
+\end{figure}
+
+\subsection{Trésorerie}
+
+Le module de suivi des paiements permet de visualiser les encaissements, d'analyser le DSO (Days Sales Outstanding) et de gérer les transactions associées aux factures émises.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{capture12.png}
+\caption{Interface de suivi des encaissements et paiements.}
+\label{fig:capture12}
+\end{figure}
+
+% ============================================================
+% CHAPITRE 6 — STRATÉGIE DE VALIDATION ET TESTS
+% ============================================================
+\chapter{Stratégie de Validation et Tests}
+\label{ch:tests}
+
+Ce chapitre démontre comment nous garantissons la fiabilité de FinFlow face aux exigences d'un logiciel de facturation. Il présente la pyramide de tests adoptée, les indicateurs de performance mesurés et des exemples concrets de tests PHPUnit sur le moteur de calcul et les flux documentaires.
+
+\section{Pyramide des tests adoptée}
+
+Un logiciel de facturation qui se trompe de 1 centime, c'est un logiciel en lequel on ne peut pas faire confiance. Nos tests sont conçus pour empêcher exactement cela.
+
+Nous suivons la pyramide de tests classique, adaptée à notre stack Laravel/Inertia :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{En bas, les tests unitaires} (\texttt{tests/Unit/}) : ils vérifient le moteur de calcul en isolation. Pas de base de données, pas de HTTP --- juste des chiffres et des assertions.
+    \item \textbf{Au milieu, les tests feature} (\texttt{tests/Feature/}) : ils simulent des parcours complets. Un devis accepté se convertit-il bien en facture ? Un client belge reçoit-il bien 21\,\% de TVA ?
+    \item \textbf{En haut, les tests d'authentification} (\texttt{tests/Feature/Auth/}) : hérités de Laravel Breeze, ils garantissent que seuls les utilisateurs connectés accèdent à l'application.
+\end{itemize}
+
+\section{Indicateurs de performance réels}
+
+Nous avons exécuté la suite complète le 8 juin 2026 avec la commande \texttt{php artisan test}. Les résultats parlent d'eux-mêmes :
+
+\begin{table}[H]
+\centering
+\caption{Résultats de la suite de tests automatisés FinFlow}
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Indicateur} & \textbf{Valeur mesurée} \\
+\midrule
+Tests exécutés (total) & 42 \\
+Tests métier (calcul + flux documentaires) & 16 \\
+Tests Auth / Profil / exemples & 26 \\
+Assertions validées & 131 \\
+Durée d'exécution & 6{,}51 secondes \\
+Taux de réussite & 100\,\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cette suite garantit une régression zéro : si demain un développeur modifie le calcul de TVA ou la conversion devis, les tests le détecteront en moins de 7 secondes. C'est notre filet de sécurité.
+
+\section{Tests métier prioritaires}
+
+Le tableau~\ref{tab:tests-essentiels} ne retient que les \textbf{14 scénarios les plus critiques} pour la fiabilité financière et les flux documentaires. Les 28 autres tests (authentification Breeze, profil utilisateur, navigation) complètent la couverture sécurité mais ne sont pas détaillés ici.
+
+\begingroup
+\footnotesize
+\renewcommand{\arraystretch}{1.35}
+\setlength{\tabcolsep}{8pt}
+\begin{table}[H]
+\centering
+\caption{Tests métier prioritaires de FinFlow}
+\label{tab:tests-essentiels}
+\begin{tabular}{@{}
+    >{\bfseries\centering\arraybackslash}m{0.7cm}
+    >{\RaggedRight\arraybackslash}m{0.19\linewidth}
+    >{\RaggedRight\arraybackslash}m{0.34\linewidth}
+    >{\RaggedRight\arraybackslash}m{0.39\linewidth}
+@{}}
+\toprule
+\textbf{\#} & \textbf{Domaine} & \textbf{Test (classe)} & \textbf{Ce qui est validé} \\
+\midrule
+1 &
+Calcul &
+\texttt{DocumentTotalsTest} — remise \% &
+2 $\times$ 100\,€ HT avec 10\,\% de remise $\rightarrow$ \textbf{180\,€ HT}. \\
+2 &
+Calcul &
+\texttt{DocumentTotalsTest} — remise fixe &
+150\,€ HT moins 50\,€ de remise $\rightarrow$ \textbf{100\,€ HT} (plancher à 0). \\
+3 &
+Calcul &
+\texttt{DocumentTotalsTest} — export USA &
+Client US : frais de port 30\,€, TVA 0\,\%, TTC = \textbf{530\,€}. \\
+4 &
+Calcul &
+\texttt{DocumentTotalsTest} — TVA Belgique &
+Client BE : TVA \textbf{21\,\%}, 100\,€ HT $\rightarrow$ \textbf{121\,€ TTC}. \\
+5 &
+Devis &
+\texttt{DevisConversionTest} — conversion OK &
+Devis \emph{accepté} $\rightarrow$ facture \textbf{brouillon}, lignes copiées, audit \texttt{CONVERTED}. \\
+6 &
+Devis &
+\texttt{DevisConversionTest} — conversion refusée &
+Devis \emph{envoyé} (non accepté) : \textbf{aucune} facture créée. \\
+7 &
+Facture &
+\texttt{FactureVatTest} — TVA auto &
+Client belge : le serveur impose \textbf{21\,\%} même si le formulaire envoie 20\,\%. \\
+8 &
+Facture &
+\texttt{FactureFinancialDiscountTest} — config &
+Escompte financier \textbf{2\,\% / 10 jours} bien enregistré sur le document. \\
+9 &
+Facture &
+\texttt{FactureFinancialDiscountTest} — escompte OK &
+Paiement anticipé : escompte \textbf{24\,€}, net \textbf{1\,176\,€}, statut \texttt{paid}. \\
+10 &
+Facture &
+\texttt{FactureFinancialDiscountTest} — escompte KO &
+Paiement tardif : \textbf{aucun} escompte appliqué, montant TTC intégral. \\
+11 &
+Avoir &
+\texttt{AvoirGenerationTest} — génération &
+Facture \emph{envoyée} $\rightarrow$ avoir \textbf{brouillon} lié, lignes reprises, audit \texttt{VOIDED}. \\
+12 &
+Avoir &
+\texttt{AvoirGenerationTest} — protection &
+Facture \emph{brouillon} : génération d'avoir \textbf{refusée}. \\
+13 &
+Clients &
+\texttt{ClientStoreTest} — création &
+Utilisateur connecté peut créer un client ; invité redirigé vers \texttt{/login}. \\
+14 &
+IA &
+\texttt{DashboardAnalyzeTest} — analyse Groq &
+Endpoint \texttt{/dashboard/analyze} renvoie une clé JSON \texttt{analysis} non vide. \\
+\bottomrule
+\end{tabular}
+\end{table}
+\endgroup
+
+\section{Exemple de test — Calcul de remise par pourcentage}
+
+Voici un test concret qui vérifie une remise de 10\,\% sur une ligne de 2 $\times$ 100\,€. Le résultat attendu : 180\,€ HT. Simple, lisible, incontestable :
+
+\begin{lstlisting}[style=phpstyle,caption={DocumentTotalsTest — Validation remise 10\% sur ligne}]
+public function test_percent_discount_line_total_ht_is_one_hundred_eighty(): void
+{
+    $ligne = [
+        'quantity' => 2,
+        'unit_price_ht' => 100,
+        'discount_type' => LigneAmounts::DISCOUNT_PERCENT,
+        'discount_value' => 10,
+        'vat_rate' => 20,
+    ];
+
+    $this->assertSame(200.0, LigneAmounts::baseAmount($ligne));
+    $this->assertSame(20.0, LigneAmounts::discountAmount($ligne));
+    $this->assertSame(180.0, LigneAmounts::totalHt($ligne));
+}
+\end{lstlisting}
+
+\section{Exemple de test — Conversion devis accepté en facture}
+
+Ce second test vérifie l'opération la plus critique du parcours commercial : la conversion d'un devis accepté en facture. Il s'assure que les lignes sont copiées, que la facture est bien en brouillon, et que les événements d'audit sont enregistrés des deux côtés :
+
+\begin{lstlisting}[style=phpstyle,caption={DevisConversionTest — Conversion atomique avec événements d'audit}]
+public function test_accepted_devis_converts_to_draft_facture_with_lines_and_events(): void
+{
+    // ... setup devis accepte avec 2 lignes ...
+    $response = $this->actingAs($user)
+        ->post(route('devis.convert', $devis));
+
+    $facture = Document::query()
+        ->where('type', Document::TYPE_FACTURE)
+        ->where('parent_id', $devis->id)
+        ->first();
+
+    $this->assertNotNull($facture);
+    $this->assertSame($lignesCount, $facture->lignes()->count());
+    $this->assertDatabaseHas('document_events', [
+        'document_id' => $devis->id,
+        'event_type' => DocumentEvent::TYPE_CONVERTED,
+    ]);
+}
+\end{lstlisting}
+
+% ============================================================
+% CHAPITRE 7 — BILAN ET PERSPECTIVES
+% ============================================================
+\chapter{Bilan et Perspectives d'Évolution}
+\label{ch:bilan}
+
+Ce chapitre dresse un bilan honnête de FinFlow à l'issue du projet. Il analyse l'état d'avancement par domaine, reconnaît ouvertement les limites actuelles et propose une feuille de route réaliste pour une éventuelle commercialisation au-delà du cadre académique.
+
+\section{Analyse critique de l'état actuel}
+
+Soyons honnêtes : FinFlow n'est pas un produit fini prêt à être commercialisé demain. C'est un MVP solide, fonctionnel, qui couvre environ 80\,\% du périmètre métier prévu. Et c'est déjà énorme pour un projet de fin d'études.
+
+Les fondations sont saines. Laravel~12, Inertia.js, la couche Support de calcul, les sept services métier --- tout cela tient la route et pourrait accueillir de nouvelles fonctionnalités sans tout casser. Les modules les plus récents (paramètres entreprise, pixel de tracking, analyse IA) montrent que le projet continue de mûrir.
+
+\begin{table}[H]
+\centering
+\caption{État d'avancement par domaine}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Domaine} & \textbf{Avancement} & \textbf{Commentaire} \\
+\midrule
+Modèle de données \& migrations & $\sim$95\,\% & Schéma stable, 15+ migrations versionnées \\
+Backend / logique métier & $\sim$90\,\% & 7 services métier opérationnels \\
+Interface utilisateur & $\sim$85\,\% & Tous les écrans principaux livrés \\
+Paramètres \& personnalisation & $\sim$80\,\% & Branding + destinations configurables \\
+Authentification & $\sim$70\,\% & Breeze OK, middleware auth partiel \\
+E-mails \& PDF & $\sim$90\,\% & Envoi client direct, PDF personnalisé \\
+Suivi \& traçabilité & $\sim$75\,\% & Events + pixel tracking opérationnels \\
+Intelligence artificielle & $\sim$70\,\% & Groq si clé API configurée \\
+Tests automatisés & $\sim$60\,\% & 42 tests, 131 assertions \\
+Déploiement production & $\sim$15\,\% & Environnement local uniquement \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Limites identifiées}
+
+Nous identifions quatre limites principales, qu'il est important de reconnaître ouvertement :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Une seule entreprise à la fois.} Aujourd'hui, \texttt{company\_settings} ne gère qu'une seule société (singleton id=1). Pour vendre FinFlow en SaaS à plusieurs clients, il faudra une architecture multi-tenant --- chaque organisation isolée dans son propre espace.
+    \item \textbf{Des taux de TVA figés dans le code.} Le fichier \texttt{config/taxes.php} fonctionne, mais il faudrait un jour le remplacer par une source dynamique (API gouvernementale, base VIES) pour suivre les évolutions légales sans redéployer l'application.
+    \item \textbf{Une sécurisation incomplète.} Laravel Breeze protège l'authentification, mais certaines routes métier ne sont pas encore verrouillées derrière le middleware \texttt{auth}.
+    \item \textbf{Pas de tests de bout en bout.} Nos tests PHPUnit couvrent la logique métier, mais aucun test Playwright ou Cypress ne simule encore un parcours complet dans le navigateur.
+\end{itemize}
+
+\section{Perspectives de développement commercial}
+
+Si nous devions poursuivre FinFlow au-delà de ce projet de fin d'études, voici la feuille de route que nous envisageons :
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Court terme} : verrouiller toutes les routes, enrichir les tests, rédiger un guide utilisateur. Les bases doivent être béton avant d'aller plus loin.
+    \item \textbf{Moyen terme} : passer au multi-tenant, déployer sur un VPS avec HTTPS, activer les workers de file d'attente pour les e-mails, automatiser les sauvegardes. C'est le passage du « projet étudiant » au « produit hébergé ».
+    \item \textbf{Long terme} : intégrer Stripe ou Mollie pour les paiements en ligne, automatiser les relances d'impayés via des tâches CRON Laravel, ajouter la signature électronique des devis, et peut-être une API comptable pour se connecter à Sage ou QuickBooks.
+\end{enumerate}
+
+% ============================================================
+% CHAPITRE 8 — CONCLUSION GÉNÉRALE
+% ============================================================
+\chapter{Conclusion Générale}
+\label{ch:conclusion}
+
+Le projet FinFlow est bien plus qu'un exercice technique. C'est la preuve qu'il est possible de concevoir, de développer et de valider une application métier complète --- de la première ligne de migration SQL au pixel de tracking invisible dans un e-mail.
+
+Au cours de ce projet de fin d'études, nous avons appris à :
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Modéliser un domaine complexe} : 9 entités, des cycles de vie, des règles fiscales internationales --- le métier de la facturation n'est pas trivial, et le comprendre a été notre premier défi.
+    \item \textbf{Architecturer proprement} : couche Support, services découplés, transactions atomiques, pattern Snapshot. Des choix qui rendent le code lisible aujourd'hui et extensible demain.
+    \item \textbf{Penser l'utilisateur final} : aperçu live des documents, interface sombre soignée, login premium avec Framer Motion. La technique au service de l'expérience, pas l'inverse.
+    \item \textbf{Intégrer l'intelligence artificielle avec prudence} : Groq analyse les chiffres, pas les noms de clients. L'IA comme assistant, pas comme boîte noire.
+    \item \textbf{Garantir la qualité par les tests} : 42 tests, 131 assertions, moins de 7 secondes d'exécution. Chaque centime calculé est vérifié automatiquement.
+\end{itemize}
+
+FinFlow n'est pas parfait --- et nous l'assumons. Mais ses fondations sont solides, son code est maintenable, et sa vision est claire : donner aux PME un outil de facturation moderne, fiable et agréable à utiliser. C'est un projet dont nous sommes fiers, et une base sur laquelle nous serions heureux de continuer à construire.
+
+% ============================================================
+% BIBLIOGRAPHIE ET WEBOGRAPHIE
+% ============================================================
+\chapter*{Bibliographie et Webographie}
+\addcontentsline{toc}{chapter}{Bibliographie et Webographie}
+
+Les sources ci-dessous ont accompagné la conception, le développement et la rédaction de ce rapport. Elles couvrent le cadre réglementaire de la facturation électronique, les technologies backend et frontend mobilisées dans FinFlow, ainsi que les références techniques consultées pour garantir la fiabilité et la conformité du produit.
+
+\section*{Cadre légal et fiscal (facturation électronique)}
+
+\begingroup
+\sloppy
+\setlength{\emergencystretch}{3em}
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Direction Générale des Finances Publiques (DGFiP).}
+    \emph{Facturation électronique et plateformes agréées --- calendrier et modalités de généralisation en France (2026--2027).}
+    Texte officiel présentant les échéances réglementaires (réception au 1\textsuperscript{er}~septembre 2026, émission généralisée au 1\textsuperscript{er}~septembre 2027) et les obligations de traçabilité imposées aux entreprises.
+    \biburl{https://www.impots.gouv.fr/facturation-electronique-et-plateformes-agreees}
+
+    \item \textbf{Journal Officiel de l'Union Européenne.}
+    \emph{Directive 2014/55/UE du 16 avril 2014 relative à la facturation électronique dans le cadre des marchés publics.}
+    Cadre européen imposant l'interopérabilité des formats et l'alignement sur la norme EN~16931, garantissant l'intégrité, l'authenticité et l'immutabilité des documents échangés --- principes directement reflétés dans le cycle de vie verrouillé de FinFlow.
+    \biburl{https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32014L0055}
+\end{enumerate}
+\endgroup
+
+\section*{Technologies backend, base de données et services}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Taylor Otwell et l'équipe Laravel.}
+    \emph{Documentation officielle Laravel~12 --- Eloquent ORM, Mailable, transactions et architecture MVC.}
+    Référence principale pour la modélisation des entités (\texttt{Document}, \texttt{Tier}), l'envoi d'e-mails transactionnels, et l'utilisation de \texttt{DB::transaction()} pour les opérations atomiques (conversion devis $\rightarrow$ facture).
+    \biburl{https://laravel.com/docs/12.x}
+
+    \item \textbf{DomPDF Project.}
+    \emph{Guide d'implémentation DomPDF --- rendu HTML/CSS vers PDF.}
+    Documentation technique du moteur PDF utilisé par \texttt{DocumentPdfService} pour générer les devis et factures personnalisés (logo, couleurs de marque, mise en page responsive).
+    \biburl{https://github.com/dompdf/dompdf}
+
+    \item \textbf{Groq Cloud Developer Portal.}
+    \emph{Documentation officielle de l'API Groq et spécifications du modèle \texttt{llama-3.3-70b-versatile}.}
+    Référence pour l'intégration de \texttt{FinancialAnalysisService} : appels \texttt{POST /chat/completions}, paramètres de température, gestion du timeout et bonnes pratiques d'anonymisation des données financières avant envoi à l'IA.
+    \biburl{https://console.groq.com/docs}
+\end{enumerate}
+
+\section*{Technologies frontend et motion design}
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Équipe Inertia.js.}
+    \emph{Guide officiel Inertia.js~v2 --- routage asynchrone et partage des props de session.}
+    Documentation du pont Laravel/React utilisé dans FinFlow : transmission des données serveur vers les pages React sans API REST intermédiaire, gestion des formulaires et navigation SPA.
+    \biburl{https://inertiajs.com/}
+
+    \item \textbf{Équipe React (Meta).}
+    \emph{Documentation officielle React~19 --- hooks d'état, cycles de vie et composition de composants.}
+    Référence pour la couche d'aperçu live des documents, la gestion des états locaux (\texttt{useState}, \texttt{useForm}) et l'architecture de la couche de calcul miroir JavaScript synchronisée avec le PHP.
+    \biburl{https://react.dev/}
+
+    \item \textbf{Matt Perry / Framer Motion.}
+    \emph{Guide d'implémentation Motion --- variants d'animation, micro-interactions et effets visuels.}
+    Documentation consultée pour l'écran de connexion premium : orchestration des \emph{variants} (\texttt{staggerChildren}), propriétés \texttt{initial}/\texttt{animate}, micro-interactions \texttt{whileHover}/\texttt{whileTap}, et composition avec les classes Tailwind \texttt{backdrop-blur} pour le glassmorphism.
+    \biburl{https://motion.dev/}
+\end{enumerate}
+
+\end{document}
