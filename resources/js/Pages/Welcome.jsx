@@ -1421,11 +1421,81 @@ function PrimarySubscribeAction({ auth, canAccessDashboard, isSuspended, startCh
    PAGE
    ============================================================ */
 
+const FLASH_AUTO_DISMISS_MS = 6000;
+
+function WelcomeFlashBanner() {
+    const { flash } = usePage().props;
+    const [banner, setBanner] = useState(null);
+    const [isLeaving, setIsLeaving] = useState(false);
+
+    useEffect(() => {
+        if (flash?.success) {
+            setBanner({ type: 'success', message: flash.success });
+        } else if (flash?.error) {
+            setBanner({ type: 'error', message: flash.error });
+        } else {
+            setBanner(null);
+        }
+
+        setIsLeaving(false);
+    }, [flash?.success, flash?.error]);
+
+    useEffect(() => {
+        if (!banner) {
+            return undefined;
+        }
+
+        const fadeTimer = window.setTimeout(() => setIsLeaving(true), FLASH_AUTO_DISMISS_MS - 500);
+        const hideTimer = window.setTimeout(() => setBanner(null), FLASH_AUTO_DISMISS_MS);
+
+        return () => {
+            window.clearTimeout(fadeTimer);
+            window.clearTimeout(hideTimer);
+        };
+    }, [banner]);
+
+    if (!banner) {
+        return null;
+    }
+
+    const dismiss = () => {
+        setIsLeaving(true);
+        window.setTimeout(() => setBanner(null), 300);
+    };
+
+    const toneClass =
+        banner.type === 'success'
+            ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-50'
+            : 'border-rose-400/40 bg-rose-500/15 text-rose-50';
+
+    return (
+        <div
+            role="alert"
+            className={`fixed left-1/2 top-24 z-[60] w-[min(92vw,36rem)] -translate-x-1/2 px-2 transition-all duration-500 ${
+                isLeaving ? 'translate-y-[-8px] opacity-0' : 'translate-y-0 opacity-100'
+            }`}
+        >
+            <div
+                className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur-sm ${toneClass}`}
+            >
+                <p className="flex-1 leading-relaxed">{banner.message}</p>
+                <button
+                    type="button"
+                    onClick={dismiss}
+                    className="shrink-0 rounded p-0.5 text-base leading-none opacity-70 transition hover:opacity-100"
+                    aria-label="Fermer le message"
+                >
+                    ×
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function Welcome({ auth }) {
     const year = new Date().getFullYear();
     const canAccessDashboard = Boolean(auth?.user?.can_access_app);
     const isSuspended = Boolean(auth?.user?.is_suspended);
-    const flash = usePage().props.flash ?? {};
 
     const startCheckout = () => {
         router.post(route('billing.checkout'));
@@ -1481,20 +1551,7 @@ export default function Welcome({ auth }) {
                 <div className="pointer-events-none fixed -left-1/4 top-1/3 z-0 h-[420px] w-[420px] rounded-full bg-emerald-500/20 blur-[120px]" />
                 <div className="pointer-events-none fixed -right-1/4 bottom-1/4 z-0 h-[380px] w-[380px] rounded-full bg-sky-500/15 blur-[120px]" />
 
-                {(flash?.error || flash?.success) && (
-                    <div className="fixed left-1/2 top-24 z-[60] w-[min(92vw,36rem)] -translate-x-1/2 px-2">
-                        {flash.error && (
-                            <div className="rounded-2xl border border-rose-400/40 bg-rose-500/15 px-4 py-3 text-sm text-rose-50 shadow-lg backdrop-blur-sm">
-                                {flash.error}
-                            </div>
-                        )}
-                        {flash.success && (
-                            <div className="rounded-2xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-3 text-sm text-emerald-50 shadow-lg backdrop-blur-sm">
-                                {flash.success}
-                            </div>
-                        )}
-                    </div>
-                )}
+                <WelcomeFlashBanner />
 
                 <nav className="fixed left-1/2 top-6 z-50 flex w-[90%] max-w-5xl -translate-x-1/2 items-center justify-between rounded-full border border-white/10 bg-[rgba(10,14,20,0.75)] px-4 py-3 shadow-lg backdrop-blur-md sm:px-6">
                     <MagneticLink href="/" wrapperClassName="inline-flex" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded-full">
