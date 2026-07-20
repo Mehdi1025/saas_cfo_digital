@@ -11,7 +11,8 @@ export default defineConfig({
         react(),
     ],
     build: {
-        manifest: true,
+        // Chemin attendu par Laravel : public/build/manifest.json (pas .vite/manifest.json)
+        manifest: 'manifest.json',
         outDir: 'public/build',
         emptyOutDir: true,
         chunkSizeWarningLimit: 1500,
