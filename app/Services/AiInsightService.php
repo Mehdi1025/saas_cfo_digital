@@ -13,7 +13,7 @@ class AiInsightService
     {
     }
 
-    public function findOrGenerateForDashboard(User $user, array $dashboardData): ?AiInsight
+    public function findForDashboard(User $user, array $dashboardData): ?AiInsight
     {
         $month = $dashboardData['kpis_mensuels']['mois_actuel'] ?? null;
 
@@ -21,12 +21,23 @@ class AiInsightService
             return null;
         }
 
-        $existingInsight = AiInsight::where('user_id', $user->id)
+        return AiInsight::where('user_id', $user->id)
             ->where('month', $month)
             ->first();
+    }
+
+    public function findOrGenerateForDashboard(User $user, array $dashboardData): ?AiInsight
+    {
+        $existingInsight = $this->findForDashboard($user, $dashboardData);
 
         if ($existingInsight) {
             return $existingInsight;
+        }
+
+        $month = $dashboardData['kpis_mensuels']['mois_actuel'] ?? null;
+
+        if (! $month) {
+            return null;
         }
 
         try {
@@ -58,14 +69,12 @@ class AiInsightService
             'id' => $insight->id,
             'month' => $insight->month,
             'content' => $insight->displayContent(),
-            'generated_content' => $insight->generated_content,
-            'edited_content' => $insight->edited_content,
+            'edited_content' => $insight->edited_content ?? $insight->displayContent(),
             'is_edited' => $insight->edited_content !== null,
-            'edited_at' => $insight->edited_at,
         ];
     }
 
-    public function dashboardStatus(?AiInsight $insight, array $dashboardData): string
+    public function dashboardStatus(?AiInsight $insight, array $dashboardData, bool $allowPending = true): string
     {
         if ($insight) {
             return 'ready';
@@ -75,7 +84,7 @@ class AiInsightService
             return 'missing_data';
         }
 
-        return 'unavailable';
+        return $allowPending ? 'pending' : 'unavailable';
     }
 
     /**

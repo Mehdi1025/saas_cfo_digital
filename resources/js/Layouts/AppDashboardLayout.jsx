@@ -410,7 +410,7 @@ export default function AppDashboardLayout({ children, title, badge }) {
                     </div>
                 </header>
 
-                <main className="relative flex-1 overflow-y-auto bg-obsidian p-8">
+                <main className="relative flex-1 overflow-y-auto bg-obsidian p-8 [contain:layout]">
                     <div className="relative z-[1]">{children}</div>
                 </main>
             </div>

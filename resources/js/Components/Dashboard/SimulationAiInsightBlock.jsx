@@ -1,51 +1,20 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 
 function AiThinkingLoader() {
     return (
         <div className="flex items-center gap-3 text-sm text-neonBlue">
             <div className="flex gap-1">
                 {[0, 1, 2].map((dot) => (
-                    <motion.span
+                    <span
                         key={dot}
-                        className="h-2 w-2 rounded-full bg-neonBlue"
-                        animate={{ opacity: [0.25, 1, 0.25], y: [0, -3, 0] }}
-                        transition={{
-                            duration: 1,
-                            repeat: Infinity,
-                            delay: dot * 0.15,
-                        }}
+                        className="h-2 w-2 animate-pulse rounded-full bg-neonBlue"
+                        style={{ animationDelay: `${dot * 150}ms` }}
                     />
                 ))}
             </div>
             <span className="font-medium tracking-wide">Copifi analyse votre scenario...</span>
         </div>
     );
-}
-
-function TypewriterText({ text }) {
-    const [displayed, setDisplayed] = useState('');
-
-    useEffect(() => {
-        if (!text) {
-            setDisplayed('');
-            return undefined;
-        }
-
-        setDisplayed('');
-        let index = 0;
-        const interval = window.setInterval(() => {
-            index += 1;
-            setDisplayed(text.slice(0, index));
-            if (index >= text.length) {
-                window.clearInterval(interval);
-            }
-        }, 16);
-
-        return () => window.clearInterval(interval);
-    }, [text]);
-
-    return <span>{displayed}</span>;
 }
 
 export default function SimulationAiInsightBlock({
@@ -63,6 +32,7 @@ export default function SimulationAiInsightBlock({
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
             className="mt-5 rounded-2xl border border-neonBlue/20 bg-[linear-gradient(145deg,rgba(0,240,255,0.06)_0%,rgba(255,255,255,0.02)_100%)] p-5"
         >
             <div className="mb-3 flex items-center gap-2">
@@ -77,9 +47,7 @@ export default function SimulationAiInsightBlock({
             ) : error ? (
                 <p className="text-sm leading-7 text-rose-300">{error}</p>
             ) : insight ? (
-                <p className="min-h-[3.5rem] text-sm leading-7 text-gray-200">
-                    <TypewriterText text={insight} />
-                </p>
+                <p className="min-h-[3.5rem] text-sm leading-7 text-gray-200">{insight}</p>
             ) : (
                 <p className="text-sm leading-7 text-gray-400">
                     {fallbackContent ??

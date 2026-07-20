@@ -1,13 +1,12 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
 import CfoPageShell from '@/Components/CfoPageShell';
-import DashboardChatWidget from '@/Components/Dashboard/DashboardChatWidget';
 import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
 import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
 import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
 import { useDashboardSimulation } from '@/hooks/useDashboardSimulation';
 import { useForm, usePage } from '@inertiajs/react';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
+import axios from 'axios';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Area,
     AreaChart,
@@ -22,13 +21,13 @@ import {
 } from 'recharts';
 
 const GLASS_PANEL =
-    'border border-glassBorder bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.01)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-[20px]';
+    'border border-glassBorder bg-[linear-gradient(145deg,rgba(11,16,24,0.94)_0%,rgba(8,12,18,0.9)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.4)]';
 
 const NEON_BLUE = '#00F0FF';
 const NEON_MINT = '#00FF9D';
 const ORANGE = '#FF8A00';
 
-function SparklineArea({ data, stroke, fillId }) {
+const SparklineArea = memo(function SparklineArea({ data, stroke, fillId }) {
     return (
         <ResponsiveContainer width="100%" height={48}>
             <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
@@ -40,11 +39,18 @@ function SparklineArea({ data, stroke, fillId }) {
                 </defs>
                 <XAxis dataKey="i" hide />
                 <YAxis hide domain={['auto', 'auto']} />
-                <Area type="monotone" dataKey="v" stroke={stroke} strokeWidth={2} fill={`url(#${fillId})`} isAnimationActive />
+                <Area
+                    type="monotone"
+                    dataKey="v"
+                    stroke={stroke}
+                    strokeWidth={2}
+                    fill={`url(#${fillId})`}
+                    isAnimationActive={false}
+                />
             </AreaChart>
         </ResponsiveContainer>
     );
-}
+});
 
 function MainChartTooltip({ active, payload, label }) {
     if (!active || !payload?.length) {
@@ -52,7 +58,7 @@ function MainChartTooltip({ active, payload, label }) {
     }
 
     return (
-        <div className="rounded-lg border border-white/10 bg-obsidian/95 px-3 py-2 text-xs shadow-xl backdrop-blur-md">
+        <div className="rounded-lg border border-white/10 bg-obsidian px-3 py-2 text-xs shadow-xl">
             <p className="mb-1 font-medium text-white">{label}</p>
             {payload.map((p) => (
                 <p key={p.dataKey} className="text-gray-300">
@@ -111,6 +117,8 @@ function sparklineFrom(values) {
 export default function Dashboard() {
     const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable' } = usePage().props;
     const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
+    const [resolvedAiInsight, setResolvedAiInsight] = useState(aiInsight);
+    const [resolvedAiInsightStatus, setResolvedAiInsightStatus] = useState(aiInsightStatus);
     const {
         data: aiInsightForm,
         setData: setAiInsightForm,
@@ -122,14 +130,57 @@ export default function Dashboard() {
         edited_content: aiInsight?.edited_content ?? aiInsight?.content ?? '',
     });
 
-    const submitAiInsightUpdate = (event) => {
-        event.preventDefault();
+    useEffect(() => {
+        if (resolvedAiInsightStatus !== 'pending') {
+            return undefined;
+        }
 
-        if (!aiInsight?.id) {
+        let cancelled = false;
+
+        axios
+            .get(route('dashboard.ai-insight'), {
+                params: viewedUser?.id ? { viewed_user_id: viewedUser.id } : {},
+            })
+            .then((response) => {
+                if (cancelled) {
+                    return;
+                }
+
+                setResolvedAiInsight(response.data?.aiInsight ?? null);
+                setResolvedAiInsightStatus(response.data?.aiInsightStatus ?? 'unavailable');
+            })
+            .catch(() => {
+                if (cancelled) {
+                    return;
+                }
+
+                setResolvedAiInsightStatus('unavailable');
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [resolvedAiInsightStatus, viewedUser?.id]);
+
+    useEffect(() => {
+        if (!resolvedAiInsight) {
             return;
         }
 
-        updateAiInsight(route('admin.ai-insights.update', aiInsight.id), {
+        setAiInsightForm(
+            'edited_content',
+            resolvedAiInsight.edited_content ?? resolvedAiInsight.content ?? '',
+        );
+    }, [resolvedAiInsight, setAiInsightForm]);
+
+    const submitAiInsightUpdate = (event) => {
+        event.preventDefault();
+
+        if (!resolvedAiInsight?.id) {
+            return;
+        }
+
+        updateAiInsight(route('admin.ai-insights.update', resolvedAiInsight.id), {
             preserveScroll: true,
         });
     };
@@ -145,11 +196,15 @@ export default function Dashboard() {
 
     const alert = dashboardData?.alerte ?? null;
     const evolution = dashboardData?.graphique_evolution ?? [];
-    const chartData = evolution.map((item) => ({
-        month: item.mois,
-        revenus: Number(item.ca ?? 0),
-        charges: Number(item.charges ?? 0),
-    }));
+    const chartData = useMemo(
+        () =>
+            evolution.map((item) => ({
+                month: item.mois,
+                revenus: Number(item.ca ?? 0),
+                charges: Number(item.charges ?? 0),
+            })),
+        [evolution],
+    );
     const hasFinancialData = chartData.length > 0;
 
     const {
@@ -177,57 +232,78 @@ export default function Dashboard() {
             ? (kpis.marge_nette / kpis.chiffre_affaires) * 100
             : null;
 
-    const healthPie = [
-        { name: 'Score', value: healthScore },
-        { name: 'Reste', value: 100 - healthScore },
-    ];
-
-    const recentRows = [...chartData].reverse().slice(0, 3);
-    const revenuesSpark = sparklineFrom(chartData.map((item) => item.revenus));
-    const marginSpark = sparklineFrom(
-        chartData.map((item) =>
-            item.revenus > 0 ? ((item.revenus - item.charges) / item.revenus) * 100 : 0,
-        ),
+    const healthPie = useMemo(
+        () => [
+            { name: 'Score', value: healthScore },
+            { name: 'Reste', value: Math.max(0, 100 - healthScore) },
+        ],
+        [healthScore],
     );
-    const ltvSpark = sparklineFrom(chartData.map(() => kpis.ltv ?? 0));
 
-    const alertItems = [];
+    const recentRows = useMemo(() => [...chartData].reverse().slice(0, 3), [chartData]);
+    const revenuesSpark = useMemo(
+        () => sparklineFrom(chartData.map((item) => item.revenus)),
+        [chartData],
+    );
+    const marginSpark = useMemo(
+        () =>
+            sparklineFrom(
+                chartData.map((item) =>
+                    item.revenus > 0 ? ((item.revenus - item.charges) / item.revenus) * 100 : 0,
+                ),
+            ),
+        [chartData],
+    );
+    const ltvSpark = useMemo(
+        () => sparklineFrom(chartData.map(() => kpis.ltv ?? 0)),
+        [chartData, kpis.ltv],
+    );
 
-    if (alert) {
-        alertItems.push({
-            tone: alert.niveau,
-            title:
-                alert.niveau === 'critique'
-                    ? 'Alerte critique'
-                    : alert.niveau === 'attention'
-                      ? 'Attention : indicateur a surveiller'
-                      : 'Sain : indicateurs favorables',
-            message: alert.message,
-        });
-    }
+    const alertItems = useMemo(() => {
+        const items = [];
 
-    if (kpis.cac === null || kpis.ltv === null) {
-        alertItems.push({
-            tone: 'neutral',
-            title: 'Donnees incompletes',
-            message:
-                'Le CAC ou la LTV necessitent un nombre de clients superieur a zero.',
-        });
-    }
+        if (alert) {
+            items.push({
+                tone: alert.niveau,
+                title:
+                    alert.niveau === 'critique'
+                        ? 'Alerte critique'
+                        : alert.niveau === 'attention'
+                          ? 'Attention : indicateur a surveiller'
+                          : 'Sain : indicateurs favorables',
+                message: alert.message,
+            });
+        }
 
-    if (!alertItems.length) {
-        alertItems.push({
-            tone: 'neutral',
-            title: 'Aucune alerte bloquante',
-            message:
-                'Vos indicateurs ne presentent pas de risque majeur sur le mois courant.',
-        });
-    }
+        if (kpis.cac === null || kpis.ltv === null) {
+            items.push({
+                tone: 'neutral',
+                title: 'Donnees incompletes',
+                message:
+                    'Le CAC ou la LTV necessitent un nombre de clients superieur a zero.',
+            });
+        }
+
+        if (!items.length) {
+            items.push({
+                tone: 'neutral',
+                title: 'Aucune alerte bloquante',
+                message:
+                    'Vos indicateurs ne presentent pas de risque majeur sur le mois courant.',
+            });
+        }
+
+        return items;
+    }, [alert, kpis.cac, kpis.ltv]);
+
+    const renderMainChartTooltip = useCallback((props) => <MainChartTooltip {...props} />, []);
 
     const aiInsightEmptyMessage =
-        aiInsightStatus === 'missing_data'
+        resolvedAiInsightStatus === 'missing_data'
             ? 'Saisissez vos donnees mensuelles pour generer l analyse IA.'
-            : 'L analyse IA est momentanement indisponible. Le dashboard reste accessible.';
+            : resolvedAiInsightStatus === 'pending'
+              ? 'Analyse IA en cours de generation...'
+              : 'L analyse IA est momentanement indisponible. Le dashboard reste accessible.';
 
     return (
         <AppDashboardLayout
@@ -381,7 +457,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="space-y-8 lg:col-span-2">
                         <section id="main-chart-section" className={`${GLASS_PANEL} relative overflow-hidden rounded-3xl p-1`}>
-                            <div className="h-full rounded-[23px] bg-obsidian/40 p-6 backdrop-blur-md">
+                            <div className="h-full rounded-[23px] bg-obsidian/70 p-6">
                                 <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
                                     <div>
                                         <h2 className="text-lg font-semibold tracking-wide text-white">
@@ -430,12 +506,6 @@ export default function Dashboard() {
                                                         <stop offset="0%" stopColor={ORANGE} stopOpacity={0.08} />
                                                         <stop offset="100%" stopColor={ORANGE} stopOpacity={0} />
                                                     </linearGradient>
-                                                    <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
-                                                        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#00F0FF" floodOpacity="0.65" />
-                                                    </filter>
-                                                    <filter id="glowOrange" x="-20%" y="-20%" width="140%" height="140%">
-                                                        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#FF8A00" floodOpacity="0.55" />
-                                                    </filter>
                                                 </defs>
                                                 <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
                                                 <XAxis
@@ -451,7 +521,7 @@ export default function Dashboard() {
                                                     tickLine={false}
                                                     width={48}
                                                 />
-                                                <Tooltip content={<MainChartTooltip />} />
+                                                <Tooltip content={renderMainChartTooltip} />
                                                 <Area
                                                     type="monotone"
                                                     dataKey="chargesHist"
@@ -460,7 +530,7 @@ export default function Dashboard() {
                                                     strokeWidth={2}
                                                     fill="url(#fillChg)"
                                                     connectNulls={false}
-                                                    isAnimationActive
+                                                    isAnimationActive={false}
                                                 />
                                                 <Area
                                                     type="monotone"
@@ -470,7 +540,7 @@ export default function Dashboard() {
                                                     strokeWidth={3}
                                                     fill="url(#fillRev)"
                                                     connectNulls={false}
-                                                    isAnimationActive
+                                                    isAnimationActive={false}
                                                 />
                                                 {simulationMode && (
                                                     <>
@@ -483,8 +553,7 @@ export default function Dashboard() {
                                                             strokeDasharray="8 6"
                                                             fill="url(#fillChgSim)"
                                                             connectNulls
-                                                            style={{ filter: 'url(#glowOrange)' }}
-                                                            isAnimationActive
+                                                            isAnimationActive={false}
                                                         />
                                                         <Area
                                                             type="monotone"
@@ -495,8 +564,7 @@ export default function Dashboard() {
                                                             strokeDasharray="8 6"
                                                             fill="url(#fillRevSim)"
                                                             connectNulls
-                                                            style={{ filter: 'url(#glowBlue)' }}
-                                                            isAnimationActive
+                                                            isAnimationActive={false}
                                                         />
                                                     </>
                                                 )}
@@ -616,7 +684,7 @@ export default function Dashboard() {
                                             stroke="#09090B"
                                             strokeWidth={2}
                                             paddingAngle={0}
-                                            isAnimationActive
+                                            isAnimationActive={false}
                                         >
                                             <Cell fill={healthTone.color} />
                                             <Cell fill="rgba(255,255,255,0.05)" />
@@ -624,15 +692,11 @@ export default function Dashboard() {
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                                    <motion.span
-                                        key={healthScore}
-                                        initial={{ scale: 0.92, opacity: 0.6 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                                        className={`text-5xl font-bold text-white ${healthTone.glow}`}
+                                    <span
+                                        className={`text-5xl font-bold text-white transition-opacity duration-200 ${healthTone.glow}`}
                                     >
                                         {healthScore}
-                                    </motion.span>
+                                    </span>
                                     <span className="mt-1 text-sm font-medium uppercase tracking-widest text-gray-400">/100</span>
                                 </div>
                             </div>
@@ -691,15 +755,15 @@ export default function Dashboard() {
                                     <p className="mt-1 text-sm text-gray-400">
                                         {simulationMode
                                             ? 'Analyse What-If en direct via Groq.'
-                                            : aiInsight
-                                              ? aiInsight.is_edited
+                                            : resolvedAiInsight
+                                              ? resolvedAiInsight.is_edited
                                                   ? 'Analyse corrigee par un administrateur.'
                                                   : 'Analyse generee automatiquement par Groq.'
                                               : aiInsightEmptyMessage}
                                     </p>
                                 </div>
 
-                                {aiInsight ? (
+                                {resolvedAiInsight ? (
                                     <button
                                         type="button"
                                         onClick={() => setIsAiInsightOpen((open) => !open)}
@@ -714,7 +778,7 @@ export default function Dashboard() {
                                 )}
                             </div>
 
-                            {!simulationMode && !aiInsight && (
+                            {!simulationMode && !resolvedAiInsight && (
                                 <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-6 text-sm leading-7 text-gray-300">
                                     <p className="font-semibold text-white">
                                         Analyse non disponible pour le moment
@@ -732,10 +796,10 @@ export default function Dashboard() {
                                 error={simulationError}
                             />
 
-                            {!simulationMode && aiInsight && isAiInsightOpen && (
+                            {!simulationMode && resolvedAiInsight && isAiInsightOpen && (
                                 <div className="mt-5 space-y-5">
                                     <div className="whitespace-pre-line rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-7 text-gray-300">
-                                        {aiInsight.content}
+                                        {resolvedAiInsight.content}
                                     </div>
 
                                     {viewedUser && (

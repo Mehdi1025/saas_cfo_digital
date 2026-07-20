@@ -64,6 +64,10 @@ Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified', 'active.subscription'])
     ->name('dashboard');
 
+Route::get('/dashboard/ai-insight', [DashboardController::class, 'aiInsight'])
+    ->middleware(['auth', 'verified', 'active.subscription', 'throttle:6,1'])
+    ->name('dashboard.ai-insight');
+
 Route::post('/dashboard/simulate-insights', [DashboardSimulationController::class, 'simulateInsights'])
     ->middleware(['auth', 'verified', 'active.subscription', 'throttle:12,1'])
     ->name('dashboard.simulate-insights');

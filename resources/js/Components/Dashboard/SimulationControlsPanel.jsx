@@ -42,13 +42,12 @@ export default function SimulationControlsPanel({ sliders, onChange, onReset }) 
     return (
         <AnimatePresence>
             <motion.div
-                initial={{ opacity: 0, y: 16, height: 0 }}
-                animate={{ opacity: 1, y: 0, height: 'auto' }}
-                exit={{ opacity: 0, y: 12, height: 0 }}
-                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                className="overflow-hidden"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 12 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
-                <div className="mt-6 rounded-2xl border border-neonBlue/20 bg-[linear-gradient(145deg,rgba(0,240,255,0.08)_0%,rgba(255,255,255,0.02)_100%)] p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+                <div className="mt-6 rounded-2xl border border-neonBlue/20 bg-[linear-gradient(145deg,rgba(0,240,255,0.08)_0%,rgba(255,255,255,0.02)_100%)] p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),0_12px_40px_rgba(0,0,0,0.35)]">
                     <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neonBlue">

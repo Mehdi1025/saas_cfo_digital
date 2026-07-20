@@ -66,6 +66,7 @@ class GroqApiService
 
         $response = Http::withToken($apiKey)
             ->acceptJson()
+            ->timeout(20)
             ->post($url, [
                 'model' => $model,
                 'messages' => [

@@ -23,7 +23,7 @@ class AdminUserDashboardController extends Controller
             ->get();
 
         $dashboardData = $this->financialService->buildDashboardData($records);
-        $aiInsight = $this->aiInsightService->findOrGenerateForDashboard($user, $dashboardData);
+        $aiInsight = $this->aiInsightService->findForDashboard($user, $dashboardData);
 
         return Inertia::render('Dashboard', [
             'dashboardData' => $dashboardData,
