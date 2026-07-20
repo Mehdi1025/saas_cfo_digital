@@ -370,39 +370,39 @@ export default function AppDashboardLayout({ children, title, badge }) {
                         </span>
                     </div>
 
-                    <div className="flex w-full shrink-0 flex-wrap items-center justify-between gap-3 lg:w-auto lg:justify-end lg:gap-4">
-                        <div className="flex items-center gap-2 rounded-full border border-[#10B981]/35 bg-[#10B981]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white">
+                    <div className="flex w-full shrink-0 items-center gap-2 lg:w-auto lg:justify-end lg:gap-4">
+                        <div className="flex min-w-0 items-center gap-2 rounded-full border border-[#10B981]/35 bg-[#10B981]/10 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white sm:px-3 sm:text-xs">
                             <span
                                 className="h-2 w-2 shrink-0 rounded-full bg-[#10B981] shadow-[0_0_10px_rgba(16,185,129,0.95)]"
                                 aria-hidden
                             />
-                            {isAdmin ? 'Admin' : 'Abonnement : actif'}
+                            <span className="truncate">{isAdmin ? 'Admin' : 'Abonnement : actif'}</span>
                         </div>
 
                         <button
                             type="button"
-                            className="relative rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
+                            className="relative shrink-0 rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/5 hover:text-zinc-200"
                             aria-label="Notifications"
                         >
                             <IconBell className="h-5 w-5" />
                             <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.85)] ring-2 ring-[#09231F]" />
                         </button>
 
-                        <span className="inline-block h-10 w-px shrink-0 self-center bg-white/10" aria-hidden />
+                        <span className="hidden h-10 w-px shrink-0 self-center bg-white/10 sm:inline-block" aria-hidden />
 
-                        <div className="flex items-center gap-3">
-                            <div className="text-right leading-none">
+                        <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3 lg:ml-0">
+                            <div className="hidden text-right leading-none sm:block">
                                 <p className="text-sm font-bold leading-tight text-white">{userName}</p>
                                 <p className="mt-0.5 text-xs lowercase leading-tight text-zinc-500">{userRole}</p>
                             </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold uppercase text-white">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold uppercase text-white sm:h-10 sm:w-10">
                                 {userName.charAt(0)}
                             </div>
                             <Link
                                 href={route('logout')}
                                 method="post"
                                 as="button"
-                                className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-zinc-300 transition hover:bg-white/10 hover:text-white"
+                                className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-[10px] font-semibold uppercase tracking-wide text-zinc-300 transition hover:bg-white/10 hover:text-white sm:px-3 sm:text-xs"
                             >
                                 Deconnexion
                             </Link>
@@ -410,7 +410,7 @@ export default function AppDashboardLayout({ children, title, badge }) {
                     </div>
                 </header>
 
-                <main className="relative flex-1 overflow-y-auto bg-obsidian p-8">
+                <main className="relative flex-1 overflow-y-auto bg-obsidian p-4 sm:p-6 lg:p-8">
                     <div className="relative z-[1]">{children}</div>
                 </main>
             </div>

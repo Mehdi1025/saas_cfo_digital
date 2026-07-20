@@ -50,6 +50,9 @@ Route::get('/', function (Request $request) {
 
 Route::get('/test', fn () => Inertia::render('TestLanding'));
 
+Route::get('/mentions-legales', fn () => Inertia::render('Legal/MentionsLegales'))
+    ->name('legal.mentions');
+
 Route::post('/landing/chat', LandingChatController::class)
     ->middleware('throttle:12,1')
     ->name('landing.chat');

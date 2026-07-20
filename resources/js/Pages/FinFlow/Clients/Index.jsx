@@ -307,30 +307,30 @@ export default function ClientsIndex({ clients, stats, filters }) {
                     </div>
                 }
             >
-                <div className="space-y-6">
-                    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                        <article className={cardClass}>
+                <div className="min-w-0 space-y-6">
+                    <section className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        <article className={`${cardClass} min-w-0`}>
                             <div className="flex items-start justify-between">
                                 <p className="text-sm text-slate-400">Total Clients</p>
                                 <Users className="h-5 w-5 text-blue-400" />
                             </div>
                             <p className="mt-2 text-3xl font-bold text-white">{stats.total_clients}</p>
                         </article>
-                        <article className={cardClass}>
+                        <article className={`${cardClass} min-w-0`}>
                             <div className="flex items-start justify-between">
                                 <p className="text-sm text-slate-400">Clients Actifs</p>
                                 <Building2 className="h-5 w-5 text-emerald-400" />
                             </div>
                             <p className="mt-2 text-3xl font-bold text-white">{stats.active_clients}</p>
                         </article>
-                        <article className={cardClass}>
+                        <article className={`${cardClass} min-w-0`}>
                             <div className="flex items-start justify-between">
                                 <p className="text-sm text-slate-400">Chiffre d&apos;affaires</p>
                                 <CircleDollarSign className="h-5 w-5 text-amber-400" />
                             </div>
                             <p className="mt-2 text-3xl font-bold text-white">{formatMoney(stats.total_revenue)}</p>
                         </article>
-                        <article className={cardClass}>
+                        <article className={`${cardClass} min-w-0`}>
                             <div className="flex items-start justify-between">
                                 <p className="text-sm text-slate-400">Encours</p>
                                 <Wallet className="h-5 w-5 text-red-400" />
@@ -341,11 +341,11 @@ export default function ClientsIndex({ clients, stats, filters }) {
                         </article>
                     </section>
 
-                    <section className="grid gap-6 xl:grid-cols-12">
-                        <div className="xl:col-span-8">
-                            <div className="overflow-hidden rounded-xl border border-[#1e293b] bg-[#111827]">
+                    <section className="grid min-w-0 gap-6 xl:grid-cols-12">
+                        <div className="min-w-0 xl:col-span-8">
+                            <div className="min-w-0 overflow-hidden rounded-xl border border-[#1e293b] bg-[#111827]">
                                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
-                                    <form onSubmit={runSearch} className="relative w-full max-w-sm">
+                                    <form onSubmit={runSearch} className="relative w-full min-w-0 max-w-sm">
                                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                                         <input
                                             value={search}
@@ -421,12 +421,12 @@ export default function ClientsIndex({ clients, stats, filters }) {
                             </div>
                         </div>
 
-                        <aside className="xl:col-span-4">
-                            <div className="rounded-xl border border-[#1e293b] bg-[#111827] p-5">
+                        <aside className="min-w-0 xl:col-span-4">
+                            <div className="min-w-0 rounded-xl border border-[#1e293b] bg-[#111827] p-5">
                                 {selectedClient ? (
                                     <>
                                         <div className="mb-4">
-                                            <h2 className="text-xl font-semibold text-white">{selectedClient.name}</h2>
+                                            <h2 className="break-words text-xl font-semibold text-white">{selectedClient.name}</h2>
                                             <p className="mt-1 text-xs text-slate-500">ID: CLI-{selectedClient.id}</p>
                                         </div>
 
@@ -464,19 +464,19 @@ export default function ClientsIndex({ clients, stats, filters }) {
                                             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                                                 Contact principal
                                             </p>
-                                            <p className="flex items-center gap-2 text-sm text-slate-200">
-                                                <Mail className="h-4 w-4 text-slate-500" />
+                                            <p className="flex min-w-0 items-center gap-2 break-words text-sm text-slate-200">
+                                                <Mail className="h-4 w-4 shrink-0 text-slate-500" />
                                                 {selectedClient.email || 'Email non renseigné'}
                                             </p>
-                                            <p className="flex items-center gap-2 text-sm text-slate-200">
-                                                <Phone className="h-4 w-4 text-slate-500" />
+                                            <p className="flex min-w-0 items-center gap-2 text-sm text-slate-200">
+                                                <Phone className="h-4 w-4 shrink-0 text-slate-500" />
                                                 +33 00 00 00 00
                                             </p>
-                                            <p className="text-sm text-slate-400">
+                                            <p className="break-words text-sm text-slate-400">
                                                 {selectedClient.address || 'Adresse non renseignée'}
                                             </p>
                                             {selectedClient.delivery_address ? (
-                                                <p className="text-sm text-slate-400">
+                                                <p className="break-words text-sm text-slate-400">
                                                     Livraison : {selectedClient.delivery_address}
                                                 </p>
                                             ) : null}

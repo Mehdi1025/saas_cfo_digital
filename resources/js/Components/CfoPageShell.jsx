@@ -6,7 +6,7 @@ import CfoPageBackground from '@/Components/CfoPageBackground';
 export default function CfoPageShell({ children, className = '', simulationMode = false }) {
     return (
         <div
-            className={`selection:bg-neonBlue selection:text-obsidian relative -m-8 min-h-full overflow-hidden bg-obsidian px-8 pb-8 pt-8 font-display ${className}`}
+            className={`selection:bg-neonBlue selection:text-obsidian relative -m-4 min-h-full overflow-hidden bg-obsidian px-4 pb-6 pt-6 font-display sm:-m-6 sm:px-6 lg:-m-8 lg:px-8 lg:pb-8 lg:pt-8 ${className}`}
         >
             <CfoPageBackground simulationMode={simulationMode} />
             <div className="relative z-0">{children}</div>
