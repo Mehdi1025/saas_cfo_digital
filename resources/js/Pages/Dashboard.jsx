@@ -1,4 +1,5 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
+import CashflowTimeMachine from '@/Components/Dashboard/CashflowTimeMachine';
 import CfoPageShell from '@/Components/CfoPageShell';
 import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
 import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
@@ -453,6 +454,8 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </section>
+
+                    <CashflowTimeMachine />
 
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="space-y-8 lg:col-span-2">
