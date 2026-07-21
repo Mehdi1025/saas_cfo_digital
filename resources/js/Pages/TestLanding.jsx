@@ -613,14 +613,11 @@ export default function TestLanding() {
                         <p className="text-center text-sm text-zinc-500">
                             © {year} Mini CFO Digital. Tous droits réservés.
                         </p>
-                        <div className="flex gap-4 text-zinc-500">
-                            <a href="https://twitter.com" className="transition hover:text-white" aria-label="Twitter">
-                                𝕏
-                            </a>
-                            <a href="https://linkedin.com" className="transition hover:text-white" aria-label="LinkedIn">
-                                in
-                            </a>
-                        </div>
+                        <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-zinc-500">
+                            <a href="/mentions-legales" className="transition hover:text-white">Mentions légales</a>
+                            <a href="/conditions-generales" className="transition hover:text-white">CGV</a>
+                            <a href="/confidentialite" className="transition hover:text-white">Confidentialité</a>
+                        </nav>
                     </div>
                 </footer>
 
