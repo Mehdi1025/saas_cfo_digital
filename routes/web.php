@@ -18,6 +18,7 @@ use App\Http\Controllers\FinancialRecordController;
 use App\Http\Controllers\LandingChatController;
 use App\Http\Controllers\ParametresController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PowensController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StripeCheckoutController;
 use App\Http\Controllers\StripeWebhookController;
@@ -86,6 +87,14 @@ Route::post('/dashboard/simulate-insights', [DashboardSimulationController::clas
 Route::post('/dashboard/chat', DashboardChatController::class)
     ->middleware(['auth', 'verified', 'active.subscription', 'throttle:20,1'])
     ->name('dashboard.chat');
+
+Route::middleware(['auth', 'verified', 'active.subscription'])->group(function () {
+    Route::get('/powens/connect', [PowensController::class, 'redirect'])
+        ->name('powens.connect');
+
+    Route::get('/powens/callback', [PowensController::class, 'callback'])
+        ->name('powens.callback');
+});
 
 Route::post('/copilote/chat', DashboardChatController::class)
     ->middleware(['auth', 'verified', 'active.subscription', 'throttle:20,1'])

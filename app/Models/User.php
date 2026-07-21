@@ -35,6 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'powens_access_token',
     ];
 
     /**
@@ -48,6 +49,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'suspended_at' => 'datetime',
+            'powens_access_token' => 'encrypted',
+            'powens_id_user' => 'integer',
         ];
     }
 
@@ -59,5 +62,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function facturesFournisseurs(): HasMany
     {
         return $this->hasMany(FactureFournisseur::class);
+    }
+
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(BankAccount::class);
     }
 }

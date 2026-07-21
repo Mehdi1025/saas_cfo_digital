@@ -62,4 +62,13 @@ return [
         'webhook_secret' => env('PA_WEBHOOK_SECRET'),
     ],
 
+    'powens' => [
+        'domain' => env('POWENS_DOMAIN'),
+        'client_id' => env('POWENS_CLIENT_ID'),
+        'client_secret' => env('POWENS_CLIENT_SECRET'),
+        'redirect_uri' => env('POWENS_REDIRECT_URI', env('APP_URL').'/powens/callback'),
+        'webview_url' => env('POWENS_WEBVIEW_URL', 'https://webview.powens.com/connect'),
+        'timeout' => env('POWENS_TIMEOUT', 20),
+    ],
+
 ];
