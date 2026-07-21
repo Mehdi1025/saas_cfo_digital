@@ -20,10 +20,10 @@ export default function Copilot() {
     const facturation = summary.facturation ?? {};
 
     return (
-        <AppDashboardLayout title="Copilote IA" badge="Assistant financier">
-            <CfoPageShell>
-                <div className="relative mx-auto max-w-[1600px]">
-                    <div className="mb-8">
+        <AppDashboardLayout title="Copilote IA" badge="Assistant financier" viewportLocked>
+            <CfoPageShell fillViewport>
+                <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col">
+                    <div className="mb-6 shrink-0">
                         <div className="inline-flex items-center gap-2 rounded-full border border-neonBlue/30 bg-neonBlue/10 px-4 py-1.5 text-sm font-medium text-neonBlue">
                             <Sparkles className="h-3.5 w-3.5" />
                             <span>Accès à vos données pilotage + facturation</span>
@@ -57,9 +57,9 @@ export default function Copilot() {
                         ) : null}
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,340px)_1fr] lg:items-stretch">
-                        <aside className="flex flex-col gap-4">
-                            <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                    <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:items-stretch">
+                        <aside className="flex min-h-0 flex-col gap-4 lg:overflow-y-auto lg:overscroll-y-contain lg:pr-1">
+                            <section className={`${GLASS_PANEL} shrink-0 rounded-3xl p-6`}>
                                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neonMint">
                                     Pilotage
                                 </p>
@@ -105,7 +105,7 @@ export default function Copilot() {
                                 )}
                             </section>
 
-                            <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                            <section className={`${GLASS_PANEL} shrink-0 rounded-3xl p-6`}>
                                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neonBlue">
                                     Facturation
                                 </p>
@@ -149,7 +149,7 @@ export default function Copilot() {
                                 )}
                             </section>
 
-                            <section className={`${GLASS_PANEL} rounded-3xl p-6`}>
+                            <section className={`${GLASS_PANEL} shrink-0 rounded-3xl p-6`}>
                                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-500">
                                     Exemples
                                 </p>
@@ -162,8 +162,8 @@ export default function Copilot() {
                             </section>
                         </aside>
 
-                        <section className="flex min-h-[min(72vh,720px)] flex-col lg:sticky lg:top-0 lg:max-h-[calc(100vh-8rem)]">
-                            <DashboardChatWidget />
+                        <section className="flex min-h-[min(68vh,680px)] min-w-0 flex-col lg:min-h-0 lg:flex-1">
+                            <DashboardChatWidget className="min-h-0 flex-1" />
                         </section>
                     </div>
                 </div>

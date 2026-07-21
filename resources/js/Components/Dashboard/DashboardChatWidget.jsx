@@ -56,7 +56,7 @@ const ChatBubble = memo(function ChatBubble({ role, content, isTyping = false })
     );
 });
 
-export default function DashboardChatWidget() {
+export default function DashboardChatWidget({ className = '' }) {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
@@ -69,16 +69,41 @@ export default function DashboardChatWidget() {
     const [error, setError] = useState(null);
     const scrollRef = useRef(null);
     const inputRef = useRef(null);
+    const stickToBottomRef = useRef(true);
+
+    const scrollToBottom = useCallback((behavior = 'auto') => {
+        const el = scrollRef.current;
+        if (!el) {
+            return;
+        }
+
+        el.scrollTo({
+            top: el.scrollHeight,
+            behavior,
+        });
+    }, []);
+
+    const handleMessagesScroll = useCallback(() => {
+        const el = scrollRef.current;
+        if (!el) {
+            return;
+        }
+
+        const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+        stickToBottomRef.current = distanceFromBottom < 96;
+    }, []);
 
     useEffect(() => {
+        if (!stickToBottomRef.current) {
+            return undefined;
+        }
+
         const frame = window.requestAnimationFrame(() => {
-            if (scrollRef.current) {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-            }
+            scrollToBottom('auto');
         });
 
         return () => window.cancelAnimationFrame(frame);
-    }, [messages, isLoading]);
+    }, [messages, isLoading, scrollToBottom]);
 
     const sendMessage = useCallback(async (text) => {
         const trimmed = text.trim();
@@ -87,6 +112,7 @@ export default function DashboardChatWidget() {
         }
 
         const nextMessages = [...messages, { role: 'user', content: trimmed }];
+        stickToBottomRef.current = true;
         setMessages(nextMessages);
         setInput('');
         setError(null);
@@ -123,8 +149,10 @@ export default function DashboardChatWidget() {
     };
 
     return (
-        <div className={`${GLASS_PANEL} flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl`}>
-            <div className="relative flex items-center gap-3 border-b border-white/10 px-5 py-4">
+        <div
+            className={`${GLASS_PANEL} flex min-h-[520px] flex-col overflow-hidden rounded-3xl ${className}`}
+        >
+            <div className="relative flex shrink-0 items-center gap-3 border-b border-white/10 px-5 py-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#00F0FF] to-[#00FF9D]">
                     <Sparkles className="h-5 w-5 text-black" />
                 </div>
@@ -137,7 +165,8 @@ export default function DashboardChatWidget() {
 
             <div
                 ref={scrollRef}
-                className="flex-1 space-y-4 overflow-y-auto overscroll-y-contain px-4 py-5 sm:px-5 [contain:content]"
+                onScroll={handleMessagesScroll}
+                className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain px-4 py-5 sm:px-5 [scrollbar-gutter:stable]"
             >
                 {messages.map((msg, index) => (
                     <ChatBubble key={`${msg.role}-${index}`} role={msg.role} content={msg.content} />
@@ -146,7 +175,7 @@ export default function DashboardChatWidget() {
             </div>
 
             {messages.length <= 1 ? (
-                <div className="flex flex-wrap gap-2 px-4 pb-3 sm:px-5">
+                <div className="flex shrink-0 flex-wrap gap-2 px-4 pb-3 sm:px-5">
                     {SUGGESTED_QUESTIONS.map((q) => (
                         <button
                             key={q}
@@ -161,9 +190,9 @@ export default function DashboardChatWidget() {
                 </div>
             ) : null}
 
-            {error ? <p className="px-5 pb-2 text-xs text-rose-300">{error}</p> : null}
+            {error ? <p className="shrink-0 px-5 pb-2 text-xs text-rose-300">{error}</p> : null}
 
-            <form onSubmit={handleSubmit} className="border-t border-white/10 p-4 sm:p-5">
+            <form onSubmit={handleSubmit} className="shrink-0 border-t border-white/10 p-4 sm:p-5">
                 <div className="flex items-end gap-3">
                     <textarea
                         ref={inputRef}

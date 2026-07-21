@@ -264,7 +264,7 @@ function SidebarContent({ navSections, onNavigate }) {
 
 const headerChromeClass = 'bg-[radial-gradient(ellipse_at_top_left,_rgba(17,83,77,0.42)_0%,_#050505_62%)]';
 
-export default function AppDashboardLayout({ children, title, badge }) {
+export default function AppDashboardLayout({ children, title, badge, viewportLocked = false }) {
     const { auth } = usePage().props;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const path = (usePage().url.split('?')[0] || '/').replace(/\/$/, '') || '/';
@@ -410,8 +410,16 @@ export default function AppDashboardLayout({ children, title, badge }) {
                     </div>
                 </header>
 
-                <main className="relative flex-1 overflow-y-auto bg-obsidian p-8 [contain:layout]">
-                    <div className="relative z-[1]">{children}</div>
+                <main
+                    className={`relative flex-1 bg-obsidian p-8 ${
+                        viewportLocked
+                            ? 'overflow-y-auto lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden'
+                            : 'overflow-y-auto [contain:layout]'
+                    }`}
+                >
+                    <div className={`relative z-[1] ${viewportLocked ? 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col' : ''}`}>
+                        {children}
+                    </div>
                 </main>
             </div>
         </div>
