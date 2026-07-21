@@ -1,4 +1,5 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
+import ConnectBankButton from '@/Components/Banking/ConnectBankButton';
 import CashflowTimeMachine from '@/Components/Dashboard/CashflowTimeMachine';
 import CfoPageShell from '@/Components/CfoPageShell';
 import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
@@ -116,7 +117,7 @@ function sparklineFrom(values) {
 }
 
 export default function Dashboard() {
-    const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable' } = usePage().props;
+    const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable', flash } = usePage().props;
     const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
     const [resolvedAiInsight, setResolvedAiInsight] = useState(aiInsight);
     const [resolvedAiInsightStatus, setResolvedAiInsightStatus] = useState(aiInsightStatus);
@@ -313,6 +314,17 @@ export default function Dashboard() {
         >
             <CfoPageShell simulationMode={simulationMode}>
                 <div className="mx-auto max-w-[1600px] space-y-8">
+                    {flash?.success ? (
+                        <div className="rounded-2xl border border-neonMint/30 bg-neonMint/10 px-4 py-3 text-sm text-neonMint">
+                            {flash.success}
+                        </div>
+                    ) : null}
+                    {flash?.error ? (
+                        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+                            {flash.error}
+                        </div>
+                    ) : null}
+
                     <section className={`${GLASS_PANEL} rounded-2xl p-5`}>
                         <SimulationModeToggle
                             enabled={simulationMode}
@@ -454,6 +466,23 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </section>
+
+                    <section className={`${GLASS_PANEL} rounded-2xl p-5 sm:p-6`}>
+                        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neonBlue">
+                                    Open Banking
+                                </p>
+                                <h2 className="mt-1 text-lg font-semibold text-white">
+                                    Connectez votre banque
+                                </h2>
+                                <p className="mt-1 max-w-xl text-sm text-gray-400">
+                                    Synchronisez vos soldes et transactions en temps reel via Powens (DSP2).
+                                </p>
+                            </div>
+                            <ConnectBankButton className="w-full lg:w-auto lg:min-w-[320px]" />
+                        </div>
+                    </section>
 
                     <CashflowTimeMachine />
 
