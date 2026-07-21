@@ -51,12 +51,10 @@ class CopilotContextService
      */
     public function buildUiSummary(User $user): array
     {
-        $records = $user->financialRecords()->orderByDesc('month')->get();
-        $cfo = $this->financialService->buildDashboardData(
-            $records->sortBy('month')->values(),
-        );
+        $records = $user->financialRecords()->orderBy('month')->get();
+        $cfo = $this->financialService->buildDashboardData($records);
         $kpis = $cfo['kpis_mensuels'] ?? [];
-        $facturation = $this->buildFacturationContext($user);
+        $facturation = $this->buildLightFacturationSummary($user);
 
         return [
             'has_financial_data' => $records->isNotEmpty(),
@@ -76,6 +74,37 @@ class CopilotContextService
                 'clients_total' => $facturation['clients_total'] ?? 0,
                 'encours_factures_eur' => $facturation['encours_factures_eur'] ?? 0,
             ],
+        ];
+    }
+
+    /**
+     * Résumé facturation léger pour la sidebar Copilote (sans listes ni activité récente).
+     *
+     * @return array<string, mixed>
+     */
+    private function buildLightFacturationSummary(User $user): array
+    {
+        $now = now();
+        $today = $now->copy()->startOfDay();
+        $documentsQuery = $this->documentsQuery($user);
+        $facturesQuery = (clone $documentsQuery)->where('type', Document::TYPE_FACTURE);
+        $devisQuery = (clone $documentsQuery)->where('type', Document::TYPE_DEVIS);
+
+        return [
+            'documents_total' => (clone $documentsQuery)->count(),
+            'ca_encaisse_mois_eur' => round($this->sumPaidInEurForMonth($user, $now), 2),
+            'encours_factures_eur' => round((float) (clone $facturesQuery)
+                ->where('status', Document::STATUS_SENT)
+                ->selectRaw('COALESCE(SUM('.DocumentTotals::lignesTtcInEurSql().'), 0) as total_eur')
+                ->value('total_eur'), 2),
+            'factures_en_retard_count' => (clone $facturesQuery)
+                ->where('status', Document::STATUS_SENT)
+                ->where('due_date', '<', $today->toDateString())
+                ->count(),
+            'devis_en_attente_count' => (clone $devisQuery)
+                ->where('status', Document::STATUS_SENT)
+                ->count(),
+            'clients_total' => $this->tiersQuery($user)->where('type', 'client')->count(),
         ];
     }
 

@@ -234,7 +234,7 @@
     ]
   },
   "resources/js/Pages/Copilot.jsx": {
-    "file": "assets/Copilot-D_uBHuC5.js",
+    "file": "assets/Copilot-BOZJkDeB.js",
     "name": "Copilot",
     "src": "resources/js/Pages/Copilot.jsx",
     "isDynamicEntry": true,
@@ -246,7 +246,7 @@
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-DdfcuT4F.js",
+    "file": "assets/Dashboard-CoEIMhKe.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
@@ -552,7 +552,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-C71vcOJg.js",
+    "file": "assets/app-Cg6LP8WA.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -594,7 +594,7 @@
       "resources/js/Pages/Welcome.jsx"
     ],
     "css": [
-      "assets/app-DConmC4W.css"
+      "assets/app-DSCpoAtv.css"
     ]
   }
 }

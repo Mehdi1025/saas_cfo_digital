@@ -1,9 +1,9 @@
 import { Loader2, Send, Sparkles } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 const GLASS_PANEL =
-    'border border-glassBorder bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.01)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-[20px]';
+    'border border-glassBorder bg-[linear-gradient(145deg,rgba(11,16,24,0.94)_0%,rgba(8,12,18,0.9)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.4)]';
 
 const SUGGESTED_QUESTIONS = [
     'Résume ma situation financière globale',
@@ -29,7 +29,7 @@ const markdownComponents = {
     ),
 };
 
-function ChatBubble({ role, content, isTyping = false }) {
+const ChatBubble = memo(function ChatBubble({ role, content, isTyping = false }) {
     const isUser = role === 'user';
 
     return (
@@ -54,7 +54,7 @@ function ChatBubble({ role, content, isTyping = false }) {
             </div>
         </div>
     );
-}
+});
 
 export default function DashboardChatWidget() {
     const [messages, setMessages] = useState([
@@ -71,12 +71,16 @@ export default function DashboardChatWidget() {
     const inputRef = useRef(null);
 
     useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
+        const frame = window.requestAnimationFrame(() => {
+            if (scrollRef.current) {
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            }
+        });
+
+        return () => window.cancelAnimationFrame(frame);
     }, [messages, isLoading]);
 
-    const sendMessage = async (text) => {
+    const sendMessage = useCallback(async (text) => {
         const trimmed = text.trim();
         if (!trimmed || isLoading) {
             return;
@@ -111,7 +115,7 @@ export default function DashboardChatWidget() {
             setIsLoading(false);
             inputRef.current?.focus();
         }
-    };
+    }, [isLoading, messages]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -121,22 +125,19 @@ export default function DashboardChatWidget() {
     return (
         <div className={`${GLASS_PANEL} flex h-full min-h-[520px] flex-col overflow-hidden rounded-3xl`}>
             <div className="relative flex items-center gap-3 border-b border-white/10 px-5 py-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#00F0FF] to-[#00FF9D] shadow-[0_0_20px_rgba(0,240,255,0.25)]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#00F0FF] to-[#00FF9D]">
                     <Sparkles className="h-5 w-5 text-black" />
                 </div>
                 <div>
                     <p className="text-sm font-bold text-white">Copilote financier</p>
                     <p className="text-xs text-neonMint">Connecté à vos données · IA</p>
                 </div>
-                <span className="relative ml-auto flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neonMint opacity-60" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-neonMint" />
-                </span>
+                <span className="ml-auto inline-flex h-2.5 w-2.5 rounded-full bg-neonMint" aria-hidden />
             </div>
 
             <div
                 ref={scrollRef}
-                className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-5"
+                className="flex-1 space-y-4 overflow-y-auto overscroll-y-contain px-4 py-5 sm:px-5 [contain:content]"
             >
                 {messages.map((msg, index) => (
                     <ChatBubble key={`${msg.role}-${index}`} role={msg.role} content={msg.content} />
@@ -152,7 +153,7 @@ export default function DashboardChatWidget() {
                             type="button"
                             onClick={() => sendMessage(q)}
                             disabled={isLoading}
-                            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-gray-400 transition hover:border-neonBlue/35 hover:bg-neonBlue/10 hover:text-gray-200 disabled:opacity-50"
+                            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:border-neonBlue/35 hover:bg-neonBlue/10 hover:text-gray-200 disabled:opacity-50"
                         >
                             {q}
                         </button>
@@ -177,12 +178,12 @@ export default function DashboardChatWidget() {
                         rows={1}
                         placeholder="Ex : Ma marge baisse, que faire ?"
                         disabled={isLoading}
-                        className="max-h-28 min-h-[44px] flex-1 resize-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition focus:border-neonBlue/40 focus:ring-2 focus:ring-neonBlue/20 disabled:opacity-60"
+                        className="max-h-28 min-h-[44px] flex-1 resize-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-gray-500 outline-none transition-colors focus:border-neonBlue/40 focus:ring-2 focus:ring-neonBlue/20 disabled:opacity-60"
                     />
                     <button
                         type="submit"
                         disabled={isLoading || !input.trim()}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#00F0FF] to-[#00FF9D] text-black shadow-[0_0_18px_rgba(0,240,255,0.25)] transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#00F0FF] to-[#00FF9D] text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                         aria-label="Envoyer"
                     >
                         {isLoading ? (

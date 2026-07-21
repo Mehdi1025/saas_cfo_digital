@@ -5,7 +5,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { Sparkles } from 'lucide-react';
 
 const GLASS_PANEL =
-    'border border-glassBorder bg-[linear-gradient(145deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.01)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-[20px]';
+    'border border-glassBorder bg-[linear-gradient(145deg,rgba(11,16,24,0.94)_0%,rgba(8,12,18,0.9)_100%)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.4)]';
 
 function formatCurrency(value) {
     return new Intl.NumberFormat('fr-FR', {
@@ -162,7 +162,7 @@ export default function Copilot() {
                             </section>
                         </aside>
 
-                        <section className="min-h-[min(72vh,720px)]">
+                        <section className="flex min-h-[min(72vh,720px)] flex-col lg:sticky lg:top-0 lg:max-h-[calc(100vh-8rem)]">
                             <DashboardChatWidget />
                         </section>
                     </div>
