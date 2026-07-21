@@ -50,6 +50,17 @@ Route::get('/', function (Request $request) {
 
 Route::get('/test', fn () => Inertia::render('TestLanding'));
 
+Route::get('/mentions-legales', fn () => Inertia::render('Legal/MentionsLegales'))
+    ->name('legal.mentions');
+
+Route::get('/conditions-generales', fn () => Inertia::render('Legal/ConditionsGenerales'))
+    ->name('legal.terms');
+
+Route::get('/confidentialite', fn () => Inertia::render('Legal/Confidentialite'))
+    ->name('legal.privacy');
+
+Route::redirect('/cgv', '/conditions-generales');
+
 Route::post('/landing/chat', LandingChatController::class)
     ->middleware('throttle:12,1')
     ->name('landing.chat');

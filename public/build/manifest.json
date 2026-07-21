@@ -353,7 +353,7 @@
     ]
   },
   "resources/js/Pages/FinFlow/Clients/Index.jsx": {
-    "file": "assets/Index-D_gVhQAH.js",
+    "file": "assets/Index-aL60hP6G.js",
     "name": "Index",
     "src": "resources/js/Pages/FinFlow/Clients/Index.jsx",
     "isDynamicEntry": true,
@@ -442,6 +442,33 @@
       "_framer-motion-CrO3EB-N.js"
     ]
   },
+  "resources/js/Pages/Legal/ConditionsGenerales.jsx": {
+    "file": "assets/ConditionsGenerales-CJN0gqun.js",
+    "name": "ConditionsGenerales",
+    "src": "resources/js/Pages/Legal/ConditionsGenerales.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-iJzNfegQ.js"
+    ]
+  },
+  "resources/js/Pages/Legal/Confidentialite.jsx": {
+    "file": "assets/Confidentialite-Cn5H_AZu.js",
+    "name": "Confidentialite",
+    "src": "resources/js/Pages/Legal/Confidentialite.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-iJzNfegQ.js"
+    ]
+  },
+  "resources/js/Pages/Legal/MentionsLegales.jsx": {
+    "file": "assets/MentionsLegales-7En0KKiU.js",
+    "name": "MentionsLegales",
+    "src": "resources/js/Pages/Legal/MentionsLegales.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-iJzNfegQ.js"
+    ]
+  },
   "resources/js/Pages/Profile/Edit.jsx": {
     "file": "assets/Edit-C_1WTed6.js",
     "name": "Edit",
@@ -512,7 +539,7 @@
     ]
   },
   "resources/js/Pages/TestLanding.jsx": {
-    "file": "assets/TestLanding-2bUu6e_b.js",
+    "file": "assets/TestLanding-CUjVcO1W.js",
     "name": "TestLanding",
     "src": "resources/js/Pages/TestLanding.jsx",
     "isDynamicEntry": true,
@@ -542,7 +569,7 @@
     ]
   },
   "resources/js/Pages/Welcome.jsx": {
-    "file": "assets/Welcome-CdrX4kzS.js",
+    "file": "assets/Welcome-0mLdwsje.js",
     "name": "Welcome",
     "src": "resources/js/Pages/Welcome.jsx",
     "isDynamicEntry": true,
@@ -552,7 +579,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DaHFdndj.js",
+    "file": "assets/app-CCXGj244.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -583,6 +610,9 @@
       "resources/js/Pages/FinFlow/Placeholder.jsx",
       "resources/js/Pages/FinFlow/Settings/Index.jsx",
       "resources/js/Pages/FinancialEntry.jsx",
+      "resources/js/Pages/Legal/ConditionsGenerales.jsx",
+      "resources/js/Pages/Legal/Confidentialite.jsx",
+      "resources/js/Pages/Legal/MentionsLegales.jsx",
       "resources/js/Pages/Profile/Edit.jsx",
       "resources/js/Pages/Profile/Partials/DeleteUserForm.jsx",
       "resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx",
@@ -594,7 +624,7 @@
       "resources/js/Pages/Welcome.jsx"
     ],
     "css": [
-      "assets/app-CwuBInGp.css"
+      "assets/app-iIf3msBR.css"
     ]
   }
 }

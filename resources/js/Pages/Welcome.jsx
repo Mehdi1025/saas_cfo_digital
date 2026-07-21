@@ -1711,11 +1711,11 @@ export default function Welcome({ auth }) {
                         <FinFlowBrandLogo variant="white" size="sm" />
                         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-zinc-500">
                             <a href="/mentions-legales" className="transition hover:text-white">Mentions légales</a>
-                            <a href="/cgv" className="transition hover:text-white">CGV</a>
+                            <a href="/conditions-generales" className="transition hover:text-white">CGV</a>
                             <a href="/confidentialite" className="transition hover:text-white">Confidentialité</a>
                         </nav>
                         <p className="text-center text-sm text-zinc-500">
-                            © {year} Copifi. Tous droits réservés.
+                            © {year} Mini CFO Digital. Tous droits réservés.
                         </p>
                     </div>
                 </footer>
