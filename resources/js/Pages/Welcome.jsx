@@ -1552,13 +1552,13 @@ export default function Welcome({ auth }) {
 
                 <WelcomeFlashBanner />
 
-                <nav className="fixed left-1/2 top-6 z-50 flex w-[92%] max-w-6xl -translate-x-1/2 items-center gap-3 rounded-full border border-white/10 bg-[rgba(10,14,20,0.75)] px-4 py-2.5 shadow-lg backdrop-blur-md sm:gap-4 sm:px-6 sm:py-3">
+                <nav className="fixed left-1/2 top-5 z-50 flex w-[94%] max-w-6xl -translate-x-1/2 items-center gap-4 rounded-full border border-white/10 bg-[rgba(10,14,20,0.75)] px-5 py-3 shadow-lg backdrop-blur-md sm:gap-5 sm:px-7 sm:py-3.5">
                     <MagneticLink
                         href="/"
-                        wrapperClassName="inline-flex shrink-0 items-center"
+                        wrapperClassName="inline-flex shrink-0 items-center py-0.5"
                         className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
                     >
-                        <CopifiLogo size="md" />
+                        <CopifiLogo size="nav" />
                     </MagneticLink>
 
                     <div className="hidden min-w-0 flex-1 items-center justify-center gap-5 text-sm font-medium text-zinc-300 lg:flex lg:gap-6">
