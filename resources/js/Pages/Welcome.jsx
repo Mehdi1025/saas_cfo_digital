@@ -1,6 +1,4 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import FinFlowBrandLogo from '@/Components/FinFlow/FinFlowBrandLogo';
-import FinFlowAwwwardsLogo from '@/Components/FinFlow/FinFlowAwwwardsLogo';
 import LandingChatWidget from '@/Components/Landing/LandingChatWidget';
 import {
     useCallback,
@@ -1554,9 +1552,6 @@ export default function Welcome({ auth }) {
                 <WelcomeFlashBanner />
 
                 <nav className="fixed left-1/2 top-6 z-50 flex w-[90%] max-w-5xl -translate-x-1/2 items-center justify-between rounded-full border border-white/10 bg-[rgba(10,14,20,0.75)] px-4 py-3 shadow-lg backdrop-blur-md sm:px-6">
-                    <MagneticLink href="/" wrapperClassName="inline-flex" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded-full">
-                        <FinFlowAwwwardsLogo />
-                    </MagneticLink>
                     <div className="hidden items-center gap-6 text-sm font-medium text-zinc-300 md:flex">
                         <a href="#difference" className="transition-colors hover:text-white">La différence</a>
                         <a href="#facturation" className="transition-colors hover:text-white">Facturation</a>
@@ -1564,12 +1559,26 @@ export default function Welcome({ auth }) {
                         <a href="#conformite" className="transition-colors hover:text-white">Conformité</a>
                         <a href="#tarifs" className="transition-colors hover:text-white">Tarifs</a>
                     </div>
-                    <TopActions
-                        auth={auth}
-                        canAccessDashboard={canAccessDashboard}
-                        isSuspended={isSuspended}
-                        startCheckout={startCheckout}
-                    />
+                    <div className="ml-auto flex items-center gap-3 sm:gap-4">
+                        <TopActions
+                            auth={auth}
+                            canAccessDashboard={canAccessDashboard}
+                            isSuspended={isSuspended}
+                            startCheckout={startCheckout}
+                        />
+                        <MagneticLink
+                            href="/"
+                            wrapperClassName="inline-flex shrink-0"
+                            className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+                        >
+                            <img
+                                src="/images/copifi-logo.png"
+                                alt="Copifi"
+                                className="h-7 w-auto select-none object-contain sm:h-8"
+                                draggable={false}
+                            />
+                        </MagneticLink>
+                    </div>
                 </nav>
 
                 <main className="relative z-10 flex flex-col items-center pb-24 pt-32">
@@ -1708,7 +1717,12 @@ export default function Welcome({ auth }) {
 
                 <footer className="relative z-10 border-t border-white/10 bg-[rgba(0,0,0,0.65)] py-10">
                     <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
-                        <FinFlowBrandLogo variant="white" size="sm" />
+                        <img
+                            src="/images/copifi-logo.png"
+                            alt="Copifi"
+                            className="h-7 w-auto select-none object-contain"
+                            draggable={false}
+                        />
                         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-zinc-500">
                             <a href="/mentions-legales" className="transition hover:text-white">Mentions légales</a>
                             <a href="/conditions-generales" className="transition hover:text-white">CGV</a>
