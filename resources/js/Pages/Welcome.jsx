@@ -1558,7 +1558,7 @@ export default function Welcome({ auth }) {
                         wrapperClassName="inline-flex shrink-0 items-center py-0.5"
                         className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
                     >
-                        <CopifiLogo size="nav" />
+                        <CopifiLogo lockup="horizontal" size="nav" />
                     </MagneticLink>
 
                     <div className="hidden min-w-0 flex-1 items-center justify-center gap-5 text-sm font-medium text-zinc-300 lg:flex lg:gap-6">
@@ -1715,7 +1715,7 @@ export default function Welcome({ auth }) {
 
                 <footer className="relative z-10 border-t border-white/10 bg-[rgba(0,0,0,0.65)] py-10">
                     <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
-                        <CopifiLogo size="sm" />
+                        <CopifiLogo lockup="horizontal" size="sm" />
                         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-zinc-500">
                             <a href="/mentions-legales" className="transition hover:text-white">Mentions légales</a>
                             <a href="/conditions-generales" className="transition hover:text-white">CGV</a>

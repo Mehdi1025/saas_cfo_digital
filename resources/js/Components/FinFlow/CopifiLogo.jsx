@@ -1,3 +1,11 @@
+/**
+ * Lockup horizontal Copifi (nav, emails, footer).
+ * L’espacement marque + mot est figé dans l’asset : ne scaler que proportionnellement (hauteur).
+ */
+const LOCKUPS = {
+    horizontal: '/images/copifi-logo.png',
+};
+
 const SIZES = {
     sm: 'h-8 sm:h-9',
     md: 'h-10 sm:h-11',
@@ -5,14 +13,20 @@ const SIZES = {
     nav: 'h-10 sm:h-11 md:h-12 lg:h-[3.35rem]',
 };
 
-export default function CopifiLogo({ size = 'md', className = '', blend = true }) {
+export default function CopifiLogo({
+    lockup = 'horizontal',
+    size = 'md',
+    className = '',
+    blend = true,
+}) {
+    const src = LOCKUPS[lockup] ?? LOCKUPS.horizontal;
     const height = SIZES[size] ?? SIZES.md;
 
     return (
         <img
-            src="/images/copifi-logo.png"
+            src={src}
             alt="Copifi"
-            className={`w-auto min-w-[7.5rem] select-none object-contain object-left sm:min-w-[8.5rem] md:min-w-[9.5rem] ${height} ${
+            className={`block w-auto shrink-0 select-none object-contain object-left ${height} ${
                 blend ? 'mix-blend-screen' : ''
             } ${className}`}
             draggable={false}
