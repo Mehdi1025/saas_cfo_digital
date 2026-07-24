@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import LandingChatWidget from '@/Components/Landing/LandingChatWidget';
+import WelcomePreloader from '@/Components/Landing/WelcomePreloader';
 import CopifiLogo from '@/Components/FinFlow/CopifiLogo';
 import {
     useCallback,
@@ -1495,6 +1496,20 @@ export default function Welcome({ auth }) {
     const year = new Date().getFullYear();
     const canAccessDashboard = Boolean(auth?.user?.can_access_app);
     const isSuspended = Boolean(auth?.user?.is_suspended);
+    const [preloaderDone, setPreloaderDone] = useState(() => {
+        if (typeof window === 'undefined') {
+            return true;
+        }
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            return true;
+        }
+        return sessionStorage.getItem('copifi-welcome-preloader') === '1';
+    });
+
+    const finishPreloader = useCallback(() => {
+        sessionStorage.setItem('copifi-welcome-preloader', '1');
+        setPreloaderDone(true);
+    }, []);
 
     const startCheckout = () => {
         router.post(route('billing.checkout'));
@@ -1502,6 +1517,8 @@ export default function Welcome({ auth }) {
 
     return (
         <>
+            {!preloaderDone && <WelcomePreloader onComplete={finishPreloader} />}
+
             <Head>
                 <title>Copifi — Facturation conforme 2026 + pilotage d&apos;entreprise pour TPE et indépendants</title>
                 <meta
