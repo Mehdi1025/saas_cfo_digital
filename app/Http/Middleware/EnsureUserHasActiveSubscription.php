@@ -35,8 +35,8 @@ class EnsureUserHasActiveSubscription
                 abort(Response::HTTP_FORBIDDEN, 'Abonnement actif requis.');
             }
 
-            return redirect('/')
-                ->with('error', 'Un abonnement actif est requis pour acceder a cette page.');
+            return redirect()->to(route('profile.edit').'#subscription')
+                ->with('error', 'Un abonnement actif est requis pour acceder a cette fonctionnalite.');
         }
 
         return $next($request);

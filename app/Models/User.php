@@ -3,13 +3,12 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -67,5 +66,20 @@ class User extends Authenticatable implements MustVerifyEmail
     public function bankAccounts(): HasMany
     {
         return $this->hasMany(BankAccount::class);
+    }
+
+    public function hasActiveSubscription(): bool
+    {
+        return $this->suspended_at === null
+            && in_array($this->stripe_status, ['active', 'trialing'], true);
+    }
+
+    public function subscriptionPlanLabel(): string
+    {
+        return match ($this->stripe_status) {
+            'active', 'trialing' => 'Abonnement actif',
+            'canceled' => 'Abonnement annule',
+            default => 'Aucun abonnement actif',
+        };
     }
 }

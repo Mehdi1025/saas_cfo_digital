@@ -1393,7 +1393,7 @@ function TopActions({ auth, canAccessDashboard, isSuspended, startCheckout }) {
 function PrimarySubscribeAction({ auth, canAccessDashboard, isSuspended, startCheckout, children, className }) {
     if (!auth?.user) {
         return (
-            <MagneticLink href={`${route('register')}?checkout=1`} className={className}>
+            <MagneticLink href={route('register')} className={className}>
                 {children}
             </MagneticLink>
         );
@@ -1410,9 +1410,9 @@ function PrimarySubscribeAction({ auth, canAccessDashboard, isSuspended, startCh
         );
     }
     return (
-        <MagneticButton onClick={startCheckout} className={className}>
+        <MagneticLink href={`${route('profile.edit')}#subscription`} className={className}>
             {children}
-        </MagneticButton>
+        </MagneticLink>
     );
 }
 

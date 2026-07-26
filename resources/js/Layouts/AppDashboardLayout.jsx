@@ -272,7 +272,13 @@ export default function AppDashboardLayout({ children, title, badge, viewportLoc
     const userName = user?.name ?? 'Utilisateur';
     const userRole = user?.role ?? 'user';
     const isAdmin = userRole === 'admin';
-    const headerBadge = badge ?? (isAdmin ? 'Espace admin' : 'Abonnement : actif');
+    const hasActiveSubscription = Boolean(user?.can_access_app);
+    const subscriptionLabel = isAdmin
+        ? 'Espace admin'
+        : hasActiveSubscription
+          ? 'Abonnement : actif'
+          : 'Plan gratuit';
+    const headerBadge = badge ?? subscriptionLabel;
 
     const navSections = isAdmin
         ? [
@@ -373,10 +379,14 @@ export default function AppDashboardLayout({ children, title, badge, viewportLoc
                     <div className="flex w-full shrink-0 flex-wrap items-center justify-between gap-3 lg:w-auto lg:justify-end lg:gap-4">
                         <div className="flex items-center gap-2 rounded-full border border-[#10B981]/35 bg-[#10B981]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white">
                             <span
-                                className="h-2 w-2 shrink-0 rounded-full bg-[#10B981] shadow-[0_0_10px_rgba(16,185,129,0.95)]"
+                                className={`h-2 w-2 shrink-0 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.95)] ${
+                                    hasActiveSubscription || isAdmin
+                                        ? 'bg-[#10B981]'
+                                        : 'bg-zinc-500 shadow-none'
+                                }`}
                                 aria-hidden
                             />
-                            {isAdmin ? 'Admin' : 'Abonnement : actif'}
+                            {subscriptionLabel}
                         </div>
 
                         <button

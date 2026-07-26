@@ -17,7 +17,9 @@ class StripeCheckoutController extends Controller
         $priceId = config('services.stripe.price_id');
 
         if (! $stripeSecret || ! $priceId) {
-            return back()->with('error', 'Configuration Stripe manquante.');
+            return redirect()
+                ->route('profile.edit')
+                ->with('error', 'Configuration Stripe manquante. Contactez le support.');
         }
 
         $payload = [
@@ -44,7 +46,9 @@ class StripeCheckoutController extends Controller
             ->post('https://api.stripe.com/v1/checkout/sessions', $payload);
 
         if ($response->failed() || ! $response->json('url')) {
-            return back()->with('error', 'Impossible de demarrer le paiement Stripe.');
+            return redirect()
+                ->route('profile.edit')
+                ->with('error', 'Impossible de demarrer le paiement Stripe.');
         }
 
         return Inertia::location($response->json('url'));
@@ -52,13 +56,15 @@ class StripeCheckoutController extends Controller
 
     public function success(Request $request): RedirectResponse
     {
-        return redirect('/')
-            ->with('success', 'Paiement termine. Votre abonnement est en cours de verification.');
+        return redirect()
+            ->to(route('profile.edit').'#subscription')
+            ->with('success', 'Paiement termine. Votre abonnement sera active sous peu.');
     }
 
     public function cancel(): RedirectResponse
     {
-        return redirect('/')
-            ->with('error', 'Paiement annule. Vous pouvez reessayer quand vous voulez.');
+        return redirect()
+            ->to(route('profile.edit').'#subscription')
+            ->with('error', 'Paiement annule. Vous pouvez reessayer quand vous le souhaitez.');
     }
 }

@@ -89,11 +89,7 @@ class GoogleAuthController extends Controller
             return redirect()->intended(route('admin.dashboard', absolute: false));
         }
 
-        if ($user->suspended_at === null && in_array($user->stripe_status, ['active', 'trialing'], true)) {
-            return redirect()->intended(route('dashboard', absolute: false));
-        }
-
-        return redirect()->intended('/');
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     protected function googleIsConfigured(): bool

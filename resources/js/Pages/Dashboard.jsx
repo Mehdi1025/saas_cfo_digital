@@ -6,7 +6,7 @@ import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsight
 import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
 import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
 import { useDashboardSimulation } from '@/hooks/useDashboardSimulation';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage, Link } from '@inertiajs/react';
 import axios from 'axios';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -117,7 +117,8 @@ function sparklineFrom(values) {
 }
 
 export default function Dashboard() {
-    const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable', flash } = usePage().props;
+    const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable', flash, auth } = usePage().props;
+    const hasActiveSubscription = Boolean(auth?.user?.can_access_app);
     const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
     const [resolvedAiInsight, setResolvedAiInsight] = useState(aiInsight);
     const [resolvedAiInsightStatus, setResolvedAiInsightStatus] = useState(aiInsightStatus);
@@ -324,6 +325,28 @@ export default function Dashboard() {
                             {flash.error}
                         </div>
                     ) : null}
+
+                    {!hasActiveSubscription && !viewedUser && (
+                        <section className="rounded-2xl border border-amber-400/25 bg-amber-400/10 p-5">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <p className="text-sm font-semibold text-amber-100">
+                                        Debloquez toutes les fonctionnalites
+                                    </p>
+                                    <p className="mt-1 text-sm text-amber-100/80">
+                                        Vous etes sur le plan gratuit. Abonnez-vous pour acceder au
+                                        copilote IA, a la facturation et aux outils avances.
+                                    </p>
+                                </div>
+                                <Link
+                                    href={route('profile.edit') + '#subscription'}
+                                    className="inline-flex shrink-0 items-center justify-center rounded-xl bg-[#18c98f] px-5 py-3 text-sm font-bold text-black transition hover:bg-[#25e0a4]"
+                                >
+                                    Voir les offres
+                                </Link>
+                            </div>
+                        </section>
+                    )}
 
                     <section className={`${GLASS_PANEL} rounded-2xl p-5`}>
                         <SimulationModeToggle

@@ -67,7 +67,7 @@ class GoogleAuthenticationTest extends TestCase
             ]));
 
         $this->assertAuthenticated();
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('dashboard', absolute: false));
 
         $this->assertDatabaseHas('users', [
             'email' => 'client.google@example.com',
@@ -107,7 +107,7 @@ class GoogleAuthenticationTest extends TestCase
             ]));
 
         $this->assertAuthenticatedAs($user->fresh());
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('dashboard', absolute: false));
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,

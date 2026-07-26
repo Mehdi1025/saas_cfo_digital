@@ -40,6 +40,7 @@ return [
         'secret' => env('STRIPE_SECRET'),
         'price_id' => env('STRIPE_PRICE_ID'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'plan_name' => env('STRIPE_PLAN_NAME', 'Copifi Pro'),
     ],
 
     'google' => [

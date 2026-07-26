@@ -4,10 +4,8 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -23,8 +21,6 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
-        Notification::fake();
-
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -33,13 +29,10 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('verification.notice', absolute: false));
+        $response->assertRedirect(route('dashboard', absolute: false));
 
         $user = User::query()->where('email', 'test@example.com')->first();
         $this->assertNotNull($user);
-        $this->assertNull($user->email_verified_at);
-
-        Notification::assertSentTo($user, VerifyEmail::class);
     }
 
     public function test_registration_dispatches_registered_event(): void
@@ -67,5 +60,10 @@ class RegistrationTest extends TestCase
 
         $response->assertSessionHasErrors('password');
         $this->assertGuest();
+    }
+
+    public function test_unauthenticated_users_cannot_access_dashboard(): void
+    {
+        $this->get('/dashboard')->assertRedirect(route('login'));
     }
 }

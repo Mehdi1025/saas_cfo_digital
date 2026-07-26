@@ -35,9 +35,7 @@ Route::get('/', function (Request $request) {
         return redirect()->route('admin.dashboard');
     }
 
-    if ($user
-        && $user->suspended_at === null
-        && in_array($user->stripe_status, ['active', 'trialing'], true)) {
+    if ($user) {
         return redirect()->route('dashboard');
     }
 
@@ -66,29 +64,29 @@ Route::post('/landing/chat', LandingChatController::class)
     ->middleware('throttle:12,1')
     ->name('landing.chat');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard_test', fn () => Inertia::render('TestDashboard'));
     Route::get('/dashboard_test/saisie-mensuelle', fn () => Inertia::render('TestSaisieMensuelle'));
     Route::get('/dashboard_test/rapports', fn () => Inertia::render('TestRapports'));
 });
 
 Route::get('/dashboard', DashboardController::class)
-    ->middleware(['auth', 'verified', 'active.subscription'])
+    ->middleware(['auth'])
     ->name('dashboard');
 
 Route::get('/dashboard/ai-insight', [DashboardController::class, 'aiInsight'])
-    ->middleware(['auth', 'verified', 'active.subscription', 'throttle:6,1'])
+    ->middleware(['auth', 'active.subscription', 'throttle:6,1'])
     ->name('dashboard.ai-insight');
 
 Route::post('/dashboard/simulate-insights', [DashboardSimulationController::class, 'simulateInsights'])
-    ->middleware(['auth', 'verified', 'active.subscription', 'throttle:12,1'])
+    ->middleware(['auth', 'active.subscription', 'throttle:12,1'])
     ->name('dashboard.simulate-insights');
 
 Route::post('/dashboard/chat', DashboardChatController::class)
-    ->middleware(['auth', 'verified', 'active.subscription', 'throttle:20,1'])
+    ->middleware(['auth', 'active.subscription', 'throttle:20,1'])
     ->name('dashboard.chat');
 
-Route::middleware(['auth', 'verified', 'active.subscription'])->group(function () {
+Route::middleware(['auth', 'active.subscription'])->group(function () {
     Route::get('/powens/connect', [PowensController::class, 'redirect'])
         ->name('powens.connect');
 
@@ -97,11 +95,11 @@ Route::middleware(['auth', 'verified', 'active.subscription'])->group(function (
 });
 
 Route::post('/copilote/chat', DashboardChatController::class)
-    ->middleware(['auth', 'verified', 'active.subscription', 'throttle:20,1'])
+    ->middleware(['auth', 'active.subscription', 'throttle:20,1'])
     ->name('copilot.chat');
 
 Route::get('/copilote', CopilotController::class)
-    ->middleware(['auth', 'verified', 'active.subscription'])
+    ->middleware(['auth', 'active.subscription'])
     ->name('copilot.index');
 
 Route::get('/saisie-mensuelle', function (Request $request) {
@@ -111,31 +109,31 @@ Route::get('/saisie-mensuelle', function (Request $request) {
             ->orderByDesc('month')
             ->first(),
     ]);
-})->middleware(['auth', 'verified', 'active.subscription'])
+})->middleware(['auth', 'active.subscription'])
     ->name('financial-entry.index');
 
 Route::get('/admin', AdminController::class)
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin'])
     ->name('admin.dashboard');
 
 Route::get('/admin/users/{user}/dashboard', AdminUserDashboardController::class)
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin'])
     ->name('admin.users.dashboard');
 
 Route::patch('/admin/users/{user}/suspend', [AdminUserController::class, 'suspend'])
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin'])
     ->name('admin.users.suspend');
 
 Route::patch('/admin/users/{user}/restore', [AdminUserController::class, 'restore'])
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin'])
     ->name('admin.users.restore');
 
 Route::patch('/admin/ai-insights/{aiInsight}', [AdminAiInsightController::class, 'update'])
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin'])
     ->name('admin.ai-insights.update');
 
 Route::post('/financial-records', [FinancialRecordController::class, 'store'])
-    ->middleware(['auth', 'verified', 'active.subscription'])
+    ->middleware(['auth', 'active.subscription'])
     ->name('financial-records.store');
 
 Route::post('/billing/checkout', [StripeCheckoutController::class, 'store'])
@@ -160,7 +158,7 @@ Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
 
 Route::get('/tracking/{document}/pixel', [TrackingController::class, 'pixel'])->name('tracking.pixel');
 
-Route::middleware(['auth', 'verified', 'active.subscription'])->group(function () {
+Route::middleware(['auth', 'active.subscription'])->group(function () {
     Route::get('/facturation', [FacturationDashboardController::class, 'index'])->name('facturation.dashboard');
     Route::post('/facturation/analyze', [FacturationDashboardController::class, 'analyze'])->name('facturation.analyze');
 

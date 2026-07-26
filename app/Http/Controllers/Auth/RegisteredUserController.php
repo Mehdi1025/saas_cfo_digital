@@ -46,10 +46,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        if ($request->boolean('checkout')) {
-            return redirect()->route('billing.checkout.start');
-        }
-
-        return redirect(route('verification.notice', absolute: false));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 }

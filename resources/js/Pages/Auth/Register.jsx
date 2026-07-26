@@ -60,14 +60,11 @@ function PasswordHints({ password }) {
 }
 
 export default function Register() {
-    const shouldStartCheckout = new URLSearchParams(window.location.search).get('checkout') === '1';
-
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
-        checkout: shouldStartCheckout,
     });
 
     const [clientErrors, setClientErrors] = useState({});
