@@ -61,6 +61,11 @@ composer install --no-dev --optimize-autoloader --no-interaction
 # ---------------------------------------------------------------------------
 # Frontend
 # ---------------------------------------------------------------------------
+if [ -d node_modules ]; then
+    log "Suppression de node_modules (evite EPERM chmod sur Cloudways)"
+    rm -rf node_modules
+fi
+
 log "npm ci"
 npm ci --no-audit --no-fund
 
