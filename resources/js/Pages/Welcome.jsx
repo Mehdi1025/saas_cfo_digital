@@ -1375,10 +1375,10 @@ function TopActions({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
     }
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
             <MagneticLink
                 href={route('login')}
-                className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 sm:px-5"
+                className="px-3 py-2 text-sm font-medium text-white transition hover:text-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 sm:px-4"
             >
                 Se connecter
             </MagneticLink>
@@ -1593,24 +1593,24 @@ export default function Welcome({ auth }) {
 
                 <WelcomeFlashBanner />
 
-                <nav className="fixed left-1/2 top-5 z-50 flex w-[94%] max-w-6xl -translate-x-1/2 items-center gap-4 rounded-full border border-white/10 bg-[rgba(10,14,20,0.75)] px-5 py-3 shadow-lg backdrop-blur-md sm:gap-5 sm:px-7 sm:py-3.5">
+                <nav className="fixed left-1/2 top-6 z-50 flex w-[90%] max-w-5xl -translate-x-1/2 items-center gap-3 rounded-full border border-white/10 bg-[rgba(10,14,20,0.75)] px-4 py-3 shadow-lg backdrop-blur-md sm:gap-4 sm:px-6">
                     <MagneticLink
                         href="/"
-                        wrapperClassName="inline-flex shrink-0 items-center py-0.5"
+                        wrapperClassName="inline-flex shrink-0 items-center"
                         className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
                     >
                         <CopifiLogo size="nav" priority />
                     </MagneticLink>
 
-                    <div className="hidden min-w-0 flex-1 items-center justify-center gap-5 text-sm font-medium text-zinc-300 lg:flex lg:gap-6">
+                    <div className="hidden min-w-0 flex-1 items-center justify-center gap-6 text-sm font-medium text-zinc-300 md:flex">
                         <a href="#difference" className="whitespace-nowrap transition-colors hover:text-white">La différence</a>
                         <a href="#facturation" className="whitespace-nowrap transition-colors hover:text-white">Facturation</a>
                         <a href="#pilotage" className="whitespace-nowrap transition-colors hover:text-white">Pilotage</a>
                         <a href="#conformite" className="whitespace-nowrap transition-colors hover:text-white">Conformité</a>
-                        <a href="#tarifs" className="whitespace-nowrap transition-colors hover:text-white">L&apos;offre</a>
+                        <a href="#tarifs" className="whitespace-nowrap transition-colors hover:text-white">Tarifs</a>
                     </div>
 
-                    <div className="ml-auto shrink-0">
+                    <div className="ml-auto shrink-0 md:ml-0">
                         <TopActions
                             auth={auth}
                             canAccessDashboard={canAccessDashboard}
