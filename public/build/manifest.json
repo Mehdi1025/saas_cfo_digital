@@ -566,7 +566,7 @@
     ]
   },
   "resources/js/Pages/Welcome.jsx": {
-    "file": "assets/Welcome-DgiOGlaN.js",
+    "file": "assets/Welcome-B1VddsL_.js",
     "name": "Welcome",
     "src": "resources/js/Pages/Welcome.jsx",
     "isDynamicEntry": true,
@@ -577,7 +577,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-C3WHhwci.js",
+    "file": "assets/app-Kq9c4VRe.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -623,7 +623,7 @@
       "resources/js/Pages/Welcome.jsx"
     ],
     "css": [
-      "assets/app-CkCXz2YB.css"
+      "assets/app-BBYOMxz6.css"
     ]
   }
 }
