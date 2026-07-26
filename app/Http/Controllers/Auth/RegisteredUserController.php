@@ -50,6 +50,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        $request->session()->regenerate();
+
         return $this->redirectAfterAuthentication($request);
     }
 }

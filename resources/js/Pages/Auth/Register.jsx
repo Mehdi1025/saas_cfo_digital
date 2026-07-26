@@ -60,6 +60,10 @@ function PasswordHints({ password }) {
     );
 }
 
+function readCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+}
+
 export default function Register({ redirect = null, intent = null }) {
     const isSubscribeFlow = intent === SUBSCRIBE_INTENT;
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -67,6 +71,9 @@ export default function Register({ redirect = null, intent = null }) {
         email: '',
         password: '',
         password_confirmation: '',
+        redirect: redirect ?? '',
+        intent: intent ?? '',
+        _token: readCsrfToken(),
     });
 
     const [clientErrors, setClientErrors] = useState({});

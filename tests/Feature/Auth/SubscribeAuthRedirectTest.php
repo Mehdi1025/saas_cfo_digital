@@ -33,6 +33,21 @@ class SubscribeAuthRedirectTest extends TestCase
         $response->assertRedirect('/?subscribe=1');
     }
 
+    public function test_registration_with_subscribe_intent_in_post_body_redirects_to_landing(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password1',
+            'password_confirmation' => 'password1',
+            'redirect' => '/',
+            'intent' => 'subscribe',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/?subscribe=1');
+    }
+
     public function test_login_with_subscribe_intent_redirects_to_landing(): void
     {
         $user = User::factory()->create();

@@ -11,22 +11,42 @@ trait HandlesPostAuthRedirect
 {
     protected function storeAuthIntent(Request $request): void
     {
-        if (! $request->filled('redirect')) {
+        $redirect = $this->authRedirectPath($request);
+
+        if ($redirect === null) {
             return;
         }
 
-        session(['url.intended' => $this->resolveAuthRedirectUrl($request)]);
+        session(['url.intended' => $this->resolveAuthRedirectUrl($request, $redirect)]);
     }
 
-    protected function resolveAuthRedirectUrl(Request $request): string
+    protected function authRedirectPath(Request $request): ?string
     {
-        $redirect = (string) $request->query('redirect', '/');
+        $redirect = $request->input('redirect', $request->query('redirect'));
+
+        if (! is_string($redirect) || $redirect === '') {
+            return null;
+        }
+
+        return $redirect;
+    }
+
+    protected function authIntent(Request $request): ?string
+    {
+        $intent = $request->input('intent', $request->query('intent'));
+
+        return is_string($intent) && $intent !== '' ? $intent : null;
+    }
+
+    protected function resolveAuthRedirectUrl(Request $request, ?string $redirect = null): string
+    {
+        $redirect = (string) ($redirect ?? $this->authRedirectPath($request) ?? '/');
 
         if (! str_starts_with($redirect, '/') || str_starts_with($redirect, '//')) {
             $redirect = '/';
         }
 
-        if ($request->query('intent') === 'subscribe' && ! str_contains($redirect, 'subscribe=1')) {
+        if ($this->authIntent($request) === 'subscribe' && ! str_contains($redirect, 'subscribe=1')) {
             $separator = str_contains($redirect, '?') ? '&' : '?';
             $redirect .= $separator.'subscribe=1';
         }
@@ -37,6 +57,10 @@ trait HandlesPostAuthRedirect
     protected function redirectAfterAuthentication(Request $request): RedirectResponse
     {
         $user = $request->user();
+
+        if ($this->authRedirectPath($request) !== null) {
+            $this->storeAuthIntent($request);
+        }
 
         if ($user->role === 'admin') {
             return redirect()->intended(route('admin.dashboard', absolute: false));

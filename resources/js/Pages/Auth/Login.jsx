@@ -54,6 +54,10 @@ function EyeIcon() {
     );
 }
 
+function readCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+}
+
 export default function Login({ status, canResetPassword, redirect = null, intent = null }) {
     const { flash } = usePage().props;
     const isSubscribeFlow = intent === SUBSCRIBE_INTENT;
@@ -62,6 +66,9 @@ export default function Login({ status, canResetPassword, redirect = null, inten
         email: '',
         password: '',
         remember: false,
+        redirect: redirect ?? '',
+        intent: intent ?? '',
+        _token: readCsrfToken(),
     });
 
     const submit = (e) => {
