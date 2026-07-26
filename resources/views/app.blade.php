@@ -35,6 +35,9 @@
 
         @if ($inertiaDarkShellBg)
             <meta name="theme-color" content="{{ $inertiaDarkShellBg }}">
+            @if (request()->path() === '' || request()->is('/'))
+                <link rel="preload" as="image" href="{{ asset('images/copifi-logo.png') }}">
+            @endif
             <style>
                 html, body, #app {
                     background-color: {{ $inertiaDarkShellBg }} !important;
