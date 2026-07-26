@@ -37,6 +37,12 @@
             <meta name="theme-color" content="{{ $inertiaDarkShellBg }}">
             @if (request()->path() === '' || request()->is('/'))
                 <link rel="preload" as="image" href="{{ asset('images/copifi-logo.png') }}">
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+                    rel="stylesheet"
+                >
             @endif
             <style>
                 html, body, #app {
@@ -62,5 +68,6 @@
     </head>
     <body class="font-sans antialiased" @if ($inertiaDarkShellBg) style="background-color:{{ $inertiaDarkShellBg }};min-height:100vh;min-height:100dvh" @endif>
         @inertia
+        @include('partials.landing-first-paint')
     </body>
 </html>
