@@ -59,8 +59,8 @@ class PasswordResetTest extends TestCase
             $response = $this->post('/reset-password', [
                 'token' => $notification->token,
                 'email' => $user->email,
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => 'password1',
+                'password_confirmation' => 'password1',
             ]);
 
             $response
@@ -69,5 +69,18 @@ class PasswordResetTest extends TestCase
 
             return true;
         });
+    }
+
+    public function test_reset_link_request_does_not_reveal_unknown_email(): void
+    {
+        Notification::fake();
+
+        $response = $this->post('/forgot-password', ['email' => 'unknown@example.com']);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status');
+
+        Notification::assertNothingSent();
     }
 }

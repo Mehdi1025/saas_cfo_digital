@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
@@ -47,7 +46,7 @@ class NewPasswordController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
                 $user->forceFill([
-                    'password' => Hash::make($request->password),
+                    'password' => $request->password,
                     'remember_token' => Str::random(60),
                 ])->save();
 
@@ -59,11 +58,20 @@ class NewPasswordController extends Controller
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         if ($status == Password::PASSWORD_RESET) {
-            return redirect()->route('login')->with('status', __($status));
+            return redirect()->route('login')->with(
+                'status',
+                'Votre mot de passe a ete reinitialise. Vous pouvez vous connecter.'
+            );
         }
 
+        $message = match ($status) {
+            Password::INVALID_TOKEN => 'Ce lien de reinitialisation est invalide ou a deja ete utilise.',
+            Password::INVALID_USER => 'Ce lien de reinitialisation est invalide ou a expire.',
+            default => 'Impossible de reinitialiser le mot de passe. Demandez un nouveau lien.',
+        };
+
         throw ValidationException::withMessages([
-            'email' => [trans($status)],
+            'email' => [$message],
         ]);
     }
 }

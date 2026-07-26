@@ -77,7 +77,14 @@ function AuthTabs({ mode }) {
     );
 }
 
-export default function AuthShell({ children, mode, title, subtitle }) {
+export default function AuthShell({
+    children,
+    mode,
+    title,
+    subtitle,
+    showTabs = true,
+    showSocial = true,
+}) {
     const googleLabel = mode === 'login' ? 'Se connecter avec Google' : 'Continuer avec Google';
 
     return (
@@ -139,9 +146,9 @@ export default function AuthShell({ children, mode, title, subtitle }) {
 
                 <section className="mx-auto w-full max-w-md">
                     <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-8 shadow-[0_30px_100px_rgba(0,0,0,0.65)] backdrop-blur-xl">
-                        <AuthTabs mode={mode} />
+                        {showTabs && <AuthTabs mode={mode} />}
 
-                        <div className="mt-9">
+                        <div className={showTabs ? 'mt-9' : ''}>
                             <h2 className="text-2xl font-bold text-white">
                                 {title}
                             </h2>
@@ -152,23 +159,27 @@ export default function AuthShell({ children, mode, title, subtitle }) {
 
                         <div className="mt-8">{children}</div>
 
-                        <div className="my-8 flex items-center gap-4">
-                            <div className="h-px flex-1 bg-white/10" />
-                            <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-                                Ou continuer avec
-                            </span>
-                            <div className="h-px flex-1 bg-white/10" />
-                        </div>
+                        {showSocial && (
+                            <>
+                                <div className="my-8 flex items-center gap-4">
+                                    <div className="h-px flex-1 bg-white/10" />
+                                    <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                        Ou continuer avec
+                                    </span>
+                                    <div className="h-px flex-1 bg-white/10" />
+                                </div>
 
-                        <div className="grid grid-cols-1 gap-4">
-                            <a
-                                href={route('auth.google.redirect')}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
-                            >
-                                <GoogleIcon />
-                                {googleLabel}
-                            </a>
-                        </div>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <a
+                                        href={route('auth.google.redirect')}
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
+                                    >
+                                        <GoogleIcon />
+                                        {googleLabel}
+                                    </a>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <div className="mt-8 flex items-center justify-center gap-4 text-xs text-slate-500">

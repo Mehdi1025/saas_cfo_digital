@@ -9,6 +9,7 @@ use App\Models\Document;
 use App\Models\Tier;
 use App\Services\GenericPaApiClient;
 use App\Services\RestPaApiClient;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -79,7 +81,32 @@ class AppServiceProvider extends ServiceProvider
                 ->subject('Confirmez votre e-mail Copifi')
                 ->line('Appuyez sur le bouton ci-dessous pour confirmer votre adresse e-mail.')
                 ->action('Confirmer mon e-mail', $url)
+                ->line('Ce lien expire dans 60 minutes.')
                 ->line('Si vous n\'avez pas cree de compte, ignorez ce message.');
+        });
+
+        ResetPassword::createUrlUsing(function (object $notifiable, string $token): string {
+            return url(route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], false));
+        });
+
+        ResetPassword::toMailUsing(function (object $notifiable, string $url): MailMessage {
+            return (new MailMessage)
+                ->subject('Reinitialisez votre mot de passe Copifi')
+                ->line('Nous avons recu une demande de reinitialisation de mot de passe pour votre compte.')
+                ->action('Reinitialiser le mot de passe', $url)
+                ->line('Ce lien expire dans 60 minutes et ne peut etre utilise qu\'une seule fois.')
+                ->line('Si vous n\'avez pas demande cette reinitialisation, ignorez ce message.');
+        });
+
+        Password::defaults(function () {
+            $rule = Password::min(8)->letters()->numbers();
+
+            return $this->app->isProduction()
+                ? $rule->mixedCase()->symbols()->uncompromised()
+                : $rule;
         });
 
         Vite::prefetch(concurrency: 3);

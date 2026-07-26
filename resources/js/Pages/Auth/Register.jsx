@@ -1,6 +1,11 @@
 import InputError from '@/Components/InputError';
 import AuthShell from '@/Pages/Auth/AuthShell';
+import {
+    passwordRequirements,
+    validateRegistrationForm,
+} from '@/utils/authValidation';
 import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
 function FieldIcon({ type }) {
     const paths = {
@@ -31,6 +36,29 @@ function FieldIcon({ type }) {
     );
 }
 
+function PasswordHints({ password }) {
+    const requirements = passwordRequirements(password);
+
+    const items = [
+        { key: 'minLength', label: 'Au moins 8 caracteres', ok: requirements.minLength },
+        { key: 'hasLetter', label: 'Au moins une lettre', ok: requirements.hasLetter },
+        { key: 'hasNumber', label: 'Au moins un chiffre', ok: requirements.hasNumber },
+    ];
+
+    return (
+        <ul className="mt-2 space-y-1 text-xs text-slate-500">
+            {items.map((item) => (
+                <li
+                    key={item.key}
+                    className={item.ok ? 'text-emerald-400' : undefined}
+                >
+                    {item.ok ? '✓' : '•'} {item.label}
+                </li>
+            ))}
+        </ul>
+    );
+}
+
 export default function Register() {
     const shouldStartCheckout = new URLSearchParams(window.location.search).get('checkout') === '1';
 
@@ -42,8 +70,17 @@ export default function Register() {
         checkout: shouldStartCheckout,
     });
 
+    const [clientErrors, setClientErrors] = useState({});
+
     const submit = (e) => {
         e.preventDefault();
+
+        const validationErrors = validateRegistrationForm(data);
+        setClientErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length > 0) {
+            return;
+        }
 
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
@@ -114,7 +151,13 @@ export default function Register() {
                                 onChange={(e) => setData(field.id, e.target.value)}
                             />
                         </div>
-                        <InputError message={errors[field.id]} className="mt-2" />
+                        {field.id === 'password' && (
+                            <PasswordHints password={data.password} />
+                        )}
+                        <InputError
+                            message={clientErrors[field.id] || errors[field.id]}
+                            className="mt-2"
+                        />
                     </div>
                 ))}
 
