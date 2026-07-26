@@ -18,14 +18,7 @@ createInertiaApp({
         ),
     setup({ el, App, props }) {
         const root = createRoot(el);
-
         root.render(<App {...props} />);
-
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                document.body.classList.add('inertia-ready');
-            });
-        });
     },
     progress: false,
 });

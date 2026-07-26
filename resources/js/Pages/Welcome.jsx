@@ -62,43 +62,8 @@ const gridBg =
    PRIMITIVES
    ============================================================ */
 
-function ScrollReveal({ children, className = '', delay = 0, immediate = false }) {
-    const ref = useRef(null);
-    const [visible, setVisible] = useState(true);
-
-    useEffect(() => {
-        if (immediate) {
-            return undefined;
-        }
-
-        const el = ref.current;
-        if (!el) return undefined;
-
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight * 0.92) {
-            return undefined;
-        }
-
-        setVisible(false);
-        const obs = new IntersectionObserver(
-            ([e]) => e.isIntersecting && setVisible(true),
-            { threshold: 0.08, rootMargin: '0px 0px -6% 0px' },
-        );
-        obs.observe(el);
-        return () => obs.disconnect();
-    }, [immediate]);
-
-    return (
-        <div
-            ref={ref}
-            className={`transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
-                visible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-10 scale-[0.98] opacity-0'
-            } ${className}`}
-            style={{ transitionDelay: `${delay}ms` }}
-        >
-            {children}
-        </div>
-    );
+function ScrollReveal({ children, className = '' }) {
+    return <div className={className}>{children}</div>;
 }
 
 function useMagnetic() {
