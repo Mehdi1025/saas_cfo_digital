@@ -1615,7 +1615,7 @@ export default function Welcome({ auth }) {
                             auth={auth}
                             canAccessDashboard={canAccessDashboard}
                             isSuspended={isSuspended}
-                            onSubscribe={onSubscribe}
+                            onSubscribe={handleSubscribe}
                         />
                     </div>
                 </nav>
@@ -1660,7 +1660,7 @@ export default function Welcome({ auth }) {
                                 auth={auth}
                                 canAccessDashboard={canAccessDashboard}
                                 isSuspended={isSuspended}
-                                onSubscribe={onSubscribe}
+                                onSubscribe={handleSubscribe}
                                 className="inline-flex items-center justify-center gap-2 rounded-full border border-[#C9A962]/40 bg-gradient-to-r from-[#C9A962] via-[#E8D5A8] to-[#C9A962] px-8 py-4 text-lg font-semibold text-[#1a1510] shadow-[0_0_32px_rgba(201,169,98,0.28)] transition hover:shadow-[0_0_48px_rgba(201,169,98,0.42)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8D5A8]/60"
                             >
                                 {subscribeLabel}
