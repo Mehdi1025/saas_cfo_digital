@@ -40,7 +40,10 @@ return [
         'secret' => env('STRIPE_SECRET'),
         'price_id' => env('STRIPE_PRICE_ID'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
-        'plan_name' => env('STRIPE_PLAN_NAME', 'Copifi Pro'),
+        'plan_name' => env('STRIPE_PLAN_NAME', 'Copifi'),
+        'plan_price' => env('STRIPE_PLAN_PRICE', '29.95'),
+        'plan_price_label' => env('STRIPE_PLAN_PRICE_LABEL', '29,95 €'),
+        'plan_currency' => env('STRIPE_PLAN_CURRENCY', 'EUR'),
     ],
 
     'google' => [

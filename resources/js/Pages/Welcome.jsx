@@ -978,7 +978,7 @@ function PilotageSection() {
    SECTION ASSISTANT IA
    ============================================================ */
 
-function LandingChatSection({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
+function LandingChatSection({ auth, canAccessDashboard, isSuspended, onSubscribe, subscribeLabel }) {
     return (
         <section id="assistant" className="relative mx-auto w-full max-w-7xl px-6 py-24 md:py-32">
             <div
@@ -1016,9 +1016,9 @@ function LandingChatSection({ auth, canAccessDashboard, isSuspended, onSubscribe
                             canAccessDashboard={canAccessDashboard}
                             isSuspended={isSuspended}
                             onSubscribe={onSubscribe}
-                            className="inline-flex items-center gap-2 rounded-full bg-[#CCFF00] px-6 py-3 text-base font-semibold text-black shadow-[0_0_24px_rgba(204,255,0,0.3)] transition hover:-translate-y-0.5 hover:bg-[#b8e600] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#C9A962]/35 bg-gradient-to-r from-[#C9A962]/90 to-[#E8D5A8]/90 px-6 py-3 text-base font-semibold text-[#1a1510] shadow-[0_0_28px_rgba(201,169,98,0.2)] transition hover:shadow-[0_0_40px_rgba(201,169,98,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8D5A8]/60"
                         >
-                            Démarrer l&apos;essai gratuit
+                            {subscribeLabel}
                             <IconArrowRight className="h-4 w-4" />
                         </PrimarySubscribeAction>
                     </ScrollReveal>
@@ -1033,110 +1033,131 @@ function LandingChatSection({ auth, canAccessDashboard, isSuspended, onSubscribe
 }
 
 /* ============================================================
-   TARIFS — les deux piliers inclus dans chaque plan
+   TARIFS — offre unique premium
    ============================================================ */
 
-function PricingSection({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
-    const plans = [
-        {
-            name: 'Indépendant',
-            price: '15 €',
-            tagline: 'Pour les auto-entrepreneurs et freelances.',
-            popular: false,
-            features: [
-                { t: '30 factures / mois + devis illimités', pillar: 'fact' },
-                { t: 'Conformité réforme 2026 incluse (Factur-X, PA)', pillar: 'fact' },
-                { t: 'Archivage légal 10 ans', pillar: 'fact' },
-                { t: 'Tableau de bord : CA, marge, trésorerie', pillar: 'pil' },
-            ],
-        },
-        {
-            name: 'Pro',
-            price: '49 €',
-            tagline: 'Pour les TPE et PME qui veulent piloter.',
-            popular: true,
-            features: [
-                { t: 'Factures illimitées + conformité complète', pillar: 'fact' },
-                { t: 'Pilotage avancé : CAC, LTV, DSO, prévisionnel', pillar: 'pil' },
-                { t: 'Alertes intelligentes + copilote et analyses IA', pillar: 'pil' },
-                { t: 'Multi-devises et escompte financier', pillar: 'fact' },
-                { t: 'Support prioritaire', pillar: 'pil' },
-            ],
-        },
-    ];
+const OFFER_FEATURES = [
+    { t: 'Facturation conforme 2026 — Factur-X & Plateforme Agréée', accent: 'gold' },
+    { t: 'Devis et factures illimités · archivage légal 10 ans', accent: 'gold' },
+    { t: 'Tableau de bord : trésorerie, marge et CA en temps réel', accent: 'emerald' },
+    { t: 'Pilotage avancé : CAC, LTV, DSO et prévisionnel', accent: 'emerald' },
+    { t: 'Copilote IA, alertes intelligentes et analyses mensuelles', accent: 'emerald' },
+    { t: 'Hébergement France · RGPD · support prioritaire', accent: 'gold' },
+];
 
+function PricingSection({ auth, canAccessDashboard, isSuspended, onSubscribe, pricing, subscribeLabel }) {
     return (
-        <section id="tarifs" className="mx-auto flex w-full max-w-7xl flex-col items-center px-6 pb-24 pt-20 md:pb-28 md:pt-28">
-            <ScrollReveal className="mb-14 text-center">
-                <p className="ff-mono mb-4 text-[11px] uppercase tracking-[0.28em] text-emerald-400/80">Tarifs</p>
+        <section id="tarifs" className="relative mx-auto w-full max-w-7xl px-6 pb-28 pt-24 md:pb-36 md:pt-32">
+            <div
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-0 h-[520px] w-[min(100%,720px)] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(201,169,98,0.14)_0%,transparent_68%)]"
+            />
+
+            <ScrollReveal className="relative mb-16 text-center">
+                <p className="ff-mono mb-5 text-[11px] uppercase tracking-[0.32em] text-[#C9A962]/90">
+                    L&apos;offre unique
+                </p>
                 <h2 className="text-3xl font-bold tracking-tight text-white md:text-5xl">
-                    Simple,
+                    Tout Copifi.
                     {' '}
-                    <span className="ff-serif italic text-emerald-200">sans engagement.</span>
+                    <span className="ff-serif italic text-[#E8D5A8]">Une seule formule.</span>
                 </h2>
-                <p className="mx-auto mt-4 max-w-xl text-zinc-400">
-                    Facturation conforme <span className="text-emerald-300">et</span> pilotage : les deux piliers
-                    sont inclus dans chaque plan. Ce n&apos;est pas une option.
+                <p className="mx-auto mt-5 max-w-lg text-base font-light leading-relaxed text-zinc-400 md:text-lg">
+                    Facturation conforme et pilotage d&apos;entreprise — réunis dans un abonnement
+                    unique, sans compromis.
                 </p>
             </ScrollReveal>
 
-            <div className="grid w-full max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
-                {plans.map((plan, i) => (
-                    <ScrollReveal key={plan.name} delay={80 + i * 80} className="h-full">
-                        <div
-                            className={`relative flex h-full flex-col rounded-[2rem] border p-9 transition-all duration-500 hover:-translate-y-1 ${
-                                plan.popular
-                                    ? 'border-emerald-400/40 bg-gradient-to-b from-emerald-500/[0.08] to-transparent shadow-[0_0_60px_-12px_rgba(16,185,129,0.35)]'
-                                    : 'border-white/10 bg-white/[0.02] hover:border-white/20'
-                            }`}
-                        >
-                            {plan.popular && (
-                                <span className="ff-mono absolute -top-3 right-8 rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-black">
-                                    Populaire
-                                </span>
-                            )}
-                            <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-                            <p className="mt-1 text-sm text-zinc-400">{plan.tagline}</p>
-                            <div className="mb-8 mt-6 flex items-baseline gap-2 border-b border-white/10 pb-8">
-                                <span className="ff-mono text-5xl font-bold tabular-nums text-white">{plan.price}</span>
-                                <span className="text-zinc-400">/ mois HT</span>
-                            </div>
-                            <ul className="mb-10 space-y-3.5">
-                                {plan.features.map((f) => {
-                                    const sky = f.pillar === 'pil';
-                                    return (
-                                        <li key={f.t} className="flex items-start gap-3 text-sm text-zinc-300">
-                                            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${sky ? 'bg-sky-500/20' : 'bg-emerald-500/20'}`}>
-                                                <IconCheck className={`h-3 w-3 ${sky ? 'text-sky-400' : 'text-emerald-400'}`} />
-                                            </span>
-                                            {f.t}
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                            <div className="mt-auto">
-                                <PrimarySubscribeAction
-                                    auth={auth}
-                                    canAccessDashboard={canAccessDashboard}
-                                    isSuspended={isSuspended}
-                                    onSubscribe={onSubscribe}
-                                    className={`block w-full rounded-xl py-3.5 text-center text-base font-bold transition focus:outline-none focus-visible:ring-2 ${
-                                        plan.popular
-                                            ? 'bg-[#CCFF00] text-black hover:bg-[#b8e600] focus-visible:ring-[#CCFF00]/60'
-                                            : 'border border-white/15 bg-white/[0.05] text-white hover:bg-white/10 focus-visible:ring-white/40'
-                                    }`}
-                                >
-                                    Démarrer l&apos;essai gratuit
-                                </PrimarySubscribeAction>
-                            </div>
-                        </div>
-                    </ScrollReveal>
-                ))}
-            </div>
+            <ScrollReveal delay={80} className="relative mx-auto max-w-xl">
+                <div className="relative overflow-hidden rounded-[2rem] border border-[#C9A962]/25 bg-gradient-to-b from-[#12100c] via-[#0a0d12] to-[#06080b] p-[1px] shadow-[0_40px_100px_rgba(0,0,0,0.55),0_0_80px_-20px_rgba(201,169,98,0.35)]">
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E8D5A8] to-transparent"
+                    />
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#C9A962]/10 blur-3xl"
+                    />
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-emerald-500/[0.07] blur-3xl"
+                    />
 
-            <ScrollReveal delay={240} className="mt-8">
-                <p className="ff-mono text-center text-[11px] uppercase tracking-[0.18em] text-zinc-600">
-                    14 jours d&apos;essai · sans carte bancaire · résiliable à tout moment
+                    <div className="relative px-8 py-10 sm:px-10 sm:py-12">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <p className="ff-mono text-[10px] uppercase tracking-[0.28em] text-[#C9A962]/80">
+                                    Accès complet
+                                </p>
+                                <h3 className="ff-serif mt-3 text-3xl text-white md:text-4xl">
+                                    {pricing.name}
+                                </h3>
+                                <p className="mt-2 text-sm font-light text-zinc-400">
+                                    L&apos;intégralité de la plateforme, sans limite.
+                                </p>
+                            </div>
+                            <span className="ff-mono shrink-0 rounded-full border border-[#C9A962]/30 bg-[#C9A962]/10 px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.22em] text-[#E8D5A8]">
+                                Tout inclus
+                            </span>
+                        </div>
+
+                        <div className="my-10 border-y border-white/[0.06] py-10 text-center">
+                            <div className="flex items-end justify-center gap-1">
+                                <span className="ff-serif text-6xl font-normal leading-none tracking-tight text-white md:text-7xl">
+                                    {pricing.amount_display}
+                                </span>
+                                <span className="mb-2 text-2xl font-light text-[#E8D5A8] md:text-3xl">€</span>
+                            </div>
+                            <p className="ff-mono mt-3 text-[11px] uppercase tracking-[0.24em] text-zinc-500">
+                                par mois · HT · sans engagement
+                            </p>
+                        </div>
+
+                        <ul className="space-y-4">
+                            {OFFER_FEATURES.map((feature) => (
+                                <li
+                                    key={feature.t}
+                                    className="flex items-start gap-3.5 text-sm font-light leading-relaxed text-zinc-300"
+                                >
+                                    <span
+                                        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                                            feature.accent === 'gold'
+                                                ? 'bg-[#C9A962]/15 ring-1 ring-[#C9A962]/25'
+                                                : 'bg-emerald-500/15 ring-1 ring-emerald-400/20'
+                                        }`}
+                                    >
+                                        <IconCheck
+                                            className={`h-3 w-3 ${
+                                                feature.accent === 'gold'
+                                                    ? 'text-[#E8D5A8]'
+                                                    : 'text-emerald-400'
+                                            }`}
+                                        />
+                                    </span>
+                                    {feature.t}
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="mt-10">
+                            <PrimarySubscribeAction
+                                auth={auth}
+                                canAccessDashboard={canAccessDashboard}
+                                isSuspended={isSuspended}
+                                onSubscribe={onSubscribe}
+                                className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border border-[#C9A962]/40 bg-gradient-to-r from-[#C9A962] via-[#E8D5A8] to-[#C9A962] px-6 py-4 text-base font-semibold text-[#1a1510] shadow-[0_0_40px_rgba(201,169,98,0.25)] transition hover:shadow-[0_0_56px_rgba(201,169,98,0.4)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8D5A8]/60"
+                            >
+                                {subscribeLabel}
+                                <IconArrowRight className="h-5 w-5 transition group-hover:translate-x-0.5" />
+                            </PrimarySubscribeAction>
+                        </div>
+                    </div>
+                </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={180} className="relative mt-10">
+                <p className="ff-mono text-center text-[11px] uppercase tracking-[0.22em] text-zinc-600">
+                    Paiement sécurisé · Résiliable à tout moment · Données hébergées en France
                 </p>
             </ScrollReveal>
         </section>
@@ -1239,7 +1260,7 @@ function FaqSection() {
    CTA FINAL — fermer la vente
    ============================================================ */
 
-function FinalCtaSection({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
+function FinalCtaSection({ auth, canAccessDashboard, isSuspended, onSubscribe, subscribeLabel, pricing }) {
     const { d } = useCountdown(REFORM_DEADLINE);
 
     return (
@@ -1272,21 +1293,21 @@ function FinalCtaSection({ auth, canAccessDashboard, isSuspended, onSubscribe })
                             canAccessDashboard={canAccessDashboard}
                             isSuspended={isSuspended}
                             onSubscribe={onSubscribe}
-                            className="rounded-full bg-[#CCFF00] px-9 py-4 text-lg font-semibold text-black shadow-[0_0_32px_rgba(204,255,0,0.35)] transition hover:-translate-y-0.5 hover:bg-[#b8e600] hover:shadow-[0_0_44px_rgba(204,255,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
+                            className="inline-flex items-center gap-2 rounded-full border border-[#C9A962]/40 bg-gradient-to-r from-[#C9A962] via-[#E8D5A8] to-[#C9A962] px-9 py-4 text-lg font-semibold text-[#1a1510] shadow-[0_0_36px_rgba(201,169,98,0.3)] transition hover:shadow-[0_0_52px_rgba(201,169,98,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8D5A8]/60"
                         >
-                            Démarrer l&apos;essai gratuit
+                            {subscribeLabel}
                             <IconArrowRight className="h-5 w-5" />
                         </PrimarySubscribeAction>
                         <a
                             href="#tarifs"
-                            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-9 py-4 text-lg font-medium text-white transition hover:border-white/20 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-9 py-4 text-lg font-medium text-white transition hover:border-[#C9A962]/30 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
                         >
-                            Voir les tarifs
+                            Voir l&apos;offre
                         </a>
                     </div>
 
                     <p className="ff-mono relative mt-8 text-[10px] uppercase tracking-[0.2em] text-zinc-600">
-                        14 jours d&apos;essai · sans carte bancaire · sans engagement
+                        {pricing.amount_label}/mois HT · sans engagement · paiement sécurisé
                     </p>
                 </div>
             </ScrollReveal>
@@ -1497,10 +1518,12 @@ function WelcomeFlashBanner() {
 }
 
 export default function Welcome({ auth }) {
+    const { pricing } = usePage().props;
     const year = new Date().getFullYear();
     const canAccessDashboard = Boolean(auth?.user?.can_access_app);
     const isSuspended = Boolean(auth?.user?.is_suspended);
     const subscribeCheckoutTriggered = useRef(false);
+    const subscribeLabel = `S'abonner — ${pricing.amount_label}/mois`;
 
     const startCheckout = useCallback(() => {
         router.post(route('billing.checkout'));
@@ -1608,7 +1631,7 @@ export default function Welcome({ auth }) {
                         <a href="#facturation" className="whitespace-nowrap transition-colors hover:text-white">Facturation</a>
                         <a href="#pilotage" className="whitespace-nowrap transition-colors hover:text-white">Pilotage</a>
                         <a href="#conformite" className="whitespace-nowrap transition-colors hover:text-white">Conformité</a>
-                        <a href="#tarifs" className="whitespace-nowrap transition-colors hover:text-white">Tarifs</a>
+                        <a href="#tarifs" className="whitespace-nowrap transition-colors hover:text-white">L&apos;offre</a>
                     </div>
 
                     <div className="ml-auto shrink-0">
@@ -1662,13 +1685,13 @@ export default function Welcome({ auth }) {
                                 canAccessDashboard={canAccessDashboard}
                                 isSuspended={isSuspended}
                                 onSubscribe={onSubscribe}
-                                className="rounded-full bg-[#CCFF00] px-8 py-4 text-lg font-semibold text-black shadow-[0_0_28px_rgba(204,255,0,0.35)] transition hover:-translate-y-0.5 hover:bg-[#b8e600] hover:shadow-[0_0_40px_rgba(204,255,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#C9A962]/40 bg-gradient-to-r from-[#C9A962] via-[#E8D5A8] to-[#C9A962] px-8 py-4 text-lg font-semibold text-[#1a1510] shadow-[0_0_32px_rgba(201,169,98,0.28)] transition hover:shadow-[0_0_48px_rgba(201,169,98,0.42)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8D5A8]/60"
                             >
-                                Démarrer l&apos;essai gratuit
-                                <IconArrowRight className="h-5 w-5" />
-                            </PrimarySubscribeAction>
-                            <a
-                                href="#difference"
+                                {subscribeLabel}
+                            <IconArrowRight className="h-5 w-5" />
+                        </PrimarySubscribeAction>
+                        <a
+                            href="#difference"
                                 className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-[rgba(255,255,255,0.07)] px-8 py-4 text-lg font-medium text-white transition hover:border-white/20 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
                             >
                                 <IconGauge className="h-5 w-5 text-sky-400" />
@@ -1723,7 +1746,7 @@ export default function Welcome({ auth }) {
 
                         <ScrollReveal delay={320} className="mt-8">
                             <p className="ff-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600">
-                                14 jours d&apos;essai · sans carte bancaire · sans engagement
+                                {pricing.amount_label}/mois HT · sans engagement · paiement sécurisé
                             </p>
                         </ScrollReveal>
                     </section>
@@ -1739,12 +1762,15 @@ export default function Welcome({ auth }) {
                         canAccessDashboard={canAccessDashboard}
                         isSuspended={isSuspended}
                         onSubscribe={handleSubscribe}
+                        subscribeLabel={subscribeLabel}
                     />
                     <PricingSection
                         auth={auth}
                         canAccessDashboard={canAccessDashboard}
                         isSuspended={isSuspended}
                         onSubscribe={handleSubscribe}
+                        pricing={pricing}
+                        subscribeLabel={subscribeLabel}
                     />
                     <FaqSection />
                     <FinalCtaSection
@@ -1752,6 +1778,8 @@ export default function Welcome({ auth }) {
                         canAccessDashboard={canAccessDashboard}
                         isSuspended={isSuspended}
                         onSubscribe={handleSubscribe}
+                        subscribeLabel={subscribeLabel}
+                        pricing={pricing}
                     />
                 </main>
 

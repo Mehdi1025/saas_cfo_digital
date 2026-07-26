@@ -28,7 +28,8 @@ class ProfileController extends Controller
                 'currency' => $user->subscription_currency,
                 'stripe_configured' => filled(config('services.stripe.secret'))
                     && filled(config('services.stripe.price_id')),
-                'plan_name' => config('services.stripe.plan_name', 'Copifi Pro'),
+                'plan_name' => config('services.stripe.plan_name', 'Copifi'),
+                'plan_price_label' => config('services.stripe.plan_price_label', '29,95 €'),
             ],
         ]);
     }

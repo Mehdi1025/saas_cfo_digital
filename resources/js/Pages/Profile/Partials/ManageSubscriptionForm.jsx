@@ -12,8 +12,9 @@ function formatAmount(amount, currency) {
 }
 
 export default function ManageSubscriptionForm({ subscription, className = '' }) {
-    const { flash } = usePage().props;
+    const { flash, pricing } = usePage().props;
     const formattedAmount = formatAmount(subscription.amount, subscription.currency);
+    const displayPrice = formattedAmount ?? pricing.amount_label;
 
     return (
         <section id="subscription" className={className}>
@@ -22,7 +23,7 @@ export default function ManageSubscriptionForm({ subscription, className = '' })
                     Abonnement
                 </h2>
                 <p className="mt-1 text-sm text-gray-400">
-                    Gerez votre plan et accedez aux fonctionnalites premium de Copifi.
+                    L&apos;offre unique Copifi — facturation conforme et pilotage complet.
                 </p>
             </header>
 
@@ -39,31 +40,34 @@ export default function ManageSubscriptionForm({ subscription, className = '' })
                     </div>
                 )}
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                <div className="relative overflow-hidden rounded-2xl border border-[#C9A962]/20 bg-gradient-to-br from-[#12100c]/80 via-[#0a0d12]/90 to-[#06080b]/90 p-6">
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E8D5A8]/60 to-transparent"
+                    />
+
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                                Plan actuel
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#C9A962]/80">
+                                {subscription.is_active ? 'Votre plan' : 'Offre disponible'}
                             </p>
-                            <p className="mt-2 text-xl font-bold text-white">
-                                {subscription.is_active
-                                    ? subscription.plan_name
-                                    : 'Plan gratuit'}
+                            <p className="mt-2 font-display text-2xl font-bold text-white">
+                                {subscription.plan_name}
                             </p>
                             <p className="mt-1 text-sm text-zinc-400">
-                                {subscription.plan_label}
+                                {subscription.is_active
+                                    ? subscription.plan_label
+                                    : 'Accès complet à toute la plateforme'}
                             </p>
-                            {formattedAmount && subscription.is_active && (
-                                <p className="mt-2 text-sm text-emerald-300">
-                                    {formattedAmount} / mois
-                                </p>
-                            )}
+                            <p className="mt-3 font-display text-xl text-[#E8D5A8]">
+                                {subscription.is_active ? `${displayPrice} / mois` : `${pricing.amount_label} / mois HT`}
+                            </p>
                         </div>
 
                         <span
                             className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
                                 subscription.is_active
-                                    ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
+                                    ? 'border-[#C9A962]/30 bg-[#C9A962]/10 text-[#E8D5A8]'
                                     : 'border-zinc-500/30 bg-zinc-500/10 text-zinc-300'
                             }`}
                         >
@@ -73,9 +77,8 @@ export default function ManageSubscriptionForm({ subscription, className = '' })
 
                     {!subscription.is_active && (
                         <p className="mt-4 text-sm leading-6 text-zinc-400">
-                            Passez a {subscription.plan_name} pour debloquer le copilote IA,
-                            la facturation, la saisie mensuelle et l&apos;ensemble des outils
-                            financiers.
+                            Un seul abonnement, tout inclus : facturation conforme 2026, copilote IA,
+                            tableau de bord et outils de pilotage financier.
                         </p>
                     )}
                 </div>
@@ -89,9 +92,9 @@ export default function ManageSubscriptionForm({ subscription, className = '' })
                     ) : subscription.stripe_configured ? (
                         <Link
                             href={route('billing.checkout.start')}
-                            className="inline-flex items-center justify-center rounded-xl bg-[#18c98f] px-5 py-3 text-sm font-bold text-black shadow-[0_0_24px_rgba(24,201,143,0.2)] transition hover:bg-[#25e0a4]"
+                            className="inline-flex items-center justify-center rounded-xl border border-[#C9A962]/40 bg-gradient-to-r from-[#C9A962] to-[#E8D5A8] px-5 py-3 text-sm font-bold text-[#1a1510] shadow-[0_0_24px_rgba(201,169,98,0.2)] transition hover:shadow-[0_0_36px_rgba(201,169,98,0.35)]"
                         >
-                            S&apos;abonner
+                            S&apos;abonner — {pricing.amount_label}/mois
                         </Link>
                     ) : (
                         <p className="text-sm text-amber-200">

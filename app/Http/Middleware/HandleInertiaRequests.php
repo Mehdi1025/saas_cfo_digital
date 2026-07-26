@@ -62,6 +62,14 @@ class HandleInertiaRequests extends Middleware
             'delivery_destinations' => fn () => $user
                 ? app(DeliveryDestinationService::class)->forFrontend()
                 : [],
+            'pricing' => [
+                'name' => config('services.stripe.plan_name'),
+                'amount' => config('services.stripe.plan_price'),
+                'amount_display' => str_replace('.', ',', (string) config('services.stripe.plan_price')),
+                'amount_label' => config('services.stripe.plan_price_label'),
+                'currency' => config('services.stripe.plan_currency'),
+                'interval' => 'mois',
+            ],
         ];
     }
 }
