@@ -1661,7 +1661,7 @@ export default function Welcome({ auth }) {
                                 canAccessDashboard={canAccessDashboard}
                                 isSuspended={isSuspended}
                                 onSubscribe={handleSubscribe}
-                                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#C9A962]/40 bg-gradient-to-r from-[#C9A962] via-[#E8D5A8] to-[#C9A962] px-8 py-4 text-lg font-semibold text-[#1a1510] shadow-[0_0_32px_rgba(201,169,98,0.28)] transition hover:shadow-[0_0_48px_rgba(201,169,98,0.42)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E8D5A8]/60"
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#CCFF00] px-8 py-4 text-lg font-semibold text-black shadow-[0_0_28px_rgba(204,255,0,0.35)] transition hover:-translate-y-0.5 hover:bg-[#b8e600] hover:shadow-[0_0_40px_rgba(204,255,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
                             >
                                 {subscribeLabel}
                             <IconArrowRight className="h-5 w-5" />
