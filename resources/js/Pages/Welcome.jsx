@@ -1502,7 +1502,7 @@ export default function Welcome({ auth }) {
     const subscribeLabel = `S'abonner — ${pricing.amount_label}/mois`;
 
     const startCheckout = useCallback(() => {
-        router.post(route('billing.checkout'));
+        router.visit(route('billing.checkout.start'));
     }, []);
 
     const handleSubscribe = useCallback(() => {

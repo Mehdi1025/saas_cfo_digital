@@ -179,7 +179,7 @@
     ]
   },
   "resources/js/Pages/Auth/Login.jsx": {
-    "file": "assets/Login-CW3qKCcu.js",
+    "file": "assets/Login-1NfTkOK0.js",
     "name": "Login",
     "src": "resources/js/Pages/Auth/Login.jsx",
     "isDynamicEntry": true,
@@ -191,7 +191,7 @@
     ]
   },
   "resources/js/Pages/Auth/Register.jsx": {
-    "file": "assets/Register-D3zpK2Ua.js",
+    "file": "assets/Register-bQJmaRlZ.js",
     "name": "Register",
     "src": "resources/js/Pages/Auth/Register.jsx",
     "isDynamicEntry": true,
@@ -566,7 +566,7 @@
     ]
   },
   "resources/js/Pages/Welcome.jsx": {
-    "file": "assets/Welcome-D4NVeFDN.js",
+    "file": "assets/Welcome-DH28RQWx.js",
     "name": "Welcome",
     "src": "resources/js/Pages/Welcome.jsx",
     "isDynamicEntry": true,
@@ -577,7 +577,7 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-CYWl8TNX.js",
+    "file": "assets/app-Dg7detwH.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,

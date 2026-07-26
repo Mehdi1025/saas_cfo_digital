@@ -134,7 +134,7 @@ export default function Register({ redirect = null, intent = null }) {
             title={isSubscribeFlow ? 'Creez votre compte pour continuer' : 'Creer un compte'}
             subtitle={
                 isSubscribeFlow
-                    ? 'Inscrivez-vous pour revenir a la page d accueil et finaliser votre abonnement.'
+                    ? 'Inscrivez-vous pour acceder directement au paiement securise Stripe.'
                     : 'Lancez votre espace d analyse financiere en quelques secondes.'
             }
             redirect={redirect}
