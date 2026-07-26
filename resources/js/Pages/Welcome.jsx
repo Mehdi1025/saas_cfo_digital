@@ -62,11 +62,15 @@ const gridBg =
    PRIMITIVES
    ============================================================ */
 
-function ScrollReveal({ children, className = '', delay = 0 }) {
+function ScrollReveal({ children, className = '', delay = 0, immediate = false }) {
     const ref = useRef(null);
-    const [visible, setVisible] = useState(false);
+    const [visible, setVisible] = useState(immediate);
 
     useEffect(() => {
+        if (immediate) {
+            return undefined;
+        }
+
         const el = ref.current;
         if (!el) return undefined;
         const obs = new IntersectionObserver(
@@ -75,7 +79,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
         );
         obs.observe(el);
         return () => obs.disconnect();
-    }, []);
+    }, [immediate]);
 
     return (
         <div
@@ -1647,7 +1651,7 @@ export default function Welcome({ auth }) {
                 <main className="relative z-10 flex flex-col items-center pb-24 pt-32">
                     {/* ============ HERO — dashboard flottant conservé ============ */}
                     <section id="hero" className="mx-auto flex w-full max-w-7xl flex-col items-center px-6 pb-16 pt-16 text-center sm:pb-20 sm:pt-20">
-                        <ScrollReveal>
+                        <ScrollReveal immediate>
                             <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5">
                                 <span className="relative flex h-1.5 w-1.5">
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
@@ -1659,7 +1663,7 @@ export default function Welcome({ auth }) {
                             </div>
                         </ScrollReveal>
 
-                        <ScrollReveal delay={80} className="max-w-4xl">
+                        <ScrollReveal delay={80} immediate className="max-w-4xl">
                             <h1 className="text-5xl font-bold leading-[1.06] tracking-tighter text-white md:text-7xl">
                                 Pilotez, facturez,
                                 <br />
@@ -1669,7 +1673,7 @@ export default function Welcome({ auth }) {
                             </h1>
                         </ScrollReveal>
 
-                        <ScrollReveal delay={140} className="mt-6 max-w-2xl">
+                        <ScrollReveal delay={140} immediate className="mt-6 max-w-2xl">
                             <p className="text-lg font-light leading-relaxed text-zinc-400 md:text-xl">
                                 Bien plus qu&apos;un logiciel de facturation. Copifi réunit vos
                                 devis, factures et paiements conformes à la réforme 2026 —
@@ -1679,7 +1683,7 @@ export default function Welcome({ auth }) {
                             </p>
                         </ScrollReveal>
 
-                        <ScrollReveal delay={200} className="mb-20 mt-10 flex w-full flex-col items-stretch justify-center gap-4 sm:mb-24 sm:w-auto sm:flex-row sm:items-center">
+                        <ScrollReveal delay={200} immediate className="mb-20 mt-10 flex w-full flex-col items-stretch justify-center gap-4 sm:mb-24 sm:w-auto sm:flex-row sm:items-center">
                             <PrimarySubscribeAction
                                 auth={auth}
                                 canAccessDashboard={canAccessDashboard}

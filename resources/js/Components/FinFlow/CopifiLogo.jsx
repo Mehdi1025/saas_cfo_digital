@@ -5,7 +5,7 @@ const SIZES = {
     nav: 'h-10 sm:h-11 md:h-12 lg:h-[3.35rem]',
 };
 
-export default function CopifiLogo({ size = 'md', className = '', blend = true }) {
+export default function CopifiLogo({ size = 'md', className = '', blend = false }) {
     const height = SIZES[size] ?? SIZES.md;
 
     return (

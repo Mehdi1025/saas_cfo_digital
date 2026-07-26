@@ -2,6 +2,12 @@
     $inertiaDarkShellBg = null;
     if (request()->is('test') || request()->is('dashboard_test') || request()->is('dashboard_test/*')) {
         $inertiaDarkShellBg = '#09090B';
+    } elseif (request()->path() === '' || request()->is('/')) {
+        $inertiaDarkShellBg = '#050505';
+    } elseif (
+        request()->is('login', 'register', 'forgot-password', 'reset-password*', 'verify-email*', 'confirm-password')
+    ) {
+        $inertiaDarkShellBg = '#020707';
     } elseif (request()->routeIs([
         'dashboard',
         'financial-entry.index',

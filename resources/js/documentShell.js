@@ -60,11 +60,11 @@ export function resolveDocumentShell(page) {
     }
 
     if (component.startsWith('Auth/') || isAuthShellPath(urlPath)) {
-        return { bg: '#f3f4f6', colorScheme: 'light' };
+        return { bg: '#020707', colorScheme: 'dark' };
     }
 
     if (component === 'Welcome' || urlPath === '/') {
-        return { bg: '#f9fafb', colorScheme: 'light' };
+        return { bg: '#050505', colorScheme: 'dark' };
     }
 
     if (
