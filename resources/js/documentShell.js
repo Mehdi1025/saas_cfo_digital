@@ -45,7 +45,14 @@ function isAuthShellPath(urlPath) {
  */
 export function resolveDocumentShell(page) {
     if (!page) {
-        return { bg: '#ffffff', colorScheme: 'light' };
+        if (typeof window !== 'undefined') {
+            return resolveDocumentShell({
+                component: '',
+                url: window.location.pathname || '/',
+            });
+        }
+
+        return { bg: '#050505', colorScheme: 'dark' };
     }
 
     const component = page.component ?? '';
@@ -67,6 +74,10 @@ export function resolveDocumentShell(page) {
         return { bg: '#050505', colorScheme: 'dark' };
     }
 
+    if (pathMatchesBase(urlPath, '/billing')) {
+        return { bg: '#050505', colorScheme: 'dark' };
+    }
+
     if (
         component === 'Dashboard' ||
         component === 'Admin/Dashboard' ||
@@ -78,7 +89,7 @@ export function resolveDocumentShell(page) {
         return { bg: '#0b1220', colorScheme: 'dark' };
     }
 
-    return { bg: '#ffffff', colorScheme: 'light' };
+    return { bg: '#0b1220', colorScheme: 'dark' };
 }
 
 function shellCss(bg, colorScheme) {
@@ -160,9 +171,9 @@ export function initDocumentShell() {
     }
 
     const initial = getInitialPageFromDOM('app');
-    if (initial) {
-        applyDocumentShellFromPage(initial);
-    }
+    applyDocumentShellFromPage(
+        initial ?? { component: '', url: window.location.pathname || '/' },
+    );
 
     const onPage = (event) => {
         const page = event?.detail?.page;

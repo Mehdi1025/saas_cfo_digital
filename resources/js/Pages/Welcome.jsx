@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import LandingChatWidget from '@/Components/Landing/LandingChatWidget';
-import CopifiLogo from '@/Components/FinFlow/CopifiLogo';
+import FinFlowAwwwardsLogo from '@/Components/FinFlow/FinFlowAwwwardsLogo';
 import {
     buildSubscribeAuthUrl,
     clearSubscribeIntent,
@@ -73,6 +73,13 @@ function ScrollReveal({ children, className = '', delay = 0, immediate = false }
 
         const el = ref.current;
         if (!el) return undefined;
+
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.92) {
+            setVisible(true);
+            return undefined;
+        }
+
         const obs = new IntersectionObserver(
             ([e]) => e.isIntersecting && setVisible(true),
             { threshold: 0.08, rootMargin: '0px 0px -6% 0px' },
@@ -1594,6 +1601,13 @@ export default function Welcome({ auth }) {
             <style>{`
                 #ff-landing .ff-serif { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
                 #ff-landing .ff-mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+                @keyframes ff-landing-in {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                #ff-landing {
+                    animation: ff-landing-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+                }
                 @keyframes ff-marquee {
                     from { transform: translateX(0); }
                     to { transform: translateX(-50%); }
@@ -1601,6 +1615,7 @@ export default function Welcome({ auth }) {
                 #ff-landing .ff-marquee-track { animation: ff-marquee 32s linear infinite; }
                 #ff-landing .ff-marquee:hover .ff-marquee-track { animation-play-state: paused; }
                 @media (prefers-reduced-motion: reduce) {
+                    #ff-landing { animation: none; }
                     #ff-landing .ff-marquee-track { animation: none; flex-wrap: wrap; width: 100%; justify-content: center; }
                     #ff-landing * { transition-duration: 0.01ms !important; }
                 }
@@ -1627,7 +1642,7 @@ export default function Welcome({ auth }) {
                         wrapperClassName="inline-flex shrink-0 items-center py-0.5"
                         className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
                     >
-                        <CopifiLogo size="nav" />
+                        <FinFlowAwwwardsLogo />
                     </MagneticLink>
 
                     <div className="hidden min-w-0 flex-1 items-center justify-center gap-5 text-sm font-medium text-zinc-300 lg:flex lg:gap-6">
@@ -1703,7 +1718,7 @@ export default function Welcome({ auth }) {
                             </a>
                         </ScrollReveal>
 
-                        <ScrollReveal delay={260} className="relative isolate w-full max-w-5xl">
+                        <ScrollReveal delay={260} immediate className="relative isolate w-full max-w-5xl">
                             <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[120%] w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/20 blur-[120px]" />
                             <div className="relative z-10 rounded-[2rem] border border-white/10 bg-[rgba(255,255,255,0.08)] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-500 [transform:perspective(1000px)_rotateX(10deg)_rotateY(-12deg)_rotateZ(4deg)] [transform-style:preserve-3d] [backface-visibility:hidden] hover:[transform:perspective(1000px)_rotateX(6deg)_rotateY(-6deg)_rotateZ(2deg)] md:p-8">
                                 <div className="mb-6 flex items-start justify-between gap-4">
@@ -1748,7 +1763,7 @@ export default function Welcome({ auth }) {
                             </div>
                         </ScrollReveal>
 
-                        <ScrollReveal delay={320} className="mt-8">
+                        <ScrollReveal delay={320} immediate className="mt-8">
                             <p className="ff-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600">
                                 {pricing.amount_label}/mois HT · sans engagement · paiement sécurisé
                             </p>
@@ -1789,7 +1804,7 @@ export default function Welcome({ auth }) {
 
                 <footer className="relative z-10 border-t border-white/10 bg-[rgba(0,0,0,0.65)] py-10">
                     <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
-                        <CopifiLogo size="sm" />
+                        <span className="ff-serif text-xl tracking-tight text-white">Copifi</span>
                         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-zinc-500">
                             <a href="/mentions-legales" className="transition hover:text-white">Mentions légales</a>
                             <a href="/conditions-generales" className="transition hover:text-white">CGV</a>

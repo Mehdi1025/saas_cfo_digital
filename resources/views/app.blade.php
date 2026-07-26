@@ -4,6 +4,8 @@
         $inertiaDarkShellBg = '#09090B';
     } elseif (request()->path() === '' || request()->is('/')) {
         $inertiaDarkShellBg = '#050505';
+    } elseif (request()->is('billing', 'billing/*')) {
+        $inertiaDarkShellBg = '#050505';
     } elseif (
         request()->is('login', 'register', 'forgot-password', 'reset-password*', 'verify-email*', 'confirm-password')
     ) {
@@ -30,6 +32,17 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
+
+        @if ($inertiaDarkShellBg)
+            <meta name="theme-color" content="{{ $inertiaDarkShellBg }}">
+            <style>
+                html, body, #app {
+                    background-color: {{ $inertiaDarkShellBg }} !important;
+                    min-height: 100vh;
+                    min-height: 100dvh;
+                }
+            </style>
+        @endif
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
