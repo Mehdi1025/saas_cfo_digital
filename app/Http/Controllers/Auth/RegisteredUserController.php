@@ -15,12 +15,16 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
+    use HandlesPostAuthRedirect;
+
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('Auth/Register');
+        $this->storeAuthIntent($request);
+
+        return Inertia::render('Auth/Register', $this->authRedirectProps($request));
     }
 
     /**
@@ -46,6 +50,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return $this->redirectAfterAuthentication($request);
     }
 }

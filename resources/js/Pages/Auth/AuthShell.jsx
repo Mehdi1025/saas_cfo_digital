@@ -48,7 +48,17 @@ function GoogleIcon() {
     );
 }
 
-function AuthTabs({ mode }) {
+function AuthTabs({ mode, redirect, intent }) {
+    const authParams = {};
+
+    if (redirect) {
+        authParams.redirect = redirect;
+    }
+
+    if (intent) {
+        authParams.intent = intent;
+    }
+
     const activeClass =
         'bg-slate-700/80 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]';
     const idleClass = 'text-slate-400 hover:text-white';
@@ -57,7 +67,7 @@ function AuthTabs({ mode }) {
         <div className="grid rounded-full border border-white/5 bg-black/35 p-1 text-xs font-semibold">
             <div className="grid grid-cols-2">
                 <Link
-                    href={route('login')}
+                    href={route('login', authParams)}
                     className={`rounded-full px-5 py-2 text-center transition ${
                         mode === 'login' ? activeClass : idleClass
                     }`}
@@ -65,7 +75,7 @@ function AuthTabs({ mode }) {
                     Connexion
                 </Link>
                 <Link
-                    href={route('register')}
+                    href={route('register', authParams)}
                     className={`rounded-full px-5 py-2 text-center transition ${
                         mode === 'register' ? activeClass : idleClass
                     }`}
@@ -84,8 +94,23 @@ export default function AuthShell({
     subtitle,
     showTabs = true,
     showSocial = true,
+    redirect = null,
+    intent = null,
 }) {
     const googleLabel = mode === 'login' ? 'Se connecter avec Google' : 'Continuer avec Google';
+    const authParams = {};
+
+    if (redirect) {
+        authParams.redirect = redirect;
+    }
+
+    if (intent) {
+        authParams.intent = intent;
+    }
+
+    const googleRedirectUrl = Object.keys(authParams).length
+        ? `${route('auth.google.redirect')}?${new URLSearchParams(authParams).toString()}`
+        : route('auth.google.redirect');
 
     return (
         <div className="relative min-h-screen overflow-hidden bg-[#020707] text-white">
@@ -146,7 +171,7 @@ export default function AuthShell({
 
                 <section className="mx-auto w-full max-w-md">
                     <div className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-8 shadow-[0_30px_100px_rgba(0,0,0,0.65)] backdrop-blur-xl">
-                        {showTabs && <AuthTabs mode={mode} />}
+                        {showTabs && <AuthTabs mode={mode} redirect={redirect} intent={intent} />}
 
                         <div className={showTabs ? 'mt-9' : ''}>
                             <h2 className="text-2xl font-bold text-white">
@@ -171,7 +196,7 @@ export default function AuthShell({
 
                                 <div className="grid grid-cols-1 gap-4">
                                     <a
-                                        href={route('auth.google.redirect')}
+                                        href={googleRedirectUrl}
                                         className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
                                     >
                                         <GoogleIcon />

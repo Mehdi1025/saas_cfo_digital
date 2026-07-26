@@ -13,6 +13,8 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
+    use HandlesPostAuthRedirect;
+
     public function redirect(Request $request): RedirectResponse
     {
         if (! $this->googleIsConfigured()) {
@@ -20,6 +22,8 @@ class GoogleAuthController extends Controller
                 ->route('login')
                 ->withErrors(['email' => 'La connexion Google n est pas encore configuree sur cet environnement.']);
         }
+
+        $this->storeAuthIntent($request);
 
         return $this->googleDriver()
             ->scopes(['openid', 'email', 'profile'])
@@ -85,11 +89,7 @@ class GoogleAuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        if ($user->role === 'admin') {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
-        }
-
-        return redirect()->intended(route('dashboard', absolute: false));
+        return $this->redirectAfterAuthentication($request);
     }
 
     protected function googleIsConfigured(): bool

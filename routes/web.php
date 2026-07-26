@@ -31,12 +31,8 @@ use Inertia\Inertia;
 Route::get('/', function (Request $request) {
     $user = $request->user();
 
-    if ($user && $user->role === 'admin') {
+    if ($user && $user->role === 'admin' && ! $request->boolean('subscribe')) {
         return redirect()->route('admin.dashboard');
-    }
-
-    if ($user) {
-        return redirect()->route('dashboard');
     }
 
     return Inertia::render('Welcome', [

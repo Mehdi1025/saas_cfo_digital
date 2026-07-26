@@ -13,14 +13,19 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
+    use HandlesPostAuthRedirect;
+
     /**
      * Display the login view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $this->storeAuthIntent($request);
+
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            ...$this->authRedirectProps($request),
         ]);
     }
 
@@ -33,11 +38,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->user()->role === 'admin') {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
-        }
-
-        return redirect()->intended(route('dashboard', absolute: false));
+        return $this->redirectAfterAuthentication($request);
     }
 
     /**

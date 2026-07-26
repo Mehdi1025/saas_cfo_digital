@@ -1,0 +1,59 @@
+<?php
+
+namespace Tests\Feature\Auth;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class SubscribeAuthRedirectTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guest_subscribe_intent_stores_landing_redirect_on_register_page(): void
+    {
+        $response = $this->get('/register?redirect=/&intent=subscribe');
+
+        $response->assertOk();
+        $this->assertSame('/?subscribe=1', session('url.intended'));
+    }
+
+    public function test_registration_with_subscribe_intent_redirects_to_landing(): void
+    {
+        $this->get('/register?redirect=/&intent=subscribe');
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password1',
+            'password_confirmation' => 'password1',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/?subscribe=1');
+    }
+
+    public function test_login_with_subscribe_intent_redirects_to_landing(): void
+    {
+        $user = User::factory()->create();
+
+        $this->get('/login?redirect=/&intent=subscribe');
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect('/?subscribe=1');
+    }
+
+    public function test_authenticated_users_can_view_landing_page(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/')
+            ->assertOk();
+    }
+}

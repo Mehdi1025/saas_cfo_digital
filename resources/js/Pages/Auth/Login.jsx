@@ -1,5 +1,6 @@
 import InputError from '@/Components/InputError';
 import AuthShell from '@/Pages/Auth/AuthShell';
+import { buildAuthQueryParams, SUBSCRIBE_INTENT } from '@/utils/subscribeFlow';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 function MailIcon() {
@@ -53,8 +54,10 @@ function EyeIcon() {
     );
 }
 
-export default function Login({ status, canResetPassword }) {
+export default function Login({ status, canResetPassword, redirect = null, intent = null }) {
     const { flash } = usePage().props;
+    const isSubscribeFlow = intent === SUBSCRIBE_INTENT;
+    const authParams = buildAuthQueryParams({ redirect, intent });
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -72,8 +75,14 @@ export default function Login({ status, canResetPassword }) {
     return (
         <AuthShell
             mode="login"
-            title="Bon retour"
-            subtitle="Accedez a votre espace d'analyse financiere."
+            title={isSubscribeFlow ? 'Connectez-vous pour continuer' : 'Bon retour'}
+            subtitle={
+                isSubscribeFlow
+                    ? 'Connectez-vous pour revenir a la page d accueil et finaliser votre abonnement.'
+                    : 'Accedez a votre espace d analyse financiere.'
+            }
+            redirect={redirect}
+            intent={intent}
         >
             <Head title="Connexion" />
 
@@ -118,7 +127,7 @@ export default function Login({ status, canResetPassword }) {
                         </label>
                         {canResetPassword && (
                             <Link
-                                href={route('password.request')}
+                                href={route('password.request', authParams)}
                                 className="text-xs font-semibold text-emerald-300 transition hover:text-emerald-200"
                             >
                                 Oublie ?
@@ -157,7 +166,7 @@ export default function Login({ status, canResetPassword }) {
                     disabled={processing}
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#18c98f] px-5 py-4 text-sm font-bold text-black shadow-[0_0_30px_rgba(24,201,143,0.25)] transition hover:bg-[#25e0a4] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    Acceder au tableau de bord
+                    {isSubscribeFlow ? 'Continuer vers l abonnement' : 'Acceder au tableau de bord'}
                     <span aria-hidden>{'->'}</span>
                 </button>
             </form>

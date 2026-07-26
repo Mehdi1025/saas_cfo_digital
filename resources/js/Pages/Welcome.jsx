@@ -2,6 +2,11 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import LandingChatWidget from '@/Components/Landing/LandingChatWidget';
 import CopifiLogo from '@/Components/FinFlow/CopifiLogo';
 import {
+    buildSubscribeAuthUrl,
+    clearSubscribeIntent,
+    hasSubscribeIntent,
+} from '@/utils/subscribeFlow';
+import {
     useCallback,
     useEffect,
     useRef,
@@ -973,7 +978,7 @@ function PilotageSection() {
    SECTION ASSISTANT IA
    ============================================================ */
 
-function LandingChatSection({ auth, canAccessDashboard, isSuspended, startCheckout }) {
+function LandingChatSection({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
     return (
         <section id="assistant" className="relative mx-auto w-full max-w-7xl px-6 py-24 md:py-32">
             <div
@@ -1010,7 +1015,7 @@ function LandingChatSection({ auth, canAccessDashboard, isSuspended, startChecko
                             auth={auth}
                             canAccessDashboard={canAccessDashboard}
                             isSuspended={isSuspended}
-                            startCheckout={startCheckout}
+                            onSubscribe={onSubscribe}
                             className="inline-flex items-center gap-2 rounded-full bg-[#CCFF00] px-6 py-3 text-base font-semibold text-black shadow-[0_0_24px_rgba(204,255,0,0.3)] transition hover:-translate-y-0.5 hover:bg-[#b8e600] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
                         >
                             Démarrer l&apos;essai gratuit
@@ -1031,7 +1036,7 @@ function LandingChatSection({ auth, canAccessDashboard, isSuspended, startChecko
    TARIFS — les deux piliers inclus dans chaque plan
    ============================================================ */
 
-function PricingSection({ auth, canAccessDashboard, isSuspended, startCheckout }) {
+function PricingSection({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
     const plans = [
         {
             name: 'Indépendant',
@@ -1114,7 +1119,7 @@ function PricingSection({ auth, canAccessDashboard, isSuspended, startCheckout }
                                     auth={auth}
                                     canAccessDashboard={canAccessDashboard}
                                     isSuspended={isSuspended}
-                                    startCheckout={startCheckout}
+                                    onSubscribe={onSubscribe}
                                     className={`block w-full rounded-xl py-3.5 text-center text-base font-bold transition focus:outline-none focus-visible:ring-2 ${
                                         plan.popular
                                             ? 'bg-[#CCFF00] text-black hover:bg-[#b8e600] focus-visible:ring-[#CCFF00]/60'
@@ -1234,7 +1239,7 @@ function FaqSection() {
    CTA FINAL — fermer la vente
    ============================================================ */
 
-function FinalCtaSection({ auth, canAccessDashboard, isSuspended, startCheckout }) {
+function FinalCtaSection({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
     const { d } = useCountdown(REFORM_DEADLINE);
 
     return (
@@ -1266,7 +1271,7 @@ function FinalCtaSection({ auth, canAccessDashboard, isSuspended, startCheckout 
                             auth={auth}
                             canAccessDashboard={canAccessDashboard}
                             isSuspended={isSuspended}
-                            startCheckout={startCheckout}
+                            onSubscribe={onSubscribe}
                             className="rounded-full bg-[#CCFF00] px-9 py-4 text-lg font-semibold text-black shadow-[0_0_32px_rgba(204,255,0,0.35)] transition hover:-translate-y-0.5 hover:bg-[#b8e600] hover:shadow-[0_0_44px_rgba(204,255,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
                         >
                             Démarrer l&apos;essai gratuit
@@ -1337,7 +1342,7 @@ function HeroChart() {
    ACTIONS AUTH / ABONNEMENT
    ============================================================ */
 
-function TopActions({ auth, canAccessDashboard, isSuspended, startCheckout }) {
+function TopActions({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
     if (auth?.user) {
         return (
             <div className="flex items-center gap-2">
@@ -1354,7 +1359,7 @@ function TopActions({ auth, canAccessDashboard, isSuspended, startCheckout }) {
                     </MagneticLink>
                 ) : (
                     <MagneticButton
-                        onClick={startCheckout}
+                        onClick={onSubscribe}
                         className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 sm:px-5"
                     >
                         S&apos;abonner
@@ -1390,10 +1395,10 @@ function TopActions({ auth, canAccessDashboard, isSuspended, startCheckout }) {
     );
 }
 
-function PrimarySubscribeAction({ auth, canAccessDashboard, isSuspended, startCheckout, children, className }) {
+function PrimarySubscribeAction({ auth, canAccessDashboard, isSuspended, onSubscribe, children, className }) {
     if (!auth?.user) {
         return (
-            <MagneticLink href={route('register')} className={className}>
+            <MagneticLink href={buildSubscribeAuthUrl('register')} className={className}>
                 {children}
             </MagneticLink>
         );
@@ -1410,9 +1415,9 @@ function PrimarySubscribeAction({ auth, canAccessDashboard, isSuspended, startCh
         );
     }
     return (
-        <MagneticLink href={`${route('profile.edit')}#subscription`} className={className}>
+        <MagneticButton onClick={onSubscribe} className={className}>
             {children}
-        </MagneticLink>
+        </MagneticButton>
     );
 }
 
@@ -1495,10 +1500,47 @@ export default function Welcome({ auth }) {
     const year = new Date().getFullYear();
     const canAccessDashboard = Boolean(auth?.user?.can_access_app);
     const isSuspended = Boolean(auth?.user?.is_suspended);
+    const subscribeCheckoutTriggered = useRef(false);
 
-    const startCheckout = () => {
+    const startCheckout = useCallback(() => {
         router.post(route('billing.checkout'));
-    };
+    }, []);
+
+    const handleSubscribe = useCallback(() => {
+        if (isSuspended) {
+            return;
+        }
+
+        if (canAccessDashboard) {
+            router.visit(route('dashboard'));
+            return;
+        }
+
+        if (!auth?.user) {
+            router.visit(buildSubscribeAuthUrl('register'));
+            return;
+        }
+
+        startCheckout();
+    }, [auth, canAccessDashboard, isSuspended, startCheckout]);
+
+    useEffect(() => {
+        if (subscribeCheckoutTriggered.current) {
+            return;
+        }
+
+        if (!auth?.user || isSuspended || canAccessDashboard) {
+            return;
+        }
+
+        if (!hasSubscribeIntent()) {
+            return;
+        }
+
+        subscribeCheckoutTriggered.current = true;
+        clearSubscribeIntent();
+        startCheckout();
+    }, [auth, canAccessDashboard, isSuspended, startCheckout]);
 
     return (
         <>
@@ -1574,7 +1616,7 @@ export default function Welcome({ auth }) {
                             auth={auth}
                             canAccessDashboard={canAccessDashboard}
                             isSuspended={isSuspended}
-                            startCheckout={startCheckout}
+                            onSubscribe={onSubscribe}
                         />
                     </div>
                 </nav>
@@ -1619,7 +1661,7 @@ export default function Welcome({ auth }) {
                                 auth={auth}
                                 canAccessDashboard={canAccessDashboard}
                                 isSuspended={isSuspended}
-                                startCheckout={startCheckout}
+                                onSubscribe={onSubscribe}
                                 className="rounded-full bg-[#CCFF00] px-8 py-4 text-lg font-semibold text-black shadow-[0_0_28px_rgba(204,255,0,0.35)] transition hover:-translate-y-0.5 hover:bg-[#b8e600] hover:shadow-[0_0_40px_rgba(204,255,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
                             >
                                 Démarrer l&apos;essai gratuit
@@ -1696,20 +1738,20 @@ export default function Welcome({ auth }) {
                         auth={auth}
                         canAccessDashboard={canAccessDashboard}
                         isSuspended={isSuspended}
-                        startCheckout={startCheckout}
+                        onSubscribe={handleSubscribe}
                     />
                     <PricingSection
                         auth={auth}
                         canAccessDashboard={canAccessDashboard}
                         isSuspended={isSuspended}
-                        startCheckout={startCheckout}
+                        onSubscribe={handleSubscribe}
                     />
                     <FaqSection />
                     <FinalCtaSection
                         auth={auth}
                         canAccessDashboard={canAccessDashboard}
                         isSuspended={isSuspended}
-                        startCheckout={startCheckout}
+                        onSubscribe={handleSubscribe}
                     />
                 </main>
 

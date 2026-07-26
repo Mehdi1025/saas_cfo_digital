@@ -4,6 +4,7 @@ import {
     passwordRequirements,
     validateRegistrationForm,
 } from '@/utils/authValidation';
+import { SUBSCRIBE_INTENT } from '@/utils/subscribeFlow';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -59,7 +60,8 @@ function PasswordHints({ password }) {
     );
 }
 
-export default function Register() {
+export default function Register({ redirect = null, intent = null }) {
+    const isSubscribeFlow = intent === SUBSCRIBE_INTENT;
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -122,8 +124,14 @@ export default function Register() {
     return (
         <AuthShell
             mode="register"
-            title="Creer un compte"
-            subtitle="Lancez votre espace d'analyse financiere en quelques secondes."
+            title={isSubscribeFlow ? 'Creez votre compte pour continuer' : 'Creer un compte'}
+            subtitle={
+                isSubscribeFlow
+                    ? 'Inscrivez-vous pour revenir a la page d accueil et finaliser votre abonnement.'
+                    : 'Lancez votre espace d analyse financiere en quelques secondes.'
+            }
+            redirect={redirect}
+            intent={intent}
         >
             <Head title="Inscription" />
 
@@ -163,7 +171,7 @@ export default function Register() {
                     disabled={processing}
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#18c98f] px-5 py-4 text-sm font-bold text-black shadow-[0_0_30px_rgba(24,201,143,0.25)] transition hover:bg-[#25e0a4] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    Creer mon compte
+                    {isSubscribeFlow ? 'Continuer vers l abonnement' : 'Creer mon compte'}
                     <span aria-hidden>{'->'}</span>
                 </button>
             </form>
