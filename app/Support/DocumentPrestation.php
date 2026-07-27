@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\DeliveryDestination;
 use App\Models\Document;
+use Illuminate\Validation\Rule;
 
 class DocumentPrestation
 {
@@ -14,6 +15,26 @@ class DocumentPrestation
     public const TYPE_PRODUIT = 'produit';
 
     public const FRAIS_PORT_PAR_JOUR = 10.0;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function validationRules(): array
+    {
+        return [
+            'type_prestation' => ['required', Rule::in([self::TYPE_SERVICE, self::TYPE_PRODUIT])],
+            'destination' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::when(
+                    fn (array $input) => filled($input['destination'] ?? null),
+                    [Rule::exists('delivery_destinations', 'name')],
+                ),
+            ],
+            'jours_stockage' => ['nullable', 'integer', 'min:0'],
+        ];
+    }
 
     /**
      * @param  array<string, mixed>  $data

@@ -524,10 +524,6 @@ export default function InvoiceCreate({
         form.setData({
             ...form.data,
             type_prestation: 'produit',
-            destination:
-                form.data.destination ||
-                deliveryDestinations[0]?.name ||
-                '',
         });
     }
 
@@ -1004,14 +1000,20 @@ export default function InvoiceCreate({
                                                             value={form.data.operation_category}
                                                             onChange={(e) => {
                                                                 const nextCategory = e.target.value;
-                                                                form.setData({
+                                                                const nextData = {
                                                                     ...form.data,
                                                                     operation_category: nextCategory,
                                                                     delivery_address:
                                                                         nextCategory === 'service'
                                                                             ? ''
                                                                             : form.data.delivery_address,
-                                                                });
+                                                                };
+                                                                if (nextCategory === 'service') {
+                                                                    nextData.type_prestation = 'service';
+                                                                    nextData.destination = '';
+                                                                    nextData.jours_stockage = 0;
+                                                                }
+                                                                form.setData(nextData);
                                                             }}
                                                             disabled={isReadOnly}
                                                             required
@@ -1332,10 +1334,9 @@ export default function InvoiceCreate({
                                                                 e.target.value,
                                                             )
                                                         }
-                                                        required
                                                     >
-                                                        <option value="" disabled>
-                                                            Choisir une destination…
+                                                        <option value="">
+                                                            Aucune (sans frais de port)
                                                         </option>
                                                         {deliveryDestinations.map((dest) => (
                                                             <option key={dest.id} value={dest.name}>
@@ -1360,7 +1361,6 @@ export default function InvoiceCreate({
                                                                 e.target.value,
                                                             )
                                                         }
-                                                        required
                                                     />
                                                     <p className="mt-1.5 text-xs text-slate-500">
                                                         {selectedFeePerDay} € / jour — frais
