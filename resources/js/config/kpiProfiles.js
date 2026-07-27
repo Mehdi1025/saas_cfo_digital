@@ -190,3 +190,47 @@ export function getDefaultEnabledSecondary(profileId) {
 
     return secondary.slice(0, 4).map((kpi) => kpi.id);
 }
+
+export function getActiveDashboardKpis(profileId, preferences = {}) {
+    const resolvedProfile = profileId ?? DEFAULT_KPI_PROFILE;
+    const { essential, secondary } = getProfileKpiBreakdown(resolvedProfile);
+    const enabledSecondary = preferences?.enabled_secondary ?? [];
+    const activeSecondary = secondary.filter((kpi) => enabledSecondary.includes(kpi.id));
+
+    return [
+        ...essential.map((kpi) => ({ ...kpi, tier: 'essential' })),
+        ...activeSecondary.map((kpi) => ({ ...kpi, tier: 'secondary' })),
+    ];
+}
+
+/** Valeurs live disponibles côté dashboard mensuel */
+export function resolveKpiDisplay(kpiId, { kpis, netMarginPercentage, formatters }) {
+    const { formatCompactCurrency, formatPercentage, formatCurrency } = formatters;
+
+    switch (kpiId) {
+        case 'ca_periode':
+            return {
+                value: formatCompactCurrency(kpis.chiffre_affaires),
+                hint: 'Periode en cours',
+                live: true,
+            };
+        case 'marge_globale':
+            return {
+                value: formatPercentage(netMarginPercentage),
+                hint: `Net : ${formatCurrency(kpis.marge_nette)}`,
+                live: true,
+            };
+        case 'cac_ltv':
+            return {
+                value: kpis.cac === null ? 'N/A' : formatCompactCurrency(kpis.cac),
+                hint: kpis.ltv === null ? 'LTV indisponible' : `LTV ${formatCompactCurrency(kpis.ltv)}`,
+                live: kpis.cac !== null || kpis.ltv !== null,
+            };
+        default:
+            return {
+                value: null,
+                hint: 'Connexion des sources en cours',
+                live: false,
+            };
+    }
+}

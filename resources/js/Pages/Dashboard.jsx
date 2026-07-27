@@ -1,12 +1,12 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
 import ConnectBankButton from '@/Components/Banking/ConnectBankButton';
 import CashflowTimeMachine from '@/Components/Dashboard/CashflowTimeMachine';
+import FioKpiDashboard from '@/Components/Dashboard/FioKpiDashboard';
 import KpiProfileOnboardingModal from '@/Components/Dashboard/KpiProfileOnboardingModal';
 import CfoPageShell from '@/Components/CfoPageShell';
 import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
 import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
 import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
-import { getProfileById, isDashboardWidgetVisible } from '@/config/kpiProfiles';
 import { useDashboardSimulation } from '@/hooks/useDashboardSimulation';
 import { useForm, usePage, Link } from '@inertiajs/react';
 import axios from 'axios';
@@ -125,7 +125,6 @@ export default function Dashboard() {
     const [showKpiOnboarding, setShowKpiOnboarding] = useState(needsKpiOnboarding);
     const kpiProfile = auth?.user?.kpi_profile;
     const kpiPreferences = auth?.user?.kpi_preferences ?? { enabled_secondary: [] };
-    const activeKpiProfile = getProfileById(kpiProfile);
     const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
     const [resolvedAiInsight, setResolvedAiInsight] = useState(aiInsight);
     const [resolvedAiInsightStatus, setResolvedAiInsightStatus] = useState(aiInsightStatus);
@@ -312,10 +311,9 @@ export default function Dashboard() {
 
     const renderMainChartTooltip = useCallback((props) => <MainChartTooltip {...props} />, []);
 
-    const shouldShowWidget = useCallback(
-        (widgetId) =>
-            needsKpiOnboarding || isDashboardWidgetVisible(widgetId, kpiProfile, kpiPreferences),
-        [needsKpiOnboarding, kpiProfile, kpiPreferences],
+    const kpiFormatters = useMemo(
+        () => ({ formatCompactCurrency, formatPercentage, formatCurrency }),
+        [],
     );
 
     const aiInsightEmptyMessage =
@@ -365,27 +363,141 @@ export default function Dashboard() {
                         </section>
                     )}
 
-                    {!needsKpiOnboarding && kpiProfile && !viewedUser && (
-                        <section className={`${GLASS_PANEL} flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between`}>
-                            <div className="flex items-center gap-3">
-                                <span className="text-2xl">{activeKpiProfile.icon}</span>
-                                <div>
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neonMint">
-                                        Profil Fio actif
-                                    </p>
-                                    <p className="font-display text-sm font-semibold text-white">
-                                        {activeKpiProfile.name}
-                                    </p>
+                    {kpiProfile && !viewedUser ? (
+                        <FioKpiDashboard
+                            profileId={kpiProfile}
+                            preferences={kpiPreferences}
+                            kpis={kpis}
+                            netMarginPercentage={netMarginPercentage}
+                            sparks={{
+                                revenue: revenuesSpark,
+                                margin: marginSpark,
+                                ltv: ltvSpark,
+                            }}
+                            formatters={kpiFormatters}
+                            onEditProfile={() => setShowKpiOnboarding(true)}
+                        />
+                    ) : !viewedUser && needsKpiOnboarding ? (
+                        <section className={`${GLASS_PANEL} rounded-[24px] px-6 py-16 text-center`}>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neonMint">
+                                Console Fio
+                            </p>
+                            <h2 className="font-display mt-3 text-2xl font-bold text-white">
+                                Vos KPI apparaitront ici
+                            </h2>
+                            <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400">
+                                Choisissez votre profil metier dans le panneau de configuration pour
+                                afficher instantanement tous vos indicateurs essentiels et secondaires.
+                            </p>
+                        </section>
+                    ) : (
+                <section id="kpi-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonBlue/30`}>
+                        <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
+                            <svg className="h-10 w-10 text-neonBlue" viewBox="0 0 24 24" fill="none" aria-hidden>
+                                <path d="M4 16l4-4 4 4 8-8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M16 8h4v4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </div>
+                        <div className="relative z-10 flex h-full flex-col justify-between">
+                            <div>
+                                <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-gray-400">
+                                    Chiffre d&apos;affaires
+                                </h3>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-4xl font-bold tracking-tighter text-white">
+                                        {formatCompactCurrency(kpis.chiffre_affaires)}
+                                    </span>
                                 </div>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => setShowKpiOnboarding(true)}
-                                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                            >
-                                Modifier mes KPI
-                            </button>
-                        </section>
+                            <div className="mt-6 h-12 w-full">
+                                <SparklineArea data={revenuesSpark} stroke={NEON_BLUE} fillId="sp-revenue" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonMint/30`}>
+                        <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
+                            <svg className="h-10 w-10 text-neonMint" viewBox="0 0 24 24" fill="none" aria-hidden>
+                                <path d="M8 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.5" />
+                                <path d="M16 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.5" />
+                                <path d="M16 8L8 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                        </div>
+                        <div className="relative z-10 flex h-full flex-col justify-between">
+                            <div>
+                                <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-gray-400">
+                                    Marge nette
+                                </h3>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-4xl font-bold tracking-tighter text-white">
+                                        {formatPercentage(netMarginPercentage)}
+                                    </span>
+                                </div>
+                                <p className="mt-3 text-sm text-neonMint/70">
+                                    Montant net : {formatCurrency(kpis.marge_nette)}
+                                </p>
+                            </div>
+                            <div className="mt-6 h-12 w-full">
+                                <SparklineArea data={marginSpark} stroke={NEON_MINT} fillId="sp-margin" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-white/20`}>
+                        <div className="absolute right-0 top-0 p-4 opacity-10">
+                            <svg className="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" aria-hidden>
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.5" />
+                                <circle cx="8.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
+                                <path d="M20 8v6M23 11h-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                        </div>
+                        <div className="relative z-10 flex h-full flex-col justify-between">
+                            <div>
+                                <div className="mb-1 flex items-start justify-between">
+                                    <h3 className="text-sm font-medium uppercase tracking-wider text-gray-400">CAC</h3>
+                                    {kpis.cac === null && (
+                                        <span className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-gray-500">
+                                            Pas de donnees
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="mt-2 flex items-baseline gap-2">
+                                    <span className={`text-3xl tracking-tighter ${kpis.cac === null ? 'font-light italic text-gray-600' : 'font-bold text-white'}`}>
+                                        {kpis.cac === null ? 'N/A' : formatCompactCurrency(kpis.cac)}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="mt-6 flex items-center gap-2 text-xs text-gray-500">
+                                <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                                </svg>
+                                <span>Cout d&apos;acquisition moyen par client</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonBlue/30`}>
+                        <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
+                            <svg className="h-10 w-10 text-neonBlue" viewBox="0 0 24 24" fill="none" aria-hidden>
+                                <path d="M12 3 4 10l8 11 8-11-8-7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                            </svg>
+                        </div>
+                        <div className="relative z-10 flex h-full flex-col justify-between">
+                            <div>
+                                <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-gray-400">LTV</h3>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-4xl font-bold tracking-tighter text-white">
+                                        {kpis.ltv === null ? 'N/A' : formatCompactCurrency(kpis.ltv)}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="mt-6 h-12 w-full">
+                                <SparklineArea data={ltvSpark} stroke={NEON_BLUE} fillId="sp-ltv" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
                     )}
 
                     <section className={`${GLASS_PANEL} rounded-2xl p-5`}>
@@ -421,122 +533,6 @@ export default function Dashboard() {
                             </div>
                         </section>
                     )}
-
-                <section id="kpi-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-                    {shouldShowWidget('revenue') && (
-                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonBlue/30`}>
-                        <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
-                            <svg className="h-10 w-10 text-neonBlue" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path d="M4 16l4-4 4 4 8-8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M16 8h4v4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </div>
-                        <div className="relative z-10 flex h-full flex-col justify-between">
-                            <div>
-                                <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-gray-400">
-                                    Chiffre d&apos;affaires
-                                </h3>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-bold tracking-tighter text-white">
-                                        {formatCompactCurrency(kpis.chiffre_affaires)}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="mt-6 h-12 w-full">
-                                <SparklineArea data={revenuesSpark} stroke={NEON_BLUE} fillId="sp-revenue" />
-                            </div>
-                        </div>
-                    </div>
-                    )}
-
-                    {shouldShowWidget('net_margin') && (
-                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonMint/30`}>
-                        <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
-                            <svg className="h-10 w-10 text-neonMint" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path d="M8 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.5" />
-                                <path d="M16 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" stroke="currentColor" strokeWidth="1.5" />
-                                <path d="M16 8L8 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                        </div>
-                        <div className="relative z-10 flex h-full flex-col justify-between">
-                            <div>
-                                <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-gray-400">
-                                    Marge nette
-                                </h3>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-bold tracking-tighter text-white">
-                                        {formatPercentage(netMarginPercentage)}
-                                    </span>
-                                </div>
-                                <p className="mt-3 text-sm text-neonMint/70">
-                                    Montant net : {formatCurrency(kpis.marge_nette)}
-                                </p>
-                            </div>
-                            <div className="mt-6 h-12 w-full">
-                                <SparklineArea data={marginSpark} stroke={NEON_MINT} fillId="sp-margin" />
-                            </div>
-                        </div>
-                    </div>
-                    )}
-
-                    {shouldShowWidget('cac') && (
-                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-white/20`}>
-                        <div className="absolute right-0 top-0 p-4 opacity-10">
-                            <svg className="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="1.5" />
-                                <circle cx="8.5" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" />
-                                <path d="M20 8v6M23 11h-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                        </div>
-                        <div className="relative z-10 flex h-full flex-col justify-between">
-                            <div>
-                                <div className="mb-1 flex items-start justify-between">
-                                    <h3 className="text-sm font-medium uppercase tracking-wider text-gray-400">CAC</h3>
-                                    {kpis.cac === null && (
-                                        <span className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-xs font-medium text-gray-500">
-                                            Pas de donnees
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="mt-2 flex items-baseline gap-2">
-                                    <span className={`text-3xl tracking-tighter ${kpis.cac === null ? 'font-light italic text-gray-600' : 'font-bold text-white'}`}>
-                                        {kpis.cac === null ? 'N/A' : formatCompactCurrency(kpis.cac)}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="mt-6 flex items-center gap-2 text-xs text-gray-500">
-                                <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                                </svg>
-                                <span>Cout d&apos;acquisition moyen par client</span>
-                            </div>
-                        </div>
-                    </div>
-                    )}
-
-                    {shouldShowWidget('ltv') && (
-                    <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonBlue/30`}>
-                        <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
-                            <svg className="h-10 w-10 text-neonBlue" viewBox="0 0 24 24" fill="none" aria-hidden>
-                                <path d="M12 3 4 10l8 11 8-11-8-7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                            </svg>
-                        </div>
-                        <div className="relative z-10 flex h-full flex-col justify-between">
-                            <div>
-                                <h3 className="mb-1 text-sm font-medium uppercase tracking-wider text-gray-400">LTV</h3>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-bold tracking-tighter text-white">
-                                        {kpis.ltv === null ? 'N/A' : formatCompactCurrency(kpis.ltv)}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="mt-6 h-12 w-full">
-                                <SparklineArea data={ltvSpark} stroke={NEON_BLUE} fillId="sp-ltv" />
-                            </div>
-                        </div>
-                    </div>
-                    )}
-                </section>
 
                     <section className={`${GLASS_PANEL} rounded-2xl p-5 sm:p-6`}>
                         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -962,6 +958,8 @@ export default function Dashboard() {
                     isOpen={showKpiOnboarding}
                     onClose={() => setShowKpiOnboarding(false)}
                     initialProfile={kpiProfile}
+                    initialPreferences={kpiPreferences}
+                    isFirstVisit={needsKpiOnboarding}
                 />
             </CfoPageShell>
         </AppDashboardLayout>
