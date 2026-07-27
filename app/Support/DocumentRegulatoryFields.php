@@ -28,17 +28,21 @@ class DocumentRegulatoryFields
      */
     public static function fromValidated(array $validated): array
     {
+        $operationCategory = in_array(
+            $validated['operation_category'] ?? null,
+            Document::operationCategories(),
+            true,
+        )
+            ? $validated['operation_category']
+            : Document::OPERATION_SERVICE;
+
         $address = trim((string) ($validated['delivery_address'] ?? ''));
 
         return [
-            'operation_category' => in_array(
-                $validated['operation_category'] ?? null,
-                Document::operationCategories(),
-                true,
-            )
-                ? $validated['operation_category']
-                : Document::OPERATION_SERVICE,
-            'delivery_address' => $address !== '' ? $address : null,
+            'operation_category' => $operationCategory,
+            'delivery_address' => $operationCategory === Document::OPERATION_SERVICE
+                ? null
+                : ($address !== '' ? $address : null),
             'vat_on_debits' => filter_var($validated['vat_on_debits'] ?? false, FILTER_VALIDATE_BOOLEAN),
         ];
     }

@@ -442,7 +442,11 @@ export default function InvoiceCreate({
 
         const client = clients.find((c) => String(c.id) === String(nextTierId));
 
-        if (client?.delivery_address && !String(form.data.delivery_address ?? '').trim()) {
+        if (
+            form.data.operation_category !== 'service' &&
+            client?.delivery_address &&
+            !String(form.data.delivery_address ?? '').trim()
+        ) {
             form.setData('delivery_address', client.delivery_address);
         }
     }
@@ -998,12 +1002,17 @@ export default function InvoiceCreate({
                                                         <select
                                                             className={`${inputDark} mt-2`}
                                                             value={form.data.operation_category}
-                                                            onChange={(e) =>
-                                                                form.setData(
-                                                                    'operation_category',
-                                                                    e.target.value,
-                                                                )
-                                                            }
+                                                            onChange={(e) => {
+                                                                const nextCategory = e.target.value;
+                                                                form.setData({
+                                                                    ...form.data,
+                                                                    operation_category: nextCategory,
+                                                                    delivery_address:
+                                                                        nextCategory === 'service'
+                                                                            ? ''
+                                                                            : form.data.delivery_address,
+                                                                });
+                                                            }}
                                                             disabled={isReadOnly}
                                                             required
                                                         >
@@ -1024,29 +1033,31 @@ export default function InvoiceCreate({
                                                             </p>
                                                         ) : null}
                                                     </label>
-                                                    <label className="block sm:col-span-2">
-                                                        <span className={labelClass}>
-                                                            Adresse de livraison
-                                                        </span>
-                                                        <textarea
-                                                            className={`${inputDark} mt-2 min-h-[88px] resize-y`}
-                                                            value={form.data.delivery_address ?? ''}
-                                                            onChange={(e) =>
-                                                                form.setData(
-                                                                    'delivery_address',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            disabled={isReadOnly}
-                                                            placeholder="Adresse complète de livraison (si différente de la facturation)"
-                                                            rows={3}
-                                                        />
-                                                        {form.errors.delivery_address ? (
-                                                            <p className="mt-1 text-xs text-red-400">
-                                                                {form.errors.delivery_address}
-                                                            </p>
-                                                        ) : null}
-                                                    </label>
+                                                    {form.data.operation_category !== 'service' ? (
+                                                        <label className="block sm:col-span-2">
+                                                            <span className={labelClass}>
+                                                                Adresse de livraison
+                                                            </span>
+                                                            <textarea
+                                                                className={`${inputDark} mt-2 min-h-[88px] resize-y`}
+                                                                value={form.data.delivery_address ?? ''}
+                                                                onChange={(e) =>
+                                                                    form.setData(
+                                                                        'delivery_address',
+                                                                        e.target.value,
+                                                                    )
+                                                                }
+                                                                disabled={isReadOnly}
+                                                                placeholder="Adresse complète de livraison (si différente de la facturation)"
+                                                                rows={3}
+                                                            />
+                                                            {form.errors.delivery_address ? (
+                                                                <p className="mt-1 text-xs text-red-400">
+                                                                    {form.errors.delivery_address}
+                                                                </p>
+                                                            ) : null}
+                                                        </label>
+                                                    ) : null}
                                                     <label className="flex items-start gap-3 sm:col-span-2">
                                                         <input
                                                             type="checkbox"

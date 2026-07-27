@@ -9,7 +9,7 @@ import { useState } from 'react';
  */
 export default function ConnectBankButton({
     label = 'Connecter ma banque',
-    helper = 'Open Banking securise · Stripe Financial Connections',
+    helper = 'Stripe Financial Connections · comptes US (demo en mode test)',
     className = '',
 }) {
     const { banking, flash } = usePage().props;

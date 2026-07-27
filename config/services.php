@@ -37,13 +37,18 @@ return [
 
     'stripe' => [
         'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
+        'secret' => trim((string) env('STRIPE_SECRET', ''), " \t\n\r\0\x0B<>\"'"),
         'price_id' => env('STRIPE_PRICE_ID'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
         'plan_name' => env('STRIPE_PLAN_NAME', 'Copifi'),
         'plan_price' => env('STRIPE_PLAN_PRICE', '29.95'),
         'plan_price_label' => env('STRIPE_PLAN_PRICE_LABEL', '29,95 €'),
         'plan_currency' => env('STRIPE_PLAN_CURRENCY', 'EUR'),
+        // Financial Connections ne supporte que les comptes US (meme pour une entreprise FR).
+        'fc_countries' => array_values(array_filter(array_map(
+            trim(...),
+            explode(',', (string) env('STRIPE_FC_COUNTRIES', 'US')),
+        ))),
     ],
 
     'google' => [

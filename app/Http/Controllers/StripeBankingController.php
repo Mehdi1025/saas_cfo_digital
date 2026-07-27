@@ -36,7 +36,7 @@ class StripeBankingController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Impossible de demarrer la connexion bancaire.',
+                'message' => $exception->getMessage(),
             ], 422);
         }
     }

@@ -31,7 +31,10 @@ class StripeFinancialConnectionsService
             ]);
 
         if ($response->failed() || ! filled($response->json('id'))) {
-            throw new RuntimeException('Impossible de creer le client Stripe.');
+            throw new RuntimeException($this->formatStripeError(
+                $response->json(),
+                'Impossible de creer le client Stripe.',
+            ));
         }
 
         $customerId = $response->json('id');
@@ -47,20 +50,28 @@ class StripeFinancialConnectionsService
     {
         $customerId = $this->ensureStripeCustomer($user);
 
+        $payload = [
+            'account_holder[type]' => 'customer',
+            'account_holder[customer]' => $customerId,
+            'permissions[]' => 'balances',
+            'permissions[]' => 'ownership',
+            'permissions[]' => 'transactions',
+            'return_url' => route('dashboard'),
+        ];
+
+        foreach ($this->supportedCountries() as $country) {
+            $payload['filters[countries][]'] = $country;
+        }
+
         $response = Http::asForm()
             ->withToken($this->secret())
-            ->post('https://api.stripe.com/v1/financial_connections/sessions', [
-                'account_holder[type]' => 'customer',
-                'account_holder[customer]' => $customerId,
-                'permissions[]' => 'balances',
-                'permissions[]' => 'ownership',
-                'permissions[]' => 'transactions',
-                'filters[countries][]' => 'FR',
-                'return_url' => route('dashboard'),
-            ]);
+            ->post('https://api.stripe.com/v1/financial_connections/sessions', $payload);
 
         if ($response->failed()) {
-            throw new RuntimeException('Impossible de demarrer la connexion bancaire Stripe.');
+            throw new RuntimeException($this->formatStripeError(
+                $response->json(),
+                'Impossible de demarrer la connexion bancaire Stripe.',
+            ));
         }
 
         $sessionId = $response->json('id');
@@ -221,6 +232,34 @@ class StripeFinancialConnectionsService
             throw new RuntimeException('Configuration Stripe manquante.');
         }
 
-        return $secret;
+        return trim($secret, " \t\n\r\0\x0B<>\"'");
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function supportedCountries(): array
+    {
+        $countries = config('services.stripe.fc_countries', ['US']);
+
+        return is_array($countries) && count($countries) > 0 ? $countries : ['US'];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $payload
+     */
+    private function formatStripeError(?array $payload, string $fallback): string
+    {
+        $message = data_get($payload, 'error.message');
+
+        if (! is_string($message) || $message === '') {
+            return $fallback;
+        }
+
+        if (str_contains($message, 'Supported countries: US')) {
+            return 'Stripe Financial Connections ne supporte que les comptes bancaires US. En mode test, choisissez une banque de demonstration US.';
+        }
+
+        return $message;
     }
 }

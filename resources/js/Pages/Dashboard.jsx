@@ -605,8 +605,9 @@ export default function Dashboard() {
                                     Connectez votre banque
                                 </h2>
                                 <p className="mt-1 max-w-xl text-sm text-gray-400">
-                                    Synchronisez vos soldes et transactions via Stripe Financial Connections
-                                    (meme compte que votre abonnement Copifi).
+                                    Connexion via Stripe Financial Connections. Stripe ne supporte aujourd hui
+                                    que les comptes bancaires US — en mode test, utilisez une banque de
+                                    demonstration (ex. Test Institution).
                                 </p>
                             </div>
                             <ConnectBankButton className="w-full lg:w-auto lg:min-w-[320px]" />
