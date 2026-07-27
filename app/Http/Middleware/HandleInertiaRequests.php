@@ -47,6 +47,9 @@ class HandleInertiaRequests extends Middleware
                     'is_suspended' => $user->suspended_at !== null,
                     'can_access_app' => $user->suspended_at === null
                         && in_array($user->stripe_status, ['active', 'trialing'], true),
+                    'kpi_profile' => $user->kpi_profile,
+                    'kpi_preferences' => $user->kpi_preferences ?? ['enabled_secondary' => []],
+                    'needs_kpi_onboarding' => $user->needsKpiOnboarding(),
                 ] : null,
             ],
             'tax_rates' => config('taxes'),

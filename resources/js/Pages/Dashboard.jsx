@@ -1,10 +1,12 @@
 import AppDashboardLayout from '@/Layouts/AppDashboardLayout';
 import ConnectBankButton from '@/Components/Banking/ConnectBankButton';
 import CashflowTimeMachine from '@/Components/Dashboard/CashflowTimeMachine';
+import KpiProfileOnboardingModal from '@/Components/Dashboard/KpiProfileOnboardingModal';
 import CfoPageShell from '@/Components/CfoPageShell';
 import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
 import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
 import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
+import { getProfileById, isDashboardWidgetVisible } from '@/config/kpiProfiles';
 import { useDashboardSimulation } from '@/hooks/useDashboardSimulation';
 import { useForm, usePage, Link } from '@inertiajs/react';
 import axios from 'axios';
@@ -119,6 +121,11 @@ function sparklineFrom(values) {
 export default function Dashboard() {
     const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable', flash, auth } = usePage().props;
     const hasActiveSubscription = Boolean(auth?.user?.can_access_app);
+    const needsKpiOnboarding = Boolean(auth?.user?.needs_kpi_onboarding) && !viewedUser;
+    const [showKpiOnboarding, setShowKpiOnboarding] = useState(needsKpiOnboarding);
+    const kpiProfile = auth?.user?.kpi_profile;
+    const kpiPreferences = auth?.user?.kpi_preferences ?? { enabled_secondary: [] };
+    const activeKpiProfile = getProfileById(kpiProfile);
     const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
     const [resolvedAiInsight, setResolvedAiInsight] = useState(aiInsight);
     const [resolvedAiInsightStatus, setResolvedAiInsightStatus] = useState(aiInsightStatus);
@@ -132,6 +139,10 @@ export default function Dashboard() {
     } = useForm({
         edited_content: aiInsight?.edited_content ?? aiInsight?.content ?? '',
     });
+
+    useEffect(() => {
+        setShowKpiOnboarding(needsKpiOnboarding);
+    }, [needsKpiOnboarding]);
 
     useEffect(() => {
         if (resolvedAiInsightStatus !== 'pending') {
@@ -301,6 +312,12 @@ export default function Dashboard() {
 
     const renderMainChartTooltip = useCallback((props) => <MainChartTooltip {...props} />, []);
 
+    const shouldShowWidget = useCallback(
+        (widgetId) =>
+            needsKpiOnboarding || isDashboardWidgetVisible(widgetId, kpiProfile, kpiPreferences),
+        [needsKpiOnboarding, kpiProfile, kpiPreferences],
+    );
+
     const aiInsightEmptyMessage =
         resolvedAiInsightStatus === 'missing_data'
             ? 'Saisissez vos donnees mensuelles pour generer l analyse IA.'
@@ -348,6 +365,29 @@ export default function Dashboard() {
                         </section>
                     )}
 
+                    {!needsKpiOnboarding && kpiProfile && !viewedUser && (
+                        <section className={`${GLASS_PANEL} flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between`}>
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">{activeKpiProfile.icon}</span>
+                                <div>
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neonMint">
+                                        Profil Fio actif
+                                    </p>
+                                    <p className="font-display text-sm font-semibold text-white">
+                                        {activeKpiProfile.name}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowKpiOnboarding(true)}
+                                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                            >
+                                Modifier mes KPI
+                            </button>
+                        </section>
+                    )}
+
                     <section className={`${GLASS_PANEL} rounded-2xl p-5`}>
                         <SimulationModeToggle
                             enabled={simulationMode}
@@ -383,6 +423,7 @@ export default function Dashboard() {
                     )}
 
                 <section id="kpi-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                    {shouldShowWidget('revenue') && (
                     <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonBlue/30`}>
                         <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
                             <svg className="h-10 w-10 text-neonBlue" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -406,7 +447,9 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
+                    )}
 
+                    {shouldShowWidget('net_margin') && (
                     <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonMint/30`}>
                         <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
                             <svg className="h-10 w-10 text-neonMint" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -434,7 +477,9 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
+                    )}
 
+                    {shouldShowWidget('cac') && (
                     <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-white/20`}>
                         <div className="absolute right-0 top-0 p-4 opacity-10">
                             <svg className="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -467,7 +512,9 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
+                    )}
 
+                    {shouldShowWidget('ltv') && (
                     <div className={`${GLASS_PANEL} group relative overflow-hidden rounded-2xl p-6 transition-colors duration-500 hover:border-neonBlue/30`}>
                         <div className="absolute right-0 top-0 p-4 opacity-20 transition-opacity group-hover:opacity-40">
                             <svg className="h-10 w-10 text-neonBlue" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -488,6 +535,7 @@ export default function Dashboard() {
                             </div>
                         </div>
                     </div>
+                    )}
                 </section>
 
                     <section className={`${GLASS_PANEL} rounded-2xl p-5 sm:p-6`}>
@@ -909,6 +957,12 @@ export default function Dashboard() {
                             )}
                         </section>
                 </div>
+
+                <KpiProfileOnboardingModal
+                    isOpen={showKpiOnboarding}
+                    onClose={() => setShowKpiOnboarding(false)}
+                    initialProfile={kpiProfile}
+                />
             </CfoPageShell>
         </AppDashboardLayout>
     );

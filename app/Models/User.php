@@ -48,6 +48,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'suspended_at' => 'datetime',
+            'kpi_preferences' => 'array',
+            'kpi_onboarding_completed_at' => 'datetime',
             'powens_access_token' => 'encrypted',
             'powens_id_user' => 'integer',
         ];
@@ -81,5 +83,10 @@ class User extends Authenticatable
             'canceled' => 'Abonnement annule',
             default => 'Aucun abonnement actif',
         };
+    }
+
+    public function needsKpiOnboarding(): bool
+    {
+        return $this->kpi_onboarding_completed_at === null;
     }
 }

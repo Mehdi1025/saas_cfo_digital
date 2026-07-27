@@ -15,6 +15,7 @@ use App\Http\Controllers\FacturationDashboardController;
 use App\Http\Controllers\FactureController;
 use App\Http\Controllers\FactureFournisseurController;
 use App\Http\Controllers\FinancialRecordController;
+use App\Http\Controllers\KpiProfileController;
 use App\Http\Controllers\LandingChatController;
 use App\Http\Controllers\ParametresController;
 use App\Http\Controllers\PaymentController;
@@ -69,6 +70,10 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth'])
     ->name('dashboard');
+
+Route::post('/dashboard/kpi-profile', [KpiProfileController::class, 'store'])
+    ->middleware(['auth'])
+    ->name('dashboard.kpi-profile');
 
 Route::get('/dashboard/ai-insight', [DashboardController::class, 'aiInsight'])
     ->middleware(['auth', 'active.subscription', 'throttle:6,1'])
