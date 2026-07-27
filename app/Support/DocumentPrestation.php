@@ -28,7 +28,7 @@ class DocumentPrestation
                 'string',
                 'max:255',
                 Rule::when(
-                    fn (array $input) => filled($input['destination'] ?? null),
+                    fn ($input) => filled(data_get($input, 'destination')),
                     [Rule::exists('delivery_destinations', 'name')],
                 ),
             ],
