@@ -205,6 +205,8 @@ export default function Dashboard() {
         marge_nette: 0,
         cac: null,
         ltv: null,
+        clients_count: 0,
+        marketing_budget: 0,
     };
 
     const alert = dashboardData?.alerte ?? null;
@@ -215,6 +217,8 @@ export default function Dashboard() {
                 month: item.mois,
                 revenus: Number(item.ca ?? 0),
                 charges: Number(item.charges ?? 0),
+                clients_count: Number(item.clients_count ?? 0),
+                marketing_budget: Number(item.marketing_budget ?? 0),
             })),
         [evolution],
     );
@@ -368,12 +372,7 @@ export default function Dashboard() {
                             profileId={kpiProfile}
                             preferences={kpiPreferences}
                             kpis={kpis}
-                            netMarginPercentage={netMarginPercentage}
-                            sparks={{
-                                revenue: revenuesSpark,
-                                margin: marginSpark,
-                                ltv: ltvSpark,
-                            }}
+                            chartData={chartData}
                             formatters={kpiFormatters}
                             onEditProfile={() => setShowKpiOnboarding(true)}
                         />
@@ -555,6 +554,7 @@ export default function Dashboard() {
 
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="space-y-8 lg:col-span-2">
+                        {(!kpiProfile || simulationMode || viewedUser) && (
                         <section id="main-chart-section" className={`${GLASS_PANEL} relative overflow-hidden rounded-3xl p-1`}>
                             <div className="h-full rounded-[23px] bg-obsidian/70 p-6">
                                 <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -711,6 +711,7 @@ export default function Dashboard() {
                                 )}
                             </div>
                         </section>
+                        )}
 
                         <section id="recent-transactions" className={`${GLASS_PANEL} rounded-3xl p-6`}>
                             <div className="mb-6 flex items-center justify-between">

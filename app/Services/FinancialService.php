@@ -29,6 +29,8 @@ class FinancialService
                     'mois' => $record->month,
                     'ca' => $record->revenue,
                     'charges' => $record->charges,
+                    'clients_count' => $record->clients_count,
+                    'marketing_budget' => $record->marketing_budget,
                 ];
             }),
         ];
