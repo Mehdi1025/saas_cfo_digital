@@ -108,7 +108,7 @@ export default function ManageSubscriptionForm({ subscription, className = '' })
                             href={route('dashboard')}
                             className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.08]"
                         >
-                            Ouvrir le tableau de bord
+                            Accéder au dashboard
                         </Link>
                     )}
                 </div>

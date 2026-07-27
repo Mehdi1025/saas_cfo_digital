@@ -1339,6 +1339,8 @@ function HeroChart() {
    ACTIONS AUTH / ABONNEMENT
    ============================================================ */
 
+const DASHBOARD_ACCESS_LABEL = 'Accéder au dashboard';
+
 function TopActions({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
     if (auth?.user) {
         return (
@@ -1352,7 +1354,7 @@ function TopActions({ auth, canAccessDashboard, isSuspended, onSubscribe }) {
                         href={route('dashboard')}
                         className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 sm:px-5"
                     >
-                        Tableau de bord
+                        {DASHBOARD_ACCESS_LABEL}
                     </MagneticLink>
                 ) : (
                     <MagneticButton
@@ -1406,7 +1408,7 @@ function PrimarySubscribeAction({ auth, canAccessDashboard, isSuspended, onSubsc
     if (canAccessDashboard) {
         return (
             <MagneticLink href={route('dashboard')} className={className}>
-                Tableau de bord
+                {DASHBOARD_ACCESS_LABEL}
                 <IconArrowRight className="h-5 w-5" />
             </MagneticLink>
         );
@@ -1500,6 +1502,7 @@ export default function Welcome({ auth }) {
     const isSuspended = Boolean(auth?.user?.is_suspended);
     const subscribeCheckoutTriggered = useRef(false);
     const subscribeLabel = `S'abonner — ${pricing.amount_label}/mois`;
+    const primaryActionLabel = canAccessDashboard ? DASHBOARD_ACCESS_LABEL : subscribeLabel;
 
     const startCheckout = useCallback(() => {
         router.visit(route('billing.checkout.start'));
@@ -1663,7 +1666,7 @@ export default function Welcome({ auth }) {
                                 onSubscribe={handleSubscribe}
                                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[#CCFF00] px-8 py-4 text-lg font-semibold text-black shadow-[0_0_28px_rgba(204,255,0,0.35)] transition hover:-translate-y-0.5 hover:bg-[#b8e600] hover:shadow-[0_0_40px_rgba(204,255,0,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
                             >
-                                {subscribeLabel}
+                                {primaryActionLabel}
                             <IconArrowRight className="h-5 w-5" />
                         </PrimarySubscribeAction>
                         <a
@@ -1738,7 +1741,7 @@ export default function Welcome({ auth }) {
                         canAccessDashboard={canAccessDashboard}
                         isSuspended={isSuspended}
                         onSubscribe={handleSubscribe}
-                        subscribeLabel={subscribeLabel}
+                        subscribeLabel={primaryActionLabel}
                     />
                     <PricingSection
                         auth={auth}
@@ -1746,7 +1749,7 @@ export default function Welcome({ auth }) {
                         isSuspended={isSuspended}
                         onSubscribe={handleSubscribe}
                         pricing={pricing}
-                        subscribeLabel={subscribeLabel}
+                        subscribeLabel={primaryActionLabel}
                     />
                     <FaqSection />
                     <FinalCtaSection
@@ -1754,7 +1757,7 @@ export default function Welcome({ auth }) {
                         canAccessDashboard={canAccessDashboard}
                         isSuspended={isSuspended}
                         onSubscribe={handleSubscribe}
-                        subscribeLabel={subscribeLabel}
+                        subscribeLabel={primaryActionLabel}
                         pricing={pricing}
                     />
                 </main>

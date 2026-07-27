@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\ProcessedStripeEvent;
 use App\Models\User;
+use App\Services\StripeSubscriptionSync;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Http;
-use RuntimeException;
 
 class StripeWebhookController extends Controller
 {
+    public function __construct(
+        private readonly StripeSubscriptionSync $stripeSubscriptionSync,
+    ) {}
+
     public function handle(Request $request): Response
     {
         $payload = $request->getContent();
@@ -84,12 +87,9 @@ class StripeWebhookController extends Controller
             return false;
         }
 
-        $subscription = $this->getStripeSubscription($subscriptionId);
+        $subscription = $this->stripeSubscriptionSync->fetchSubscription($subscriptionId);
 
-        $user->stripe_customer_id = $session['customer'] ?? $user->stripe_customer_id;
-        $user->stripe_subscription_id = $subscriptionId;
-        $this->fillSubscriptionDetails($user, $subscription);
-        $user->save();
+        $this->stripeSubscriptionSync->applySubscription($user, $subscription, $session['customer'] ?? null);
 
         return true;
     }
@@ -102,8 +102,7 @@ class StripeWebhookController extends Controller
             return false;
         }
 
-        $this->fillSubscriptionDetails($user, $subscription);
-        $user->save();
+        $this->stripeSubscriptionSync->applySubscription($user, $subscription);
 
         return true;
     }
@@ -120,36 +119,6 @@ class StripeWebhookController extends Controller
         $user->save();
 
         return true;
-    }
-
-    private function getStripeSubscription(string $subscriptionId): array
-    {
-        $stripeSecret = config('services.stripe.secret');
-
-        if (! $stripeSecret) {
-            throw new RuntimeException('Stripe secret is missing.');
-        }
-
-        $response = Http::withToken($stripeSecret)
-            ->get("https://api.stripe.com/v1/subscriptions/{$subscriptionId}");
-
-        if ($response->failed() || ! $response->json('status')) {
-            throw new RuntimeException('Unable to fetch Stripe subscription.');
-        }
-
-        return $response->json();
-    }
-
-    private function fillSubscriptionDetails(User $user, array $subscription): void
-    {
-        $price = $subscription['items']['data'][0]['price'] ?? null;
-
-        $user->stripe_status = $subscription['status'] ?? $user->stripe_status;
-        $user->stripe_price_id = $price['id'] ?? $user->stripe_price_id;
-        $user->subscription_amount = isset($price['unit_amount'])
-            ? number_format($price['unit_amount'] / 100, 2, '.', '')
-            : $user->subscription_amount;
-        $user->subscription_currency = $price['currency'] ?? $user->subscription_currency;
     }
 
     private function hasValidSignature(string $payload, string $signature, string $webhookSecret): bool

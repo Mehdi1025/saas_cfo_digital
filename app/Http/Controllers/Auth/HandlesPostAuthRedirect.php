@@ -18,7 +18,7 @@ trait HandlesPostAuthRedirect
         }
 
         if ($intent === 'subscribe') {
-            session(['url.intended' => route('billing.checkout.start', absolute: false)]);
+            session(['url.intended' => $this->landingSubscribeUrl()]);
 
             return;
         }
@@ -74,6 +74,26 @@ trait HandlesPostAuthRedirect
         return $redirect;
     }
 
+    protected function landingSubscribeUrl(): string
+    {
+        return '/';
+    }
+
+    protected function redirectAfterRegistration(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->hasActiveSubscription()) {
+            return redirect()->route('dashboard');
+        }
+
+        return redirect($this->landingSubscribeUrl());
+    }
+
     protected function redirectAfterAuthentication(Request $request): RedirectResponse
     {
         $user = $request->user();
@@ -85,11 +105,11 @@ trait HandlesPostAuthRedirect
                 return redirect()->route('admin.dashboard');
             }
 
-            if (in_array($user->stripe_status, ['active', 'trialing'], true)) {
+            if ($user->hasActiveSubscription()) {
                 return redirect()->route('dashboard');
             }
 
-            return redirect()->route('billing.checkout.start');
+            return redirect($this->landingSubscribeUrl());
         }
 
         if ($this->authRedirectPath($request) !== null) {

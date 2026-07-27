@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\StripeSubscriptionSync;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -10,6 +11,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class StripeCheckoutController extends Controller
 {
+    public function __construct(
+        private readonly StripeSubscriptionSync $stripeSubscriptionSync,
+    ) {}
+
     public function store(Request $request): Response
     {
         $user = $request->user();
@@ -56,15 +61,30 @@ class StripeCheckoutController extends Controller
 
     public function success(Request $request): RedirectResponse
     {
-        return redirect()
-            ->to(route('profile.edit').'#subscription')
+        $user = $request->user();
+        $sessionId = $request->query('session_id');
+
+        if (is_string($sessionId) && $sessionId !== '') {
+            try {
+                $this->stripeSubscriptionSync->syncUserFromCheckoutSession($user, $sessionId);
+                $user->refresh();
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+        }
+
+        if ($user->hasActiveSubscription()) {
+            return redirect('/')
+                ->with('success', 'Paiement confirme. Votre abonnement est actif.');
+        }
+
+        return redirect('/')
             ->with('success', 'Paiement termine. Votre abonnement sera active sous peu.');
     }
 
     public function cancel(): RedirectResponse
     {
-        return redirect()
-            ->to(route('profile.edit').'#subscription')
+        return redirect('/')
             ->with('error', 'Paiement annule. Vous pouvez reessayer quand vous le souhaitez.');
     }
 }

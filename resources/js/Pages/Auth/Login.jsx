@@ -85,7 +85,7 @@ export default function Login({ status, canResetPassword, redirect = null, inten
             title={isSubscribeFlow ? 'Connectez-vous pour continuer' : 'Bon retour'}
             subtitle={
                 isSubscribeFlow
-                    ? 'Connectez-vous pour acceder directement au paiement securise Stripe.'
+                    ? 'Connectez-vous pour revenir a la page d accueil et finaliser votre abonnement.'
                     : 'Accedez a votre espace d analyse financiere.'
             }
             redirect={redirect}
