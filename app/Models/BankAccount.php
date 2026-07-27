@@ -11,6 +11,7 @@ class BankAccount extends Model
     protected $fillable = [
         'user_id',
         'powens_account_id',
+        'stripe_fc_account_id',
         'bank_name',
         'iban',
         'balance',

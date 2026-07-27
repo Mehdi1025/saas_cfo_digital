@@ -19,8 +19,7 @@ use App\Http\Controllers\KpiProfileController;
 use App\Http\Controllers\LandingChatController;
 use App\Http\Controllers\ParametresController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\PowensController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StripeBankingController;
 use App\Http\Controllers\StripeCheckoutController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\TrackingController;
@@ -88,11 +87,11 @@ Route::post('/dashboard/chat', DashboardChatController::class)
     ->name('dashboard.chat');
 
 Route::middleware(['auth', 'active.subscription'])->group(function () {
-    Route::get('/powens/connect', [PowensController::class, 'redirect'])
-        ->name('powens.connect');
+    Route::post('/banking/stripe/session', [StripeBankingController::class, 'createSession'])
+        ->name('banking.stripe.session');
 
-    Route::get('/powens/callback', [PowensController::class, 'callback'])
-        ->name('powens.callback');
+    Route::post('/banking/stripe/complete', [StripeBankingController::class, 'complete'])
+        ->name('banking.stripe.complete');
 });
 
 Route::post('/copilote/chat', DashboardChatController::class)

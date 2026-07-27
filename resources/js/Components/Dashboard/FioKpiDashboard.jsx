@@ -1,3 +1,6 @@
+import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
+import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
+import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
 import { getActiveDashboardKpis, getProfileById } from '@/config/kpiProfiles';
 import {
     buildKpiAnalytics,
@@ -5,8 +8,9 @@ import {
     buildProfileStatsSummary,
     getKpiMetric,
 } from '@/utils/kpiAnalytics';
+import { buildProfileAlerts } from '@/utils/profileAlerts';
 import { motion } from 'framer-motion';
-import { ArrowDownRight, ArrowUpRight, Minus, Pencil, Sparkles } from 'lucide-react';
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Minus, Pencil, Sparkles, Zap } from 'lucide-react';
 import { memo, useMemo } from 'react';
 import {
     Area,
@@ -43,7 +47,33 @@ function TrendBadge({ trend }) {
     );
 }
 
-const MiniAreaChart = memo(function MiniAreaChart({ data, color, fillId }) {
+function AlertToneBadge({ tone }) {
+    const className =
+        tone === 'critique'
+            ? 'border-red-500/30 bg-red-500/10 text-red-300'
+            : tone === 'attention'
+              ? 'border-[#FF8A00]/30 bg-[#FF8A00]/10 text-[#FF8A00]'
+              : tone === 'sain'
+                ? 'border-neonMint/30 bg-neonMint/10 text-neonMint'
+                : 'border-white/10 bg-white/5 text-slate-300';
+
+    const label =
+        tone === 'critique'
+            ? 'Critique'
+            : tone === 'attention'
+              ? 'Vigilance'
+              : tone === 'sain'
+                ? 'Sain'
+                : 'Info';
+
+    return (
+        <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${className}`}>
+            {label}
+        </span>
+    );
+}
+
+const MiniAreaChart = memo(function MiniAreaChart({ data, color, fillId, dashed = false }) {
     if (!data?.length) {
         return null;
     }
@@ -62,6 +92,7 @@ const MiniAreaChart = memo(function MiniAreaChart({ data, color, fillId }) {
                     dataKey="v"
                     stroke={color}
                     strokeWidth={2}
+                    strokeDasharray={dashed ? '6 4' : undefined}
                     fill={`url(#${fillId})`}
                     isAnimationActive={false}
                 />
@@ -107,7 +138,7 @@ function ChartTooltip({ active, payload, label, valueFormat = 'number' }) {
     );
 }
 
-function ProfileChartPanel({ panel, chartLabels }) {
+function ProfileChartPanel({ panel, chartLabels, simulationMode = false }) {
     const valueFormat = panel.id === 'margin-pct' ? 'percent' : 'currency';
     const chartRows = chartLabels.map((label, index) => {
         const row = { label };
@@ -121,10 +152,19 @@ function ProfileChartPanel({ panel, chartLabels }) {
 
     return (
         <div className={`${GLASS_PANEL} overflow-hidden rounded-[24px] p-5 sm:p-6`}>
-            <div className="mb-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Courbe Fio</p>
-                <h3 className="font-display mt-1 text-lg font-bold text-white">{panel.title}</h3>
-                <p className="text-xs text-slate-400">{panel.subtitle}</p>
+            <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">Courbe Fio</p>
+                    <h3 className="font-display mt-1 text-lg font-bold text-white">{panel.title}</h3>
+                    <p className="text-xs text-slate-400">
+                        {simulationMode ? `${panel.subtitle} · projection 6 mois incluse` : panel.subtitle}
+                    </p>
+                </div>
+                {simulationMode && (
+                    <span className="rounded-full border border-neonBlue/25 bg-neonBlue/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neonBlue">
+                        What-If
+                    </span>
+                )}
             </div>
             <div className="h-[240px] w-full">
                 {panel.type === 'bar' ? (
@@ -197,7 +237,7 @@ function ProfileChartPanel({ panel, chartLabels }) {
     );
 }
 
-function FioKpiCard({ kpi, metric, index }) {
+function FioKpiCard({ kpi, metric, index, isTriggered = false, simulationMode = false }) {
     const isEssential = kpi.tier === 'essential';
     const color = isEssential ? '#00FF9D' : '#00F0FF';
 
@@ -207,12 +247,16 @@ function FioKpiCard({ kpi, metric, index }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.035, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className={`group relative overflow-hidden rounded-[22px] p-5 transition duration-500 ${GLASS_PANEL} ${
-                isEssential ? 'hover:border-neonMint/35' : 'hover:border-neonBlue/30'
+                isTriggered
+                    ? 'border-amber-400/35 shadow-[0_0_24px_rgba(251,191,36,0.08)]'
+                    : isEssential
+                      ? 'hover:border-neonMint/35'
+                      : 'hover:border-neonBlue/30'
             }`}
         >
             <div
                 className={`absolute inset-y-0 left-0 w-[3px] ${
-                    kpi.alert ? 'bg-amber-400' : isEssential ? 'bg-neonMint' : 'bg-slate-500'
+                    isTriggered ? 'bg-amber-400' : kpi.alert ? 'bg-amber-400/70' : isEssential ? 'bg-neonMint' : 'bg-slate-500'
                 }`}
             />
             <div className="relative z-10">
@@ -221,7 +265,15 @@ function FioKpiCard({ kpi, metric, index }) {
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{kpi.group}</p>
                         <h3 className="mt-1 text-sm font-medium leading-snug text-slate-100">{kpi.name}</h3>
                     </div>
-                    <TrendBadge trend={metric.trend} />
+                    <div className="flex flex-col items-end gap-1">
+                        {isTriggered && (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-semibold text-amber-200">
+                                <AlertTriangle className="h-3 w-3" />
+                                Alerte
+                            </span>
+                        )}
+                        <TrendBadge trend={metric.trend} />
+                    </div>
                 </div>
 
                 <div className="mt-5">
@@ -231,6 +283,11 @@ function FioKpiCard({ kpi, metric, index }) {
                                 {metric.value ?? '—'}
                             </p>
                             {metric.hint ? <p className="mt-2 text-xs text-slate-400">{metric.hint}</p> : null}
+                            {simulationMode && (
+                                <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-neonBlue/80">
+                                    Valeur projetee
+                                </p>
+                            )}
                         </>
                     ) : (
                         <p className="text-sm text-slate-500">{metric.hint ?? 'Donnees bientot disponibles'}</p>
@@ -239,11 +296,61 @@ function FioKpiCard({ kpi, metric, index }) {
 
                 {metric.sparkline?.length > 0 && (
                     <div className="mt-4 opacity-90">
-                        <MiniAreaChart data={metric.sparkline} color={color} fillId={`mini-${kpi.id}`} />
+                        <MiniAreaChart
+                            data={metric.sparkline}
+                            color={color}
+                            fillId={`mini-${kpi.id}`}
+                            dashed={simulationMode}
+                        />
                     </div>
                 )}
             </div>
         </motion.article>
+    );
+}
+
+function ProfileAlertsStrip({ alerts, simulationMode }) {
+    const criticalCount = alerts.filter((item) => item.tone === 'critique').length;
+    const watchCount = alerts.filter((item) => item.tone === 'attention').length;
+    const preview = alerts.slice(0, 2);
+
+    return (
+        <div className="relative mt-5 space-y-3 rounded-2xl border border-white/8 bg-black/20 p-4 backdrop-blur-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-amber-300" />
+                    <p className="text-sm font-semibold text-white">
+                        Alertes profil {simulationMode ? '· projection' : ''}
+                    </p>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[10px] font-semibold uppercase tracking-wider">
+                    {criticalCount > 0 && (
+                        <span className="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-red-300">
+                            {criticalCount} critique{criticalCount > 1 ? 's' : ''}
+                        </span>
+                    )}
+                    {watchCount > 0 && (
+                        <span className="rounded-full border border-[#FF8A00]/30 bg-[#FF8A00]/10 px-2 py-0.5 text-[#FF8A00]">
+                            {watchCount} vigilance
+                        </span>
+                    )}
+                </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+                {preview.map((item, index) => (
+                    <div
+                        key={`${item.title}-${index}`}
+                        className="rounded-xl border border-white/6 bg-white/[0.03] p-3"
+                    >
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                            <p className="text-xs font-semibold text-white">{item.title}</p>
+                            <AlertToneBadge tone={item.tone} />
+                        </div>
+                        <p className="text-xs leading-relaxed text-slate-400">{item.message}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }
 
@@ -254,6 +361,16 @@ export default function FioKpiDashboard({
     chartData,
     formatters,
     onEditProfile,
+    simulationMode = false,
+    hasFinancialData = true,
+    onSimulationModeChange,
+    sliders,
+    onSliderChange,
+    onResetSimulation,
+    simulatedInsight,
+    isSimulatingInsight,
+    simulationError,
+    backendAlert = null,
 }) {
     const profile = getProfileById(profileId);
     const activeKpis = useMemo(
@@ -264,6 +381,18 @@ export default function FioKpiDashboard({
     const analytics = useMemo(
         () => buildKpiAnalytics(chartData, kpis, formatters),
         [chartData, kpis, formatters],
+    );
+
+    const profileAlerts = useMemo(
+        () =>
+            buildProfileAlerts({
+                activeKpis,
+                analytics,
+                kpis,
+                backendAlert,
+                simulationMode,
+            }),
+        [activeKpis, analytics, kpis, backendAlert, simulationMode],
     );
 
     const chartPanels = useMemo(
@@ -281,6 +410,8 @@ export default function FioKpiDashboard({
         [activeKpis],
     );
 
+    const triggeredSet = useMemo(() => new Set(profileAlerts.triggeredKpiIds), [profileAlerts.triggeredKpiIds]);
+
     return (
         <section id="fio-kpi-board" className="space-y-6">
             <div className={`relative overflow-hidden rounded-[28px] p-6 sm:p-8 ${GLASS_PANEL}`}>
@@ -290,13 +421,19 @@ export default function FioKpiDashboard({
                         <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-neonMint">
                             <Sparkles className="h-3.5 w-3.5" />
                             Console Fio · {profile.name}
+                            {simulationMode && (
+                                <span className="rounded-full border border-neonBlue/30 bg-neonBlue/10 px-2 py-0.5 text-[10px] text-neonBlue">
+                                    Simulation active
+                                </span>
+                            )}
                         </p>
                         <h2 className="font-display mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
                             Vos {activeKpis.length} KPI actifs
                         </h2>
                         <p className="mt-2 max-w-2xl text-sm text-slate-400">
-                            Stats, tendances M-1 et courbes d evolution calculees sur vos saisies mensuelles —
-                            filtrees selon votre profil metier.
+                            {simulationMode
+                                ? 'Projection What-If a 6 mois — KPI, courbes et alertes recalculés en direct selon vos hypotheses.'
+                                : 'Stats, tendances M-1 et courbes d evolution calculees sur vos saisies mensuelles — filtrees selon votre profil metier.'}
                         </p>
                     </div>
                     <button
@@ -317,7 +454,11 @@ export default function FioKpiDashboard({
                             return (
                                 <div
                                     key={kpi.id}
-                                    className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 backdrop-blur-sm"
+                                    className={`rounded-2xl border px-4 py-3 backdrop-blur-sm ${
+                                        triggeredSet.has(kpi.id)
+                                            ? 'border-amber-400/30 bg-amber-400/5'
+                                            : 'border-white/8 bg-black/20'
+                                    }`}
                                 >
                                     <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">{kpi.name}</p>
                                     <p className="font-display mt-1 text-xl font-bold text-white">{metric.value ?? '—'}</p>
@@ -330,6 +471,7 @@ export default function FioKpiDashboard({
                                                 data={metric.sparkline}
                                                 color={kpi.tier === 'essential' ? '#00FF9D' : '#00F0FF'}
                                                 fillId={`headline-${kpi.id}`}
+                                                dashed={simulationMode}
                                             />
                                         </div>
                                     )}
@@ -362,7 +504,37 @@ export default function FioKpiDashboard({
                         </p>
                     </div>
                 )}
+
+                <ProfileAlertsStrip alerts={profileAlerts.items} simulationMode={simulationMode} />
             </div>
+
+            <section className={`${GLASS_PANEL} rounded-[24px] p-5 sm:p-6`}>
+                <SimulationModeToggle
+                    enabled={simulationMode}
+                    onChange={onSimulationModeChange}
+                    disabled={!hasFinancialData}
+                />
+                {!hasFinancialData && (
+                    <p className="mt-3 text-sm text-gray-500">
+                        Ajoutez une saisie mensuelle pour activer le simulateur What-If.
+                    </p>
+                )}
+                {simulationMode && hasFinancialData && (
+                    <>
+                        <SimulationControlsPanel
+                            sliders={sliders}
+                            onChange={onSliderChange}
+                            onReset={onResetSimulation}
+                        />
+                        <SimulationAiInsightBlock
+                            enabled={simulationMode}
+                            insight={simulatedInsight}
+                            isLoading={isSimulatingInsight}
+                            error={simulationError}
+                        />
+                    </>
+                )}
+            </section>
 
             {chartPanels.length > 0 && (
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
@@ -374,7 +546,11 @@ export default function FioKpiDashboard({
                             transition={{ delay: 0.08 + index * 0.06 }}
                             className={index === 0 && chartPanels.length % 2 === 1 ? 'xl:col-span-2' : ''}
                         >
-                            <ProfileChartPanel panel={panel} chartLabels={analytics.chartLabels} />
+                            <ProfileChartPanel
+                                panel={panel}
+                                chartLabels={analytics.chartLabels}
+                                simulationMode={simulationMode}
+                            />
                         </motion.div>
                     ))}
                 </div>
@@ -396,6 +572,8 @@ export default function FioKpiDashboard({
                             kpi={kpi}
                             index={index}
                             metric={getKpiMetric(analytics, kpi.id)}
+                            isTriggered={triggeredSet.has(kpi.id)}
+                            simulationMode={simulationMode}
                         />
                     ))}
                 </div>

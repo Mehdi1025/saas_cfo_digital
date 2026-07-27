@@ -73,6 +73,24 @@ class HandleInertiaRequests extends Middleware
                 'currency' => config('services.stripe.plan_currency'),
                 'interval' => 'mois',
             ],
+            'banking' => fn () => $user ? [
+                'stripe_configured' => filled(config('services.stripe.key'))
+                    && filled(config('services.stripe.secret')),
+                'publishable_key' => config('services.stripe.key'),
+                'accounts' => $user->bankAccounts()
+                    ->whereNotNull('stripe_fc_account_id')
+                    ->orderByDesc('updated_at')
+                    ->get(['id', 'bank_name', 'iban', 'balance', 'type'])
+                    ->map(fn ($account) => [
+                        'id' => $account->id,
+                        'bank_name' => $account->bank_name,
+                        'iban' => $account->iban,
+                        'balance' => (float) $account->balance,
+                        'type' => $account->type,
+                    ])
+                    ->values()
+                    ->all(),
+            ] : null,
         ];
     }
 }

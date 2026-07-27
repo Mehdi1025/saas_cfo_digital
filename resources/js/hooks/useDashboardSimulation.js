@@ -137,6 +137,7 @@ export function useDashboardSimulation({ historicalChartData, baselineKpis, hasF
         updateSlider,
         resetSimulation,
         activeChartData,
+        simulationChart,
         healthScore,
         healthTone,
         baselineHealthScore,

@@ -132,6 +132,8 @@ export function buildSimulationChartData(historical, baselineKpis, sliders) {
             chargesHist: null,
             revenusSim: Math.round(projectedRevenue),
             chargesSim: Math.round(projectedCharges),
+            clients_count: projectedClients,
+            marketing_budget: Math.round(marketingBudget),
             isProjected: true,
             isBridge: monthIndex === 1,
         });
@@ -185,4 +187,44 @@ export function buildHorizonKpisFromSliders(baselineKpis, sliders) {
     ];
 
     return buildSimulationChartData(historical, baselineKpis, sliders).horizonKpis;
+}
+
+/**
+ * Fusionne historique + projection pour la Console Fio (KPI + courbes).
+ */
+export function buildFioChartData(historicalChartData, simulationMode, simulationResult) {
+    const normalizedHistorical = historicalChartData.map((row) => ({
+        ...row,
+        isProjected: false,
+    }));
+
+    if (!simulationMode || !simulationResult?.chartData?.length) {
+        return normalizedHistorical;
+    }
+
+    const historicalByMonth = Object.fromEntries(historicalChartData.map((row) => [row.month, row]));
+
+    return simulationResult.chartData.map((row) => {
+        if (row.isProjected) {
+            return {
+                month: row.month,
+                revenus: Number(row.revenusSim ?? 0),
+                charges: Number(row.chargesSim ?? 0),
+                clients_count: Number(row.clients_count ?? 0),
+                marketing_budget: Number(row.marketing_budget ?? 0),
+                isProjected: true,
+            };
+        }
+
+        const historical = historicalByMonth[row.month];
+
+        return {
+            month: row.month,
+            revenus: Number(row.revenusHist ?? historical?.revenus ?? 0),
+            charges: Number(row.chargesHist ?? historical?.charges ?? 0),
+            clients_count: Number(historical?.clients_count ?? 0),
+            marketing_budget: Number(historical?.marketing_budget ?? 0),
+            isProjected: false,
+        };
+    });
 }

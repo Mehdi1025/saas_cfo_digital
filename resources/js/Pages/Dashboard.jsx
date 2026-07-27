@@ -7,7 +7,11 @@ import CfoPageShell from '@/Components/CfoPageShell';
 import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
 import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
 import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
+import { getActiveDashboardKpis } from '@/config/kpiProfiles';
 import { useDashboardSimulation } from '@/hooks/useDashboardSimulation';
+import { buildKpiAnalytics } from '@/utils/kpiAnalytics';
+import { buildFioChartData } from '@/utils/financialSimulation';
+import { buildProfileAlerts } from '@/utils/profileAlerts';
 import { useForm, usePage, Link } from '@inertiajs/react';
 import axios from 'axios';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
@@ -119,7 +123,7 @@ function sparklineFrom(values) {
 }
 
 export default function Dashboard() {
-    const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable', flash, auth } = usePage().props;
+    const { dashboardData, viewedUser, aiInsight, aiInsightStatus = 'unavailable', flash, auth, banking } = usePage().props;
     const hasActiveSubscription = Boolean(auth?.user?.can_access_app);
     const needsKpiOnboarding = Boolean(auth?.user?.needs_kpi_onboarding) && !viewedUser;
     const [showKpiOnboarding, setShowKpiOnboarding] = useState(needsKpiOnboarding);
@@ -231,17 +235,64 @@ export default function Dashboard() {
         updateSlider,
         resetSimulation,
         activeChartData,
+        simulationChart,
         healthScore,
         healthTone,
         simulatedInsight,
         isSimulatingInsight,
         simulationError,
+        simulatedHorizonKpis,
     } = useDashboardSimulation({
         historicalChartData: chartData,
         baselineKpis: kpis,
         hasFinancialData,
         viewedUserId: viewedUser?.id,
     });
+
+    const displayKpis = useMemo(
+        () => (simulationMode && simulatedHorizonKpis ? simulatedHorizonKpis : kpis),
+        [simulationMode, simulatedHorizonKpis, kpis],
+    );
+
+    const fioChartData = useMemo(
+        () => buildFioChartData(chartData, simulationMode, simulationChart),
+        [chartData, simulationMode, simulationChart],
+    );
+
+    const activeKpisForProfile = useMemo(() => {
+        if (!kpiProfile) {
+            return [];
+        }
+
+        return getActiveDashboardKpis(kpiProfile, kpiPreferences);
+    }, [kpiProfile, kpiPreferences]);
+
+    const kpiFormatters = useMemo(
+        () => ({ formatCompactCurrency, formatPercentage, formatCurrency }),
+        [],
+    );
+
+    const fioAnalytics = useMemo(() => {
+        if (!kpiProfile || viewedUser) {
+            return null;
+        }
+
+        return buildKpiAnalytics(fioChartData, displayKpis, kpiFormatters);
+    }, [kpiProfile, viewedUser, fioChartData, displayKpis, kpiFormatters]);
+
+    const profileAlertBundle = useMemo(() => {
+        if (!kpiProfile || viewedUser || !fioAnalytics) {
+            return null;
+        }
+
+        return buildProfileAlerts({
+            activeKpis: activeKpisForProfile,
+            analytics: fioAnalytics,
+            kpis: displayKpis,
+            backendAlert: alert,
+            simulationMode,
+        });
+    }, [kpiProfile, viewedUser, fioAnalytics, activeKpisForProfile, displayKpis, alert, simulationMode]);
 
 
     const netMarginPercentage =
@@ -277,6 +328,10 @@ export default function Dashboard() {
     );
 
     const alertItems = useMemo(() => {
+        if (profileAlertBundle) {
+            return profileAlertBundle.items;
+        }
+
         const items = [];
 
         if (alert) {
@@ -311,14 +366,9 @@ export default function Dashboard() {
         }
 
         return items;
-    }, [alert, kpis.cac, kpis.ltv]);
+    }, [profileAlertBundle, alert, kpis.cac, kpis.ltv]);
 
     const renderMainChartTooltip = useCallback((props) => <MainChartTooltip {...props} />, []);
-
-    const kpiFormatters = useMemo(
-        () => ({ formatCompactCurrency, formatPercentage, formatCurrency }),
-        [],
-    );
 
     const aiInsightEmptyMessage =
         resolvedAiInsightStatus === 'missing_data'
@@ -371,10 +421,20 @@ export default function Dashboard() {
                         <FioKpiDashboard
                             profileId={kpiProfile}
                             preferences={kpiPreferences}
-                            kpis={kpis}
-                            chartData={chartData}
+                            kpis={displayKpis}
+                            chartData={fioChartData}
                             formatters={kpiFormatters}
                             onEditProfile={() => setShowKpiOnboarding(true)}
+                            simulationMode={simulationMode}
+                            hasFinancialData={hasFinancialData}
+                            onSimulationModeChange={setSimulationMode}
+                            sliders={sliders}
+                            onSliderChange={updateSlider}
+                            onResetSimulation={resetSimulation}
+                            simulatedInsight={simulatedInsight}
+                            isSimulatingInsight={isSimulatingInsight}
+                            simulationError={simulationError}
+                            backendAlert={alert}
                         />
                     ) : !viewedUser && needsKpiOnboarding ? (
                         <section className={`${GLASS_PANEL} rounded-[24px] px-6 py-16 text-center`}>
@@ -499,6 +559,7 @@ export default function Dashboard() {
                 </section>
                     )}
 
+                    {!kpiProfile && (
                     <section className={`${GLASS_PANEL} rounded-2xl p-5`}>
                         <SimulationModeToggle
                             enabled={simulationMode}
@@ -511,6 +572,7 @@ export default function Dashboard() {
                             </p>
                         )}
                     </section>
+                    )}
 
                     {viewedUser && (
                         <section className={`${GLASS_PANEL} rounded-2xl p-4`}>
@@ -543,18 +605,38 @@ export default function Dashboard() {
                                     Connectez votre banque
                                 </h2>
                                 <p className="mt-1 max-w-xl text-sm text-gray-400">
-                                    Synchronisez vos soldes et transactions en temps reel via Powens (DSP2).
+                                    Synchronisez vos soldes et transactions via Stripe Financial Connections
+                                    (meme compte que votre abonnement Copifi).
                                 </p>
                             </div>
                             <ConnectBankButton className="w-full lg:w-auto lg:min-w-[320px]" />
                         </div>
+
+                        {banking?.accounts?.length > 0 && (
+                            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                                {banking.accounts.map((account) => (
+                                    <div
+                                        key={account.id}
+                                        className="rounded-xl border border-neonMint/20 bg-neonMint/5 px-4 py-3"
+                                    >
+                                        <p className="text-sm font-semibold text-white">{account.bank_name}</p>
+                                        <p className="mt-1 text-xs text-slate-400">
+                                            {account.iban ?? 'Compte connecte'} · {account.type}
+                                        </p>
+                                        <p className="font-display mt-2 text-xl font-bold text-neonMint">
+                                            {formatCurrency(account.balance)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </section>
 
                     <CashflowTimeMachine />
 
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="space-y-8 lg:col-span-2">
-                        {(!kpiProfile || simulationMode || viewedUser) && (
+                        {(!kpiProfile || viewedUser) && (
                         <section id="main-chart-section" className={`${GLASS_PANEL} relative overflow-hidden rounded-3xl p-1`}>
                             <div className="h-full rounded-[23px] bg-obsidian/70 p-6">
                                 <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -814,7 +896,18 @@ export default function Dashboard() {
                                         <path d="M7 2v11h3v9l7-12h-4l4-8H7z" />
                                     </svg>
                                 </div>
-                                <h2 className="text-lg font-semibold tracking-wide text-white">Alertes</h2>
+                                <div>
+                                    <h2 className="text-lg font-semibold tracking-wide text-white">
+                                        {profileAlertBundle ? 'Alertes profil Fio' : 'Alertes'}
+                                    </h2>
+                                    {profileAlertBundle && (
+                                        <p className="mt-0.5 text-xs text-gray-500">
+                                            {simulationMode
+                                                ? 'Projection What-If · indicateurs 2a du profil'
+                                                : 'Indicateurs essentiels + alerte de votre profil metier'}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-4">
