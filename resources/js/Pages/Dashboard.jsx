@@ -9,6 +9,7 @@ import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPa
 import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
 import { getActiveDashboardKpis } from '@/config/kpiProfiles';
 import { useDashboardSimulation } from '@/hooks/useDashboardSimulation';
+import { useBankingReturnScroll } from '@/hooks/useBankingReturnScroll';
 import { buildKpiAnalytics } from '@/utils/kpiAnalytics';
 import { buildFioChartData } from '@/utils/financialSimulation';
 import { buildProfileAlerts } from '@/utils/profileAlerts';
@@ -127,6 +128,7 @@ export default function Dashboard() {
     const hasActiveSubscription = Boolean(auth?.user?.can_access_app);
     const needsKpiOnboarding = Boolean(auth?.user?.needs_kpi_onboarding) && !viewedUser;
     const [showKpiOnboarding, setShowKpiOnboarding] = useState(needsKpiOnboarding);
+    useBankingReturnScroll('open-banking');
     const kpiProfile = auth?.user?.kpi_profile;
     const kpiPreferences = auth?.user?.kpi_preferences ?? { enabled_secondary: [] };
     const [isAiInsightOpen, setIsAiInsightOpen] = useState(false);
@@ -601,7 +603,7 @@ export default function Dashboard() {
                         </section>
                     )}
 
-                    <section className={`${GLASS_PANEL} rounded-2xl p-5 sm:p-6`}>
+                    <section id="open-banking" className={`${GLASS_PANEL} scroll-mt-28 rounded-2xl p-5 sm:p-6`}>
                         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.25em] text-neonBlue">
@@ -616,7 +618,11 @@ export default function Dashboard() {
                                     <span className="font-mono text-neonMint">success</span>.
                                 </p>
                             </div>
-                            <ConnectBankButton className="w-full lg:w-auto lg:min-w-[320px]" />
+                            <ConnectBankButton
+                                className="w-full lg:w-auto lg:min-w-[320px]"
+                                returnTo="dashboard"
+                                returnSection="open-banking"
+                            />
                         </div>
 
                         {banking?.accounts?.length > 0 && (

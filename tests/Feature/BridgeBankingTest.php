@@ -152,17 +152,60 @@ class BridgeBankingTest extends TestCase
             'bridge_user_uuid' => 'bridge-user-uuid-3',
         ]);
 
-        $response = $this->actingAs($user)->get(route('banking.bridge.callback', [
+        $response = $this->actingAs($user)->withSession([
+            'banking.return_to' => 'dashboard',
+            'banking.return_section' => 'open-banking',
+        ])->get(route('banking.bridge.callback', [
             'success' => 'true',
         ]));
 
         $response
-            ->assertRedirect(route('dashboard'))
+            ->assertRedirect(route('dashboard').'#open-banking')
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('bank_accounts', [
             'user_id' => $user->id,
             'bridge_account_id' => '54321',
         ]);
+    }
+
+    public function test_bridge_callback_can_redirect_to_landing_section(): void
+    {
+        Http::fake([
+            self::BASE_URL.'/aggregation/authorization/token' => Http::response([
+                'access_token' => 'bridge-access-token',
+                'expires_at' => now()->addHour()->toIso8601String(),
+                'user' => ['uuid' => 'bridge-user-uuid-4'],
+            ], 200),
+            self::BASE_URL.'/aggregation/accounts*' => Http::response([
+                'resources' => [
+                    [
+                        'id' => 11111,
+                        'item_id' => 77,
+                        'name' => 'Compte Landing',
+                        'type' => 'checking',
+                        'data_access' => 'enabled',
+                        'balance' => 1200,
+                    ],
+                ],
+            ], 200),
+            self::BASE_URL.'/aggregation/transactions*' => Http::response([
+                'resources' => [],
+            ], 200),
+        ]);
+
+        $user = User::factory()->create([
+            'stripe_status' => 'active',
+            'bridge_user_uuid' => 'bridge-user-uuid-4',
+        ]);
+
+        $response = $this->actingAs($user)->withSession([
+            'banking.return_to' => 'welcome',
+            'banking.return_section' => 'open-banking',
+        ])->get(route('banking.bridge.callback', [
+            'success' => 'true',
+        ]));
+
+        $response->assertRedirect(url('/').'#open-banking');
     }
 }

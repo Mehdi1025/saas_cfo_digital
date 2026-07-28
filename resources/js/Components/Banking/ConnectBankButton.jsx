@@ -10,6 +10,8 @@ export default function ConnectBankButton({
     label = 'Connecter ma banque',
     helper = 'Bridge · banques francaises (sandbox : Demo Bank, login success)',
     className = '',
+    returnTo = 'dashboard',
+    returnSection = 'open-banking',
 }) {
     const { banking, flash } = usePage().props;
     const [isConnecting, setIsConnecting] = useState(false);
@@ -27,7 +29,10 @@ export default function ConnectBankButton({
         setError(null);
 
         try {
-            const { data } = await axios.post(route('banking.bridge.connect'));
+            const { data } = await axios.post(route('banking.bridge.connect'), {
+                return_to: returnTo,
+                return_section: returnSection,
+            });
 
             if (!data?.url) {
                 throw new Error('Bridge Connect n a pas renvoye d URL.');

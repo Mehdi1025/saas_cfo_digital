@@ -1,6 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import LandingChatWidget from '@/Components/Landing/LandingChatWidget';
+import ConnectBankButton from '@/Components/Banking/ConnectBankButton';
 import CopifiLogo from '@/Components/FinFlow/CopifiLogo';
+import { useBankingReturnScroll } from '@/hooks/useBankingReturnScroll';
 import {
     buildSubscribeAuthUrl,
     clearSubscribeIntent,
@@ -950,6 +952,162 @@ function PilotageSection() {
     );
 }
 
+function formatBankBalance(value) {
+    return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
+        maximumFractionDigits: 0,
+    }).format(Number(value ?? 0));
+}
+
+/* ============================================================
+   SECTION OPEN BANKING — Bridge (connexion banque FR)
+   ============================================================ */
+
+function OpenBankingSection({ auth, canAccessDashboard, banking, onSubscribe, subscribeLabel }) {
+    const hasAccounts = (banking?.accounts?.length ?? 0) > 0;
+    const bridgeReady = Boolean(banking?.bridge_configured);
+
+    return (
+        <section id="open-banking" className="relative mx-auto w-full max-w-7xl scroll-mt-28 px-6 py-24 md:py-32">
+            <div
+                aria-hidden
+                className="pointer-events-none absolute left-0 top-1/3 h-[360px] w-[360px] rounded-full bg-cyan-500/[0.08] blur-[120px]"
+            />
+            <div
+                aria-hidden
+                className="pointer-events-none absolute bottom-0 right-0 h-[320px] w-[320px] rounded-full bg-emerald-500/[0.08] blur-[100px]"
+            />
+
+            <ScrollReveal className="relative mb-4 flex justify-center">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-4 py-1.5">
+                    <IconWallet className="h-3.5 w-3.5 text-cyan-300" />
+                    <span className="ff-mono text-[11px] uppercase tracking-[0.2em] text-cyan-300">
+                        Open Banking · Bridge
+                    </span>
+                </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={60} className="relative mb-12 text-center">
+                <h2 className="mx-auto max-w-3xl text-3xl font-bold tracking-tight text-white md:text-5xl md:leading-[1.12]">
+                    Votre banque,
+                    {' '}
+                    <span className="ff-serif italic text-cyan-200">enfin connectée.</span>
+                </h2>
+                <p className="mx-auto mt-5 max-w-2xl text-lg font-light leading-relaxed text-zinc-400">
+                    Agrégation bancaire française via Bridge : solde, mouvements et trésorerie
+                    alimentent votre cockpit sans ressaisie. Banques FR, PSD2, hébergement sécurisé.
+                </p>
+            </ScrollReveal>
+
+            <div className="relative grid grid-cols-1 items-stretch gap-8 lg:grid-cols-2">
+                <ScrollReveal>
+                    <GlassCard glow accent="sky" className="flex h-full flex-col p-8">
+                        <ul className="space-y-4">
+                            {[
+                                'Connexion sécurisée à vos comptes professionnels (France)',
+                                'Synchronisation automatique solde et transactions',
+                                'Alimentation directe des KPI trésorerie et cashflow',
+                                'Partenaire Bridge — agrégateur open banking certifié',
+                            ].map((item) => (
+                                <li key={item} className="flex items-start gap-3 text-sm text-zinc-300">
+                                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-500/20">
+                                        <IconCheck className="h-3 w-3 text-cyan-400" />
+                                    </span>
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="mt-8 rounded-xl border border-white/[0.08] bg-black/25 p-4">
+                            <p className="ff-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500">Sandbox</p>
+                            <p className="mt-2 text-sm text-zinc-300">
+                                Demo Bank · login{' '}
+                                <span className="rounded bg-cyan-500/15 px-1.5 py-0.5 font-mono text-cyan-300">success</span>
+                            </p>
+                        </div>
+                    </GlassCard>
+                </ScrollReveal>
+
+                <ScrollReveal delay={100}>
+                    <GlassCard glow accent="sky" className="flex h-full flex-col justify-between p-8">
+                        {!auth?.user ? (
+                            <div className="flex flex-1 flex-col justify-center text-center">
+                                <p className="text-sm text-zinc-400">
+                                    Créez votre compte Copifi pour connecter votre banque et voir votre
+                                    trésorerie en temps réel.
+                                </p>
+                                <MagneticButton
+                                    onClick={onSubscribe}
+                                    className="mx-auto mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#CCFF00] px-6 py-3 text-sm font-semibold text-black transition hover:bg-[#b8e600]"
+                                >
+                                    {subscribeLabel}
+                                    <IconArrowRight className="h-4 w-4" />
+                                </MagneticButton>
+                            </div>
+                        ) : !canAccessDashboard ? (
+                            <div className="flex flex-1 flex-col justify-center text-center">
+                                <p className="text-sm text-zinc-400">
+                                    Activez votre abonnement pour débloquer la connexion bancaire Bridge.
+                                </p>
+                                <MagneticButton
+                                    onClick={onSubscribe}
+                                    className="mx-auto mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[#CCFF00] px-6 py-3 text-sm font-semibold text-black transition hover:bg-[#b8e600]"
+                                >
+                                    {subscribeLabel}
+                                    <IconArrowRight className="h-4 w-4" />
+                                </MagneticButton>
+                            </div>
+                        ) : (
+                            <>
+                                <div>
+                                    <p className="text-xs font-medium uppercase tracking-[0.2em] text-cyan-300/80">
+                                        Votre espace
+                                    </p>
+                                    <h3 className="mt-2 text-xl font-bold text-white">
+                                        {hasAccounts ? 'Compte synchronisé' : 'Connecter ma banque'}
+                                    </h3>
+                                    {!bridgeReady && (
+                                        <p className="mt-2 text-sm text-amber-200/90">
+                                            Bridge sera disponible dès activation des identifiants sandbox.
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="mt-6">
+                                    <ConnectBankButton
+                                        returnTo="welcome"
+                                        returnSection="open-banking"
+                                        className="w-full max-w-none"
+                                    />
+                                </div>
+
+                                {hasAccounts && (
+                                    <div className="mt-6 grid gap-3">
+                                        {banking.accounts.map((account) => (
+                                            <div
+                                                key={account.id}
+                                                className="rounded-xl border border-cyan-400/20 bg-cyan-500/[0.06] px-4 py-3"
+                                            >
+                                                <p className="text-sm font-semibold text-white">{account.bank_name}</p>
+                                                <p className="mt-1 text-xs text-zinc-500">
+                                                    {account.iban ?? 'Compte connecté'} · {account.type}
+                                                </p>
+                                                <p className="ff-mono mt-2 text-2xl font-bold tabular-nums text-cyan-300">
+                                                    {formatBankBalance(account.balance)}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </GlassCard>
+                </ScrollReveal>
+            </div>
+        </section>
+    );
+}
+
 /* ============================================================
    SECTION ASSISTANT IA
    ============================================================ */
@@ -1496,13 +1654,15 @@ function WelcomeFlashBanner() {
 }
 
 export default function Welcome({ auth }) {
-    const { pricing } = usePage().props;
+    const { pricing, banking } = usePage().props;
     const year = new Date().getFullYear();
     const canAccessDashboard = Boolean(auth?.user?.can_access_app);
     const isSuspended = Boolean(auth?.user?.is_suspended);
     const subscribeCheckoutTriggered = useRef(false);
     const subscribeLabel = `S'abonner — ${pricing.amount_label}/mois`;
     const primaryActionLabel = canAccessDashboard ? DASHBOARD_ACCESS_LABEL : subscribeLabel;
+
+    useBankingReturnScroll('open-banking');
 
     const startCheckout = useCallback(() => {
         router.visit(route('billing.checkout.start'));
@@ -1609,6 +1769,7 @@ export default function Welcome({ auth }) {
                         <a href="#difference" className="whitespace-nowrap transition-colors hover:text-white">La différence</a>
                         <a href="#facturation" className="whitespace-nowrap transition-colors hover:text-white">Facturation</a>
                         <a href="#pilotage" className="whitespace-nowrap transition-colors hover:text-white">Pilotage</a>
+                        <a href="#open-banking" className="whitespace-nowrap transition-colors hover:text-white">Banque</a>
                         <a href="#conformite" className="whitespace-nowrap transition-colors hover:text-white">Conformité</a>
                         <a href="#tarifs" className="whitespace-nowrap transition-colors hover:text-white">Tarifs</a>
                     </div>
@@ -1736,6 +1897,13 @@ export default function Welcome({ auth }) {
                     <InvoicingSection />
                     <ComplianceSection />
                     <PilotageSection />
+                    <OpenBankingSection
+                        auth={auth}
+                        canAccessDashboard={canAccessDashboard}
+                        banking={banking}
+                        onSubscribe={handleSubscribe}
+                        subscribeLabel={primaryActionLabel}
+                    />
                     <LandingChatSection
                         auth={auth}
                         canAccessDashboard={canAccessDashboard}
