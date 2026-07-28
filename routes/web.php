@@ -107,11 +107,15 @@ Route::get('/copilote', CopilotController::class)
     ->name('copilot.index');
 
 Route::get('/saisie-mensuelle', function (Request $request) {
+    $user = $request->user();
+
     return Inertia::render('FinancialEntry', [
-        'latestRecord' => $request->user()
-            ->financialRecords()
+        'latestRecord' => $user->financialRecords()->orderByDesc('month')->first(),
+        'recentRecords' => $user->financialRecords()
             ->orderByDesc('month')
-            ->first(),
+            ->limit(6)
+            ->get(['month', 'revenue', 'charges', 'marketing_budget', 'clients_count']),
+        'recordsCount' => $user->financialRecords()->count(),
     ]);
 })->middleware(['auth', 'active.subscription'])
     ->name('financial-entry.index');

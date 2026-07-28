@@ -22,6 +22,8 @@ class FinancialRecordController extends Controller
             $validated
         );
 
-        return redirect()->route('financial-entry.index');
+        return redirect()
+            ->route('financial-entry.index')
+            ->with('success', 'Saisie enregistree. Vos KPI du dashboard sont a jour.');
     }
 }
