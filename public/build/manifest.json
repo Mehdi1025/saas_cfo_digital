@@ -121,8 +121,8 @@
     "file": "assets/taxRates-B1uTcXQc.js",
     "name": "taxRates"
   },
-  "_useBankingReturnScroll-D3jNH63J.js": {
-    "file": "assets/useBankingReturnScroll-D3jNH63J.js",
+  "_useBankingReturnScroll-5M7FU1Yp.js": {
+    "file": "assets/useBankingReturnScroll-5M7FU1Yp.js",
     "name": "useBankingReturnScroll",
     "imports": [
       "_vendor-CFFQcbZW.js"
@@ -245,14 +245,14 @@
     ]
   },
   "resources/js/Pages/Dashboard.jsx": {
-    "file": "assets/Dashboard-Iu-VnvLP.js",
+    "file": "assets/Dashboard-BqbtRjMZ.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-CFFQcbZW.js",
       "_AppDashboardLayout-DA2I6YKI.js",
-      "_useBankingReturnScroll-D3jNH63J.js",
+      "_useBankingReturnScroll-5M7FU1Yp.js",
       "_framer-motion-hPGb8ely.js",
       "_recharts--Osre1TF.js",
       "_CfoPageShell-HPSNhOsQ.js"
@@ -574,19 +574,19 @@
     ]
   },
   "resources/js/Pages/Welcome.jsx": {
-    "file": "assets/Welcome-BpBlA3GN.js",
+    "file": "assets/Welcome-DPzlaKno.js",
     "name": "Welcome",
     "src": "resources/js/Pages/Welcome.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-CFFQcbZW.js",
-      "_useBankingReturnScroll-D3jNH63J.js",
+      "_useBankingReturnScroll-5M7FU1Yp.js",
       "_subscribeFlow-1qB-iGM8.js",
       "_recharts--Osre1TF.js"
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DVuaQDVB.js",
+    "file": "assets/app-CK-sw1LH.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -632,7 +632,7 @@
       "resources/js/Pages/Welcome.jsx"
     ],
     "css": [
-      "assets/app-DDcQF-Pq.css"
+      "assets/app-Dxeg6DNk.css"
     ]
   }
 }
