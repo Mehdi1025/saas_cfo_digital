@@ -166,10 +166,9 @@ class BridgeBankingService
     private function syncTransactions(string $accessToken, BankAccount $bankAccount): int
     {
         $bridgeAccountId = (int) $bankAccount->bridge_account_id;
-        $payload = $this->bridge->listTransactions($accessToken, $bridgeAccountId);
-        $resources = $payload['resources'] ?? [];
+        $resources = $this->fetchTransactionResources($accessToken, $bridgeAccountId);
 
-        if (! is_array($resources)) {
+        if ($resources === []) {
             return 0;
         }
 
@@ -191,7 +190,13 @@ class BridgeBankingService
             }
 
             $amount = $this->normalizeAmount($transaction['amount'] ?? 0);
-            $label = trim((string) ($transaction['clean_description'] ?? $transaction['provider_description'] ?? 'Operation bancaire'));
+            $label = trim((string) (
+                $transaction['clean_description']
+                ?? $transaction['provider_description']
+                ?? $transaction['description']
+                ?? $transaction['wording']
+                ?? 'Operation bancaire'
+            ));
             $date = $this->resolveTransactionDate($transaction);
 
             BankTransaction::query()->updateOrCreate(
@@ -203,7 +208,7 @@ class BridgeBankingService
                     'amount' => round($amount, 2),
                     'date' => $date,
                     'label' => $label !== '' ? $label : 'Operation bancaire',
-                    'status' => 'posted',
+                    'status' => (string) ($transaction['status'] ?? 'posted'),
                 ],
             );
 
@@ -214,13 +219,40 @@ class BridgeBankingService
     }
 
     /**
+     * @return list<array<string, mixed>>
+     */
+    private function fetchTransactionResources(string $accessToken, int $bridgeAccountId): array
+    {
+        $payload = $this->bridge->listTransactions($accessToken, $bridgeAccountId);
+        $resources = $payload['resources'] ?? [];
+
+        if (is_array($resources) && $resources !== []) {
+            return $resources;
+        }
+
+        $payload = $this->bridge->listTransactions($accessToken);
+        $all = $payload['resources'] ?? [];
+
+        if (! is_array($all)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $all,
+            static fn (array $transaction) => (int) ($transaction['account_id'] ?? 0) === $bridgeAccountId,
+        ));
+    }
+
+    /**
      * @param  array<string, mixed>  $transaction
      */
     private function resolveTransactionDate(array $transaction): string
     {
         $candidate = $transaction['transaction_date']
+            ?? $transaction['booking_date']
             ?? $transaction['date']
             ?? $transaction['value_date']
+            ?? $transaction['updated_at']
             ?? null;
 
         if (is_string($candidate) && $candidate !== '') {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\BankTransaction;
 use App\Services\CompanySettingsService;
 use App\Services\DeliveryDestinationService;
 use Illuminate\Http\Request;
@@ -86,6 +87,26 @@ class HandleInertiaRequests extends Middleware
                         'iban' => $account->iban,
                         'balance' => (float) $account->balance,
                         'type' => $account->type,
+                    ])
+                    ->values()
+                    ->all(),
+                'recent_transactions' => BankTransaction::query()
+                    ->whereIn(
+                        'bank_account_id',
+                        $user->bankAccounts()
+                            ->whereNotNull('bridge_account_id')
+                            ->pluck('id'),
+                    )
+                    ->orderByDesc('date')
+                    ->orderByDesc('id')
+                    ->limit(10)
+                    ->get(['id', 'amount', 'date', 'label', 'status'])
+                    ->map(fn ($transaction) => [
+                        'id' => $transaction->id,
+                        'amount' => (float) $transaction->amount,
+                        'date' => $transaction->date?->toDateString(),
+                        'label' => $transaction->label,
+                        'status' => $transaction->status,
                     ])
                     ->values()
                     ->all(),

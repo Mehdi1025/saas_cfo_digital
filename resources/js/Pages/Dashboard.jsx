@@ -81,6 +81,24 @@ function MainChartTooltip({ active, payload, label }) {
     );
 }
 
+function formatShortDate(value) {
+    if (!value) {
+        return '—';
+    }
+
+    const parsed = new Date(value);
+
+    if (Number.isNaN(parsed.getTime())) {
+        return String(value);
+    }
+
+    return new Intl.DateTimeFormat('fr-FR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    }).format(parsed);
+}
+
 function formatCurrency(value) {
     return new Intl.NumberFormat('fr-FR', {
         style: 'currency',
@@ -310,7 +328,36 @@ export default function Dashboard() {
         [healthScore],
     );
 
-    const recentRows = useMemo(() => [...chartData].reverse().slice(0, 3), [chartData]);
+    const recentRows = useMemo(() => {
+        const bankTransactions = banking?.recent_transactions ?? [];
+
+        if (bankTransactions.length > 0) {
+            return bankTransactions.map((transaction) => {
+                const amount = Number(transaction.amount ?? 0);
+                const isCredit = amount >= 0;
+
+                return {
+                    id: `bank-${transaction.id}`,
+                    date: formatShortDate(transaction.date),
+                    description: transaction.label || 'Operation bancaire',
+                    category: isCredit ? 'Entree' : 'Sortie',
+                    categoryTone: isCredit ? 'credit' : 'debit',
+                    amount,
+                    source: 'bank',
+                };
+            });
+        }
+
+        return [...chartData].reverse().slice(0, 3).map((row) => ({
+            id: `manual-${row.month}`,
+            date: row.month,
+            description: 'Periode financiere',
+            category: 'Revenu',
+            categoryTone: 'revenue',
+            amount: Number(row.revenus ?? 0),
+            source: 'manual',
+        }));
+    }, [banking?.recent_transactions, chartData]);
     const revenuesSpark = useMemo(
         () => sparklineFrom(chartData.map((item) => item.revenus)),
         [chartData],
@@ -809,14 +856,20 @@ export default function Dashboard() {
                         )}
 
                         <section id="recent-transactions" className={`${GLASS_PANEL} rounded-3xl p-6`}>
-                            <div className="mb-6 flex items-center justify-between">
-                                <h2 className="text-lg font-semibold tracking-wide text-white">Flux Recents</h2>
-                                <span className="flex items-center text-sm text-neonBlue">
-                                    Voir tout
-                                    <svg className="ml-1 h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z" />
-                                    </svg>
-                                </span>
+                            <div className="mb-6 flex items-center justify-between gap-3">
+                                <div>
+                                    <h2 className="text-lg font-semibold tracking-wide text-white">Flux Recents</h2>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        {recentRows[0]?.source === 'bank'
+                                            ? 'Dernieres operations synchronisees via Bridge'
+                                            : 'Dernieres periodes saisies manuellement'}
+                                    </p>
+                                </div>
+                                {banking?.accounts?.length > 0 && recentRows[0]?.source !== 'bank' && (
+                                    <span className="rounded-full border border-neonBlue/20 bg-neonBlue/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neonBlue">
+                                        Banque connectee
+                                    </span>
+                                )}
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full border-collapse text-left">
@@ -831,23 +884,37 @@ export default function Dashboard() {
                                     <tbody className="divide-y divide-glassBorder text-sm">
                                         {recentRows.length ? (
                                             recentRows.map((row) => (
-                                                <tr key={row.month} className="transition-colors hover:bg-white/5">
-                                                    <td className="py-4 text-gray-400">{row.month}</td>
-                                                    <td className="py-4 font-medium text-white">Periode financiere</td>
+                                                <tr key={row.id} className="transition-colors hover:bg-white/5">
+                                                    <td className="py-4 text-gray-400">{row.date}</td>
+                                                    <td className="py-4 font-medium text-white">{row.description}</td>
                                                     <td className="py-4">
-                                                        <span className="rounded-md border border-neonBlue/20 bg-neonBlue/10 px-2.5 py-1 text-xs text-neonBlue">
-                                                            Revenu
+                                                        <span
+                                                            className={`rounded-md border px-2.5 py-1 text-xs ${
+                                                                row.categoryTone === 'credit'
+                                                                    ? 'border-neonMint/20 bg-neonMint/10 text-neonMint'
+                                                                    : row.categoryTone === 'debit'
+                                                                      ? 'border-orange-400/20 bg-orange-400/10 text-orange-300'
+                                                                      : 'border-neonBlue/20 bg-neonBlue/10 text-neonBlue'
+                                                            }`}
+                                                        >
+                                                            {row.category}
                                                         </span>
                                                     </td>
-                                                    <td className="py-4 text-right font-medium text-neonBlue">
-                                                        {formatCurrency(row.revenus)}
+                                                    <td
+                                                        className={`py-4 text-right font-medium ${
+                                                            row.amount >= 0 ? 'text-neonMint' : 'text-orange-300'
+                                                        }`}
+                                                    >
+                                                        {formatCurrency(row.amount)}
                                                     </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
                                                 <td colSpan="4" className="py-5 text-sm text-gray-400">
-                                                    Aucun flux recent disponible.
+                                                    {banking?.accounts?.length > 0
+                                                        ? 'Aucune transaction synchronisee. Utilisez Resynchroniser dans la section Open Banking.'
+                                                        : 'Connectez votre banque ou saisissez vos donnees mensuelles pour afficher vos flux.'}
                                                 </td>
                                             </tr>
                                         )}
