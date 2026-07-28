@@ -11,6 +11,7 @@ class BankTransaction extends Model
         'bank_account_id',
         'powens_transaction_id',
         'stripe_transaction_id',
+        'bridge_transaction_id',
         'amount',
         'date',
         'label',

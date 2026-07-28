@@ -44,11 +44,14 @@ return [
         'plan_price' => env('STRIPE_PLAN_PRICE', '29.95'),
         'plan_price_label' => env('STRIPE_PLAN_PRICE_LABEL', '29,95 €'),
         'plan_currency' => env('STRIPE_PLAN_CURRENCY', 'EUR'),
-        // Financial Connections ne supporte que les comptes US (meme pour une entreprise FR).
-        'fc_countries' => array_values(array_filter(array_map(
-            trim(...),
-            explode(',', (string) env('STRIPE_FC_COUNTRIES', 'US')),
-        ))),
+    ],
+
+    'bridge' => [
+        'client_id' => env('BRIDGE_CLIENT_ID'),
+        'client_secret' => env('BRIDGE_CLIENT_SECRET'),
+        'base_url' => env('BRIDGE_BASE_URL', 'https://api.bridgeapi.io/v3'),
+        'version' => env('BRIDGE_VERSION', '2025-01-15'),
+        'connect_callback_url' => env('BRIDGE_CONNECT_CALLBACK_URL'),
     ],
 
     'google' => [

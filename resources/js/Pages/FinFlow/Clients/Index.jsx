@@ -44,6 +44,7 @@ function initialValues(client) {
         address: client?.address ?? '',
         delivery_address: client?.delivery_address ?? '',
         country_code: client ? (client.country_code || '') : 'FR',
+        registration_number: client?.registration_number ?? '',
         vat_number: client?.vat_number ?? '',
     };
 }
@@ -165,18 +166,35 @@ function ClientModal({ open, onClose, selectedClient, countryOptions }) {
                         ) : null}
                     </div>
 
-                    <div>
-                        <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            Numéro TVA
-                        </label>
-                        <input
-                            value={form.data.vat_number}
-                            onChange={(e) => form.setData('vat_number', e.target.value)}
-                            className="w-full rounded-lg border border-slate-700 bg-[#0f172a] px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
-                        />
-                        {form.errors.vat_number ? (
-                            <p className="mt-1 text-xs text-red-400">{form.errors.vat_number}</p>
-                        ) : null}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                SIRET / SIREN
+                            </label>
+                            <input
+                                value={form.data.registration_number}
+                                onChange={(e) => form.setData('registration_number', e.target.value)}
+                                placeholder="14 chiffres (SIRET) ou 9 (SIREN)"
+                                className="w-full rounded-lg border border-slate-700 bg-[#0f172a] px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
+                            />
+                            {form.errors.registration_number ? (
+                                <p className="mt-1 text-xs text-red-400">{form.errors.registration_number}</p>
+                            ) : null}
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                Numéro TVA
+                            </label>
+                            <input
+                                value={form.data.vat_number}
+                                onChange={(e) => form.setData('vat_number', e.target.value)}
+                                placeholder="FR…"
+                                className="w-full rounded-lg border border-slate-700 bg-[#0f172a] px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
+                            />
+                            {form.errors.vat_number ? (
+                                <p className="mt-1 text-xs text-red-400">{form.errors.vat_number}</p>
+                            ) : null}
+                        </div>
                     </div>
 
                     <div>
@@ -187,6 +205,7 @@ function ClientModal({ open, onClose, selectedClient, countryOptions }) {
                             value={form.data.address}
                             onChange={(e) => form.setData('address', e.target.value)}
                             rows={3}
+                            placeholder="Ex. 20 avenue de Lyon, 69001 Lyon"
                             className="w-full rounded-lg border border-slate-700 bg-[#0f172a] px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
                         />
                         {form.errors.address ? (
@@ -485,6 +504,9 @@ export default function ClientsIndex({ clients, stats, filters }) {
                                             </p>
                                             <p className="text-sm text-slate-400">
                                                 N° TVA : {selectedClient.vat_number || 'N/A'}
+                                            </p>
+                                            <p className="text-sm text-slate-400">
+                                                SIRET / SIREN : {selectedClient.registration_number || 'N/A'}
                                             </p>
                                         </div>
 

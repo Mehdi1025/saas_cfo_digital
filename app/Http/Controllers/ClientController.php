@@ -37,6 +37,7 @@ class ClientController extends Controller
                 'email' => $tier->email,
                 'address' => $tier->address,
                 'delivery_address' => $tier->delivery_address,
+                'registration_number' => $tier->registration_number,
                 'vat_number' => $tier->vat_number,
                 'country_code' => $tier->country_code,
                 'type' => $tier->type,
@@ -81,6 +82,7 @@ class ClientController extends Controller
             'address' => ['nullable', 'string'],
             'delivery_address' => ['nullable', 'string', 'max:2000'],
             'country_code' => ['nullable', 'string', 'max:2'],
+            'registration_number' => ['nullable', 'string', 'max:20'],
             'vat_number' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -101,6 +103,7 @@ class ClientController extends Controller
             'address' => ['nullable', 'string'],
             'delivery_address' => ['nullable', 'string', 'max:2000'],
             'country_code' => ['nullable', 'string', 'max:2'],
+            'registration_number' => ['nullable', 'string', 'max:20'],
             'vat_number' => ['nullable', 'string', 'max:255'],
         ]);
 

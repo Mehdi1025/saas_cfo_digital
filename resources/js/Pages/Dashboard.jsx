@@ -605,9 +605,9 @@ export default function Dashboard() {
                                     Connectez votre banque
                                 </h2>
                                 <p className="mt-1 max-w-xl text-sm text-gray-400">
-                                    Connexion via Stripe Financial Connections. Stripe ne supporte aujourd hui
-                                    que les comptes bancaires US — en mode test, utilisez une banque de
-                                    demonstration (ex. Test Institution).
+                                    Connexion via Bridge, agrégateur open banking français. En sandbox,
+                                    choisissez Demo Bank et utilisez le login{' '}
+                                    <span className="font-mono text-neonMint">success</span>.
                                 </p>
                             </div>
                             <ConnectBankButton className="w-full lg:w-auto lg:min-w-[320px]" />

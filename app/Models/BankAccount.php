@@ -12,6 +12,8 @@ class BankAccount extends Model
         'user_id',
         'powens_account_id',
         'stripe_fc_account_id',
+        'bridge_account_id',
+        'bridge_item_id',
         'bank_name',
         'iban',
         'balance',

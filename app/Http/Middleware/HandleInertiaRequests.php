@@ -74,11 +74,10 @@ class HandleInertiaRequests extends Middleware
                 'interval' => 'mois',
             ],
             'banking' => fn () => $user ? [
-                'stripe_configured' => filled(config('services.stripe.key'))
-                    && filled(config('services.stripe.secret')),
-                'publishable_key' => config('services.stripe.key'),
+                'bridge_configured' => filled(config('services.bridge.client_id'))
+                    && filled(config('services.bridge.client_secret')),
                 'accounts' => $user->bankAccounts()
-                    ->whereNotNull('stripe_fc_account_id')
+                    ->whereNotNull('bridge_account_id')
                     ->orderByDesc('updated_at')
                     ->get(['id', 'bank_name', 'iban', 'balance', 'type'])
                     ->map(fn ($account) => [

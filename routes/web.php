@@ -19,7 +19,7 @@ use App\Http\Controllers\KpiProfileController;
 use App\Http\Controllers\LandingChatController;
 use App\Http\Controllers\ParametresController;
 use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\StripeBankingController;
+use App\Http\Controllers\BridgeBankingController;
 use App\Http\Controllers\StripeCheckoutController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\TrackingController;
@@ -87,12 +87,16 @@ Route::post('/dashboard/chat', DashboardChatController::class)
     ->name('dashboard.chat');
 
 Route::middleware(['auth', 'active.subscription'])->group(function () {
-    Route::post('/banking/stripe/session', [StripeBankingController::class, 'createSession'])
-        ->name('banking.stripe.session');
+    Route::post('/banking/bridge/connect', [BridgeBankingController::class, 'connect'])
+        ->name('banking.bridge.connect');
 
-    Route::post('/banking/stripe/complete', [StripeBankingController::class, 'complete'])
-        ->name('banking.stripe.complete');
+    Route::post('/banking/bridge/sync', [BridgeBankingController::class, 'sync'])
+        ->name('banking.bridge.sync');
 });
+
+Route::get('/banking/bridge/callback', [BridgeBankingController::class, 'callback'])
+    ->middleware(['auth', 'active.subscription'])
+    ->name('banking.bridge.callback');
 
 Route::post('/copilote/chat', DashboardChatController::class)
     ->middleware(['auth', 'active.subscription', 'throttle:20,1'])
