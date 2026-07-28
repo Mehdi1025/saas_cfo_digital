@@ -93,45 +93,61 @@ class BridgeBankingService
             throw new RuntimeException('Aucun compte bancaire synchronise via Bridge.');
         }
 
-        $primary = $this->pickPrimaryAccount($resources);
+        $accountsToSync = $this->pickSyncableAccounts($resources);
 
-        if ($primary === null) {
+        if ($accountsToSync === []) {
             throw new RuntimeException('Aucun compte bancaire actif trouve chez Bridge.');
         }
 
+        $bridgeAccountIds = collect($accountsToSync)
+            ->map(fn (array $account) => (string) ($account['id'] ?? ''))
+            ->filter()
+            ->values()
+            ->all();
+
         $user->bankAccounts()
             ->whereNotNull('bridge_account_id')
-            ->where('bridge_account_id', '!=', (string) ($primary['id'] ?? ''))
-            ->delete();
+            ->whereNotIn('bridge_account_id', $bridgeAccountIds)
+            ->each(function (BankAccount $account): void {
+                $account->transactions()->delete();
+                $account->delete();
+            });
 
-        $bankAccount = $this->syncAccount($user, $primary);
-        $transactions = $this->syncTransactions($accessToken, $bankAccount);
+        $syncedAccounts = 0;
+        $syncedTransactions = 0;
+
+        foreach ($accountsToSync as $accountPayload) {
+            $bankAccount = $this->syncAccount($user, $accountPayload);
+            $syncedAccounts++;
+            $syncedTransactions += $this->syncTransactions($accessToken, $bankAccount);
+        }
 
         return [
-            'accounts' => 1,
-            'transactions' => $transactions,
+            'accounts' => $syncedAccounts,
+            'transactions' => $syncedTransactions,
         ];
     }
 
     /**
      * @param  list<array<string, mixed>>  $resources
-     * @return array<string, mixed>|null
+     * @return list<array<string, mixed>>
      */
-    private function pickPrimaryAccount(array $resources): ?array
+    private function pickSyncableAccounts(array $resources): array
     {
-        $enabled = collect($resources)
-            ->filter(fn (array $account) => ($account['data_access'] ?? '') === 'enabled')
+        $candidates = collect($resources)
+            ->filter(fn ($account) => is_array($account))
+            ->filter(fn (array $account) => filled($account['id'] ?? null))
             ->values();
 
-        if ($enabled->isEmpty()) {
-            $enabled = collect($resources)->values();
+        $enabled = $candidates
+            ->filter(fn (array $account) => ($account['data_access'] ?? 'enabled') === 'enabled')
+            ->values();
+
+        if ($enabled->isNotEmpty()) {
+            return $enabled->all();
         }
 
-        $checking = $enabled->first(
-            fn (array $account) => ($account['type'] ?? '') === 'checking',
-        );
-
-        return $checking ?? $enabled->first();
+        return $candidates->all();
     }
 
     /**

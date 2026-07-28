@@ -60,7 +60,7 @@ class BridgeBankingTest extends TestCase
         ]);
     }
 
-    public function test_authenticated_user_can_sync_bridge_banking(): void
+    public function test_authenticated_user_can_sync_all_bridge_accounts(): void
     {
         Http::fake([
             self::BASE_URL.'/aggregation/users' => Http::response([
@@ -82,12 +82,29 @@ class BridgeBankingTest extends TestCase
                         'balance' => 1250.50,
                         'iban' => 'FR7612345678901234567890123',
                     ],
+                    [
+                        'id' => 12346,
+                        'item_id' => 99,
+                        'name' => 'Livret Demo',
+                        'type' => 'savings',
+                        'data_access' => 'enabled',
+                        'balance' => 5000,
+                    ],
+                    [
+                        'id' => 12347,
+                        'item_id' => 99,
+                        'name' => 'Carte Demo',
+                        'type' => 'card',
+                        'data_access' => 'enabled',
+                        'balance' => -120.50,
+                    ],
                 ],
             ], 200),
             self::BASE_URL.'/aggregation/transactions*' => Http::response([
                 'resources' => [
                     [
                         'id' => 'tx-1',
+                        'account_id' => 12345,
                         'amount' => -94.00,
                         'clean_description' => 'Paiement CB',
                         'transaction_date' => now()->toDateString(),
@@ -106,13 +123,25 @@ class BridgeBankingTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('accounts', 1)
-            ->assertJsonPath('transactions', 1);
+            ->assertJsonPath('accounts', 3)
+            ->assertJsonPath('transactions', 3);
 
         $this->assertDatabaseHas('bank_accounts', [
             'user_id' => $user->id,
             'bridge_account_id' => '12345',
             'bank_name' => 'Compte courant Demo',
+        ]);
+
+        $this->assertDatabaseHas('bank_accounts', [
+            'user_id' => $user->id,
+            'bridge_account_id' => '12346',
+            'bank_name' => 'Livret Demo',
+        ]);
+
+        $this->assertDatabaseHas('bank_accounts', [
+            'user_id' => $user->id,
+            'bridge_account_id' => '12347',
+            'bank_name' => 'Carte Demo',
         ]);
 
         $this->assertDatabaseHas('bank_transactions', [
