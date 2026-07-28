@@ -70,10 +70,10 @@ const SLIDER_MARKERS = [
     { day: 30, label: '+30j' },
 ];
 
-function computeBalanceAtDay(day) {
-    return MOCK_CASHFLOW_EVENTS.reduce(
+function computeBalanceAtDay(day, initialBalance, events) {
+    return events.reduce(
         (acc, event) => (day >= event.dueDay ? acc + event.amount : acc),
-        MOCK_INITIAL_BALANCE,
+        initialBalance,
     );
 }
 
@@ -105,12 +105,12 @@ function MotionText({ value, className = '' }) {
 }
 
 /** Odomètre central — spring + couleur dynamique via useTransform */
-function TreasuryOdometer({ balanceSpring }) {
+function TreasuryOdometer({ balanceSpring, referenceBalance }) {
     const amountRef = useRef(null);
 
     const textColor = useTransform(balanceSpring, (value) => {
         const ratio = Math.min(
-            Math.max((value - CRITICAL_THRESHOLD) / (MOCK_INITIAL_BALANCE - CRITICAL_THRESHOLD), 0),
+            Math.max((value - CRITICAL_THRESHOLD) / (Math.max(referenceBalance, CRITICAL_THRESHOLD * 2) - CRITICAL_THRESHOLD), 0),
             1,
         );
         const r = Math.round(239 + (0 - 239) * ratio);
@@ -128,7 +128,7 @@ function TreasuryOdometer({ balanceSpring }) {
 
     const auraBackground = useTransform(
         balanceSpring,
-        [CRITICAL_THRESHOLD * 0.5, CRITICAL_THRESHOLD, MOCK_INITIAL_BALANCE],
+        [CRITICAL_THRESHOLD * 0.5, CRITICAL_THRESHOLD, Math.max(referenceBalance, CRITICAL_THRESHOLD * 2)],
         [
             'radial-gradient(circle, rgba(239,68,68,0.18) 0%, transparent 70%)',
             'radial-gradient(circle, rgba(239,68,68,0.12) 0%, transparent 70%)',
@@ -328,15 +328,23 @@ function TimeMachineSlider({ dayProgress }) {
 }
 
 /**
- * CashflowTimeMachine — simulateur temporel de trésorerie (God Tier).
- * Autonome, mock data, 60fps via Framer Motion MotionValues.
+ * CashflowTimeMachine — simulateur temporel de trésorerie.
  */
-export default function CashflowTimeMachine({ className = '' }) {
+export default function CashflowTimeMachine({ treasury = null, className = '' }) {
+    const hasLiveTreasury = treasury?.has_live_data === true;
+    const initialBalance = hasLiveTreasury ? Number(treasury.checking_balance) : MOCK_INITIAL_BALANCE;
+    const events =
+        hasLiveTreasury && treasury.cashflow_events?.length
+            ? treasury.cashflow_events
+            : MOCK_CASHFLOW_EVENTS;
+
     /** Jours écoulés (0 → 30) — source de vérité réactive sans useState */
     const dayProgress = useMotionValue(0);
 
     /** Solde brut dérivé du curseur */
-    const projectedBalance = useTransform(dayProgress, (day) => computeBalanceAtDay(day));
+    const projectedBalance = useTransform(dayProgress, (day) =>
+        computeBalanceAtDay(day, initialBalance, events),
+    );
 
     /** Spring « compteur sport » sur le solde */
     const balanceSpring = useSpring(projectedBalance, {
@@ -347,7 +355,7 @@ export default function CashflowTimeMachine({ className = '' }) {
 
     /** Variation vs solde initial pour micro-feedback */
     const deltaLabel = useTransform(balanceSpring, (value) => {
-        const delta = value - MOCK_INITIAL_BALANCE;
+        const delta = value - initialBalance;
         const sign = delta >= 0 ? '+' : '';
         return `${sign}${formatEuro(delta)} vs aujourd'hui`;
     });
@@ -365,6 +373,12 @@ export default function CashflowTimeMachine({ className = '' }) {
                         <h2 className="mt-1 font-display text-lg font-bold text-white sm:text-xl">
                             Cashflow Time Machine
                         </h2>
+                        {hasLiveTreasury ? (
+                            <p className="mt-1 text-xs text-cyan-300/90">
+                                Solde Bridge · flux 30j{' '}
+                                {formatEuro(Number(treasury.net_flow_30d ?? 0))}
+                            </p>
+                        ) : null}
                     </div>
                     <MotionText
                         value={deltaLabel}
@@ -374,7 +388,7 @@ export default function CashflowTimeMachine({ className = '' }) {
             </div>
 
             <div className="px-5 sm:px-6">
-                <TreasuryOdometer balanceSpring={balanceSpring} />
+                <TreasuryOdometer balanceSpring={balanceSpring} referenceBalance={initialBalance} />
 
                 <TimeMachineSlider dayProgress={dayProgress} />
             </div>
@@ -382,10 +396,10 @@ export default function CashflowTimeMachine({ className = '' }) {
             {/* Pile horizontale des échéances — scroll mobile */}
             <div className="mt-6 border-t border-white/5 px-5 py-5 sm:px-6">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400">
-                    Échéances sur la période
+                    {hasLiveTreasury ? 'Flux projete sur 30 jours' : 'Echeances sur la periode'}
                 </p>
                 <motion.div layout className="flex gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    {MOCK_CASHFLOW_EVENTS.map((event) => (
+                    {events.map((event) => (
                         <CashflowEventCard key={event.id} event={event} dayProgress={dayProgress} />
                     ))}
                 </motion.div>

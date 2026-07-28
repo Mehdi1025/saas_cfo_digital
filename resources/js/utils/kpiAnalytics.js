@@ -62,9 +62,14 @@ function seriesFromChart(chartData, mapper) {
  * @param {Array<{month:string,revenus:number,charges:number,clients_count?:number,marketing_budget?:number}>} chartData
  * @param {object} kpis
  * @param {object} formatters
+ * @param {object|null} bankingTreasury
  */
-export function buildKpiAnalytics(chartData, kpis, formatters) {
+export function buildKpiAnalytics(chartData, kpis, formatters, bankingTreasury = null) {
     const { formatCompactCurrency, formatPercentage, formatCurrency } = formatters;
+    const hasLiveTreasury = bankingTreasury?.has_live_data === true;
+    const checkingBalance = Number(bankingTreasury?.checking_balance ?? 0);
+    const netFlow30 = Number(bankingTreasury?.net_flow_30d ?? 0);
+    const dailyNetFlow = bankingTreasury?.daily_net_flow ?? [];
 
     const revenues = seriesFromChart(chartData, (r) => r.revenus);
     const charges = seriesFromChart(chartData, (r) => r.charges);
@@ -90,6 +95,20 @@ export function buildKpiAnalytics(chartData, kpis, formatters) {
         acc.push((acc[index - 1] ?? 0) + value);
         return acc;
     }, []);
+
+    const treasurySeries = hasLiveTreasury
+        ? cumulativeCash.length > 0
+            ? [...cumulativeCash.slice(0, -1), checkingBalance]
+            : [checkingBalance]
+        : cumulativeCash;
+
+    const treasurySparkline = hasLiveTreasury
+        ? dailyNetFlow.length > 1
+            ? dailyNetFlow
+            : cumulativeCash.length > 0
+              ? [...cumulativeCash.slice(-5, -1), checkingBalance]
+              : [checkingBalance]
+        : cumulativeCash;
     const tvaProvisionSeries = revenues.map((value) => value * 0.2);
     const urssafProvisionSeries = margins.map((value) => Math.max(value, 0) * 0.22);
     const encoursSeries = revenues.map((value) => Math.max(value * 0.15, 0));
@@ -173,6 +192,7 @@ export function buildKpiAnalytics(chartData, kpis, formatters) {
         chartSeries,
         chartLabel,
         unit = 'currency',
+        source = 'estimated',
     }) => ({
         kpiId,
         value,
@@ -183,6 +203,7 @@ export function buildKpiAnalytics(chartData, kpis, formatters) {
         chartSeries: chartSeries ?? [],
         chartLabel: chartLabel ?? chartLabels,
         unit,
+        source,
     });
 
     const revTrend = makeTrend(revenues);
@@ -227,11 +248,23 @@ export function buildKpiAnalytics(chartData, kpis, formatters) {
         }),
         tresorerie: metric({
             kpiId: 'tresorerie',
-            value: formatCompactCurrency(cumulativeCash.at(-1) ?? kpis.marge_nette),
-            hint: 'Solde cumule estime (CA - charges)',
-            sparkline: cumulativeCash,
-            trend: makeTrend(cumulativeCash),
-            chartSeries: cumulativeCash,
+            value: hasLiveTreasury
+                ? formatCompactCurrency(checkingBalance)
+                : formatCompactCurrency(cumulativeCash.at(-1) ?? kpis.marge_nette),
+            hint: hasLiveTreasury
+                ? `Solde comptes courants Bridge · flux 30j ${formatCompactCurrency(netFlow30)}`
+                : 'Solde cumule estime (CA - charges)',
+            live: hasLiveTreasury || chartData.length > 0,
+            sparkline: treasurySparkline,
+            trend: hasLiveTreasury
+                ? {
+                      value: netFlow30,
+                      label: `${netFlow30 >= 0 ? '+' : ''}${formatCompactCurrency(netFlow30)} / 30j`,
+                      tone: netFlow30 > 0 ? 'up' : netFlow30 < 0 ? 'down' : 'neutral',
+                  }
+                : makeTrend(cumulativeCash),
+            chartSeries: treasurySeries,
+            source: hasLiveTreasury ? 'bridge' : 'estimated',
         }),
         provisions_tva: metric({
             kpiId: 'provisions_tva',
@@ -304,16 +337,24 @@ export function buildKpiAnalytics(chartData, kpis, formatters) {
             kpiId: 'runway',
             value:
                 kpis.charges_totales > 0
-                    ? `${Math.max(Math.round((cumulativeCash.at(-1) ?? 0) / kpis.charges_totales), 0)} mois`
+                    ? `${Math.max(
+                          Math.round(
+                              ((hasLiveTreasury ? checkingBalance : cumulativeCash.at(-1) ?? 0) /
+                                  kpis.charges_totales) *
+                                  10,
+                          ) / 10,
+                          0,
+                      )} mois`
                     : 'N/A',
-            hint: 'Autonomie estimee au rythme actuel',
-            live: kpis.charges_totales > 0,
-            sparkline: cumulativeCash.map((v, i) =>
-                charges[i] > 0 ? v / charges[i] : 0,
-            ),
-            trend: makeTrend(cumulativeCash),
-            chartSeries: cumulativeCash.map((v, i) => (charges[i] > 0 ? v / charges[i] : 0)),
+            hint: hasLiveTreasury
+                ? 'Autonomie estimee sur solde bancaire reel'
+                : 'Autonomie estimee au rythme actuel',
+            live: hasLiveTreasury || kpis.charges_totales > 0,
+            sparkline: treasurySeries.map((v, i) => (charges[i] > 0 ? v / charges[i] : 0)),
+            trend: makeTrend(treasurySeries),
+            chartSeries: treasurySeries.map((v, i) => (charges[i] > 0 ? v / charges[i] : 0)),
             unit: 'months',
+            source: hasLiveTreasury ? 'bridge' : 'estimated',
         }),
         transformation_devis: metric({
             kpiId: 'transformation_devis',
@@ -477,12 +518,14 @@ export function buildKpiAnalytics(chartData, kpis, formatters) {
     return {
         byKpiId: analytics,
         chartLabels,
+        bankingTreasury,
         series: {
             revenues,
             charges,
             margins,
             marginPcts,
             cumulativeCash,
+            treasurySeries,
             cacSeries,
             ltvSeries,
             clients,
@@ -550,13 +593,19 @@ export function buildProfileChartPanels(activeKpis, analytics) {
     }
 
     if (ids.has('tresorerie') || ids.has('burn_rate') || ids.has('runway')) {
+        const cashSeries = analytics.bankingTreasury?.has_live_data
+            ? analytics.series.treasurySeries
+            : analytics.series.cumulativeCash;
+
         panels.push({
             id: 'cash',
-            title: 'Tresorerie cumulee',
-            subtitle: 'Solde estime CA - charges',
+            title: analytics.bankingTreasury?.has_live_data ? 'Tresorerie bancaire' : 'Tresorerie cumulee',
+            subtitle: analytics.bankingTreasury?.has_live_data
+                ? 'Solde Bridge + historique de flux'
+                : 'Solde estime CA - charges',
             type: 'area',
             series: [
-                { key: 'cash', label: 'Tresorerie', data: analytics.series.cumulativeCash, color: '#00FF9D' },
+                { key: 'cash', label: 'Tresorerie', data: cashSeries, color: '#00FF9D' },
             ],
         });
     }

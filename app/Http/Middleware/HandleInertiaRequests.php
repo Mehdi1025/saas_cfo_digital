@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\BankTransaction;
+use App\Support\BankTreasurySummary;
 use App\Services\CompanySettingsService;
 use App\Services\DeliveryDestinationService;
 use Illuminate\Http\Request;
@@ -110,6 +111,7 @@ class HandleInertiaRequests extends Middleware
                     ])
                     ->values()
                     ->all(),
+                'treasury' => BankTreasurySummary::forUser($user),
             ] : null,
         ];
     }

@@ -297,7 +297,7 @@ export default function Dashboard() {
             return null;
         }
 
-        return buildKpiAnalytics(fioChartData, displayKpis, kpiFormatters);
+        return buildKpiAnalytics(fioChartData, displayKpis, kpiFormatters, banking?.treasury ?? null);
     }, [kpiProfile, viewedUser, fioChartData, displayKpis, kpiFormatters]);
 
     const profileAlertBundle = useMemo(() => {
@@ -692,7 +692,7 @@ export default function Dashboard() {
                         )}
                     </section>
 
-                    <CashflowTimeMachine />
+                    <CashflowTimeMachine treasury={banking?.treasury ?? null} />
 
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     <div className="space-y-8 lg:col-span-2">

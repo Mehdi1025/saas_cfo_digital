@@ -10,6 +10,7 @@ import {
 } from '@/utils/kpiAnalytics';
 import { buildProfileAlerts } from '@/utils/profileAlerts';
 import { motion } from 'framer-motion';
+import { usePage } from '@inertiajs/react';
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, Minus, Pencil, Sparkles, Zap } from 'lucide-react';
 import { memo, useMemo } from 'react';
 import {
@@ -272,6 +273,11 @@ function FioKpiCard({ kpi, metric, index, isTriggered = false, simulationMode = 
                                 Alerte
                             </span>
                         )}
+                        {metric.source === 'bridge' && (
+                            <span className="inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-cyan-300">
+                                Bridge
+                            </span>
+                        )}
                         <TrendBadge trend={metric.trend} />
                     </div>
                 </div>
@@ -458,6 +464,7 @@ export default function FioKpiDashboard({
     simulationError,
     backendAlert = null,
 }) {
+    const { banking } = usePage().props;
     const profile = getProfileById(profileId);
     const activeKpis = useMemo(
         () => getActiveDashboardKpis(profileId, preferences),
@@ -465,8 +472,8 @@ export default function FioKpiDashboard({
     );
 
     const analytics = useMemo(
-        () => buildKpiAnalytics(chartData, kpis, formatters),
-        [chartData, kpis, formatters],
+        () => buildKpiAnalytics(chartData, kpis, formatters, banking?.treasury ?? null),
+        [chartData, kpis, formatters, banking?.treasury],
     );
 
     const profileAlerts = useMemo(
