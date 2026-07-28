@@ -437,17 +437,23 @@ export default function Dashboard() {
                             backendAlert={alert}
                         />
                     ) : !viewedUser && needsKpiOnboarding ? (
-                        <section className={`${GLASS_PANEL} rounded-[24px] px-6 py-16 text-center`}>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neonMint">
-                                Console Fio
-                            </p>
-                            <h2 className="font-display mt-3 text-2xl font-bold text-white">
-                                Vos KPI apparaitront ici
-                            </h2>
-                            <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400">
-                                Choisissez votre profil metier dans le panneau de configuration pour
-                                afficher instantanement tous vos indicateurs essentiels et secondaires.
-                            </p>
+                        <section className={`${GLASS_PANEL} relative overflow-hidden rounded-3xl p-1`}>
+                            <div className="relative overflow-hidden rounded-[23px] bg-obsidian/80 px-6 py-14 text-center sm:px-10 sm:py-16">
+                                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,157,0.08),transparent_55%)]" />
+                                <div className="relative mx-auto max-w-lg">
+                                    <span className="inline-flex items-center gap-2 rounded-full border border-neonMint/20 bg-neonMint/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-neonMint">
+                                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neonMint" />
+                                        Console Fio
+                                    </span>
+                                    <h2 className="font-display mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                                        Configurez votre cockpit
+                                    </h2>
+                                    <p className="mx-auto mt-3 text-sm leading-relaxed text-slate-400">
+                                        Choisissez votre profil metier pour afficher instantanement vos indicateurs
+                                        essentiels, courbes d evolution et alertes sectorielles.
+                                    </p>
+                                </div>
+                            </div>
                         </section>
                     ) : (
                 <section id="kpi-grid" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">

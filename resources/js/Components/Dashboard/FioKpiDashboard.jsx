@@ -1,7 +1,7 @@
 import SimulationAiInsightBlock from '@/Components/Dashboard/SimulationAiInsightBlock';
 import SimulationControlsPanel from '@/Components/Dashboard/SimulationControlsPanel';
 import SimulationModeToggle from '@/Components/Dashboard/SimulationModeToggle';
-import { getActiveDashboardKpis, getProfileById } from '@/config/kpiProfiles';
+import { getActiveDashboardKpis, getProfileById, PROFILE_SIGNALS } from '@/config/kpiProfiles';
 import {
     buildKpiAnalytics,
     buildProfileChartPanels,
@@ -314,43 +314,129 @@ function ProfileAlertsStrip({ alerts, simulationMode }) {
     const watchCount = alerts.filter((item) => item.tone === 'attention').length;
     const preview = alerts.slice(0, 2);
 
+    if (!preview.length) {
+        return null;
+    }
+
     return (
-        <div className="relative mt-5 space-y-3 rounded-2xl border border-white/8 bg-black/20 p-4 backdrop-blur-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-amber-300" />
-                    <p className="text-sm font-semibold text-white">
-                        Alertes profil {simulationMode ? '· projection' : ''}
-                    </p>
-                </div>
-                <div className="flex flex-wrap gap-2 text-[10px] font-semibold uppercase tracking-wider">
-                    {criticalCount > 0 && (
-                        <span className="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-red-300">
-                            {criticalCount} critique{criticalCount > 1 ? 's' : ''}
+        <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.45 }}
+            className={`${GLASS_PANEL} mt-5 overflow-hidden rounded-3xl p-1`}
+        >
+            <div className="relative space-y-3 rounded-[23px] bg-obsidian/75 p-4 sm:p-5">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,138,0,0.06),transparent_55%)]" />
+                <div className="relative flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-amber-400/25 bg-amber-400/10">
+                            <Zap className="h-4 w-4 text-amber-300" />
                         </span>
-                    )}
-                    {watchCount > 0 && (
-                        <span className="rounded-full border border-[#FF8A00]/30 bg-[#FF8A00]/10 px-2 py-0.5 text-[#FF8A00]">
-                            {watchCount} vigilance
-                        </span>
-                    )}
-                </div>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-                {preview.map((item, index) => (
-                    <div
-                        key={`${item.title}-${index}`}
-                        className="rounded-xl border border-white/6 bg-white/[0.03] p-3"
-                    >
-                        <div className="mb-2 flex items-center justify-between gap-2">
-                            <p className="text-xs font-semibold text-white">{item.title}</p>
-                            <AlertToneBadge tone={item.tone} />
+                        <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                Signaux profil
+                            </p>
+                            <p className="text-sm font-semibold text-white">
+                                Alertes {simulationMode ? '· projection' : '· temps reel'}
+                            </p>
                         </div>
-                        <p className="text-xs leading-relaxed text-slate-400">{item.message}</p>
                     </div>
-                ))}
+                    <div className="flex flex-wrap gap-2 text-[10px] font-semibold uppercase tracking-wider">
+                        {criticalCount > 0 && (
+                            <span className="rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-red-300">
+                                {criticalCount} critique{criticalCount > 1 ? 's' : ''}
+                            </span>
+                        )}
+                        {watchCount > 0 && (
+                            <span className="rounded-full border border-[#FF8A00]/30 bg-[#FF8A00]/10 px-2.5 py-1 text-[#FF8A00]">
+                                {watchCount} vigilance
+                            </span>
+                        )}
+                    </div>
+                </div>
+                <div className="relative grid gap-3 md:grid-cols-2">
+                    {preview.map((item, index) => (
+                        <div
+                            key={`${item.title}-${index}`}
+                            className="rounded-2xl border border-white/6 bg-white/[0.03] p-4 transition duration-300 hover:border-white/12 hover:bg-white/[0.05]"
+                        >
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                                <p className="text-xs font-semibold text-white">{item.title}</p>
+                                <AlertToneBadge tone={item.tone} />
+                            </div>
+                            <p className="text-xs leading-relaxed text-slate-400">{item.message}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
+        </motion.div>
+    );
+}
+
+function HeroStatPill({ label, value, accent = 'mint' }) {
+    const accentClass =
+        accent === 'blue'
+            ? 'border-neonBlue/20 bg-neonBlue/5 text-neonBlue'
+            : accent === 'amber'
+              ? 'border-amber-400/20 bg-amber-400/5 text-amber-200'
+              : 'border-neonMint/20 bg-neonMint/5 text-neonMint';
+
+    return (
+        <div className={`rounded-2xl border px-3 py-2.5 text-center backdrop-blur-sm ${accentClass}`}>
+            <p className="font-display text-xl font-bold leading-none text-white">{value}</p>
+            <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.16em] opacity-80">{label}</p>
         </div>
+    );
+}
+
+function HeadlineKpiTile({ kpi, metric, triggered, simulationMode, index }) {
+    const color = kpi.tier === 'essential' ? '#00FF9D' : '#00F0FF';
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 + index * 0.05, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className={`group relative overflow-hidden rounded-[22px] p-4 ${GLASS_PANEL} ${
+                triggered
+                    ? 'border-amber-400/30 shadow-[0_0_24px_rgba(251,191,36,0.08)]'
+                    : 'hover:border-neonMint/30'
+            }`}
+        >
+            <div
+                className={`absolute inset-y-0 left-0 w-[3px] ${
+                    triggered ? 'bg-amber-400' : 'bg-neonMint'
+                }`}
+            />
+            <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-neonMint/5 blur-2xl transition group-hover:bg-neonMint/10" />
+            <div className="relative">
+                <p className="truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    {kpi.name}
+                </p>
+                <p className="font-display mt-2 text-2xl font-bold tracking-tight text-white">
+                    {metric.value ?? '—'}
+                </p>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                    <TrendBadge trend={metric.trend} />
+                    {triggered && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-200">
+                            <AlertTriangle className="h-3 w-3" />
+                            Alerte
+                        </span>
+                    )}
+                </div>
+                {metric.sparkline?.length > 1 && (
+                    <div className="mt-3 h-11 opacity-85">
+                        <MiniAreaChart
+                            data={metric.sparkline}
+                            color={color}
+                            fillId={`headline-${kpi.id}`}
+                            dashed={simulationMode}
+                        />
+                    </div>
+                )}
+            </div>
+        </motion.div>
     );
 }
 
@@ -411,102 +497,156 @@ export default function FioKpiDashboard({
     );
 
     const triggeredSet = useMemo(() => new Set(profileAlerts.triggeredKpiIds), [profileAlerts.triggeredKpiIds]);
+    const profileSignals = PROFILE_SIGNALS[profileId] ?? [];
+    const alertCount = profileAlerts.items.filter((item) => item.tone === 'critique' || item.tone === 'attention').length;
 
     return (
         <section id="fio-kpi-board" className="space-y-6">
-            <div className={`relative overflow-hidden rounded-[28px] p-6 sm:p-8 ${GLASS_PANEL}`}>
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,255,157,0.1),transparent_42%),radial-gradient(circle_at_bottom_left,rgba(0,240,255,0.08),transparent_38%)]" />
-                <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-neonMint">
-                            <Sparkles className="h-3.5 w-3.5" />
-                            Console Fio · {profile.name}
-                            {simulationMode && (
-                                <span className="rounded-full border border-neonBlue/30 bg-neonBlue/10 px-2 py-0.5 text-[10px] text-neonBlue">
-                                    Simulation active
-                                </span>
-                            )}
-                        </p>
-                        <h2 className="font-display mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                            Vos {activeKpis.length} KPI actifs
-                        </h2>
-                        <p className="mt-2 max-w-2xl text-sm text-slate-400">
-                            {simulationMode
-                                ? 'Projection What-If a 6 mois — KPI, courbes et alertes recalculés en direct selon vos hypotheses.'
-                                : 'Stats, tendances M-1 et courbes d evolution calculees sur vos saisies mensuelles — filtrees selon votre profil metier.'}
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={onEditProfile}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-slate-200 transition hover:border-neonMint/30 hover:bg-neonMint/10"
-                    >
-                        <Pencil className="h-3.5 w-3.5" />
-                        Ajuster mes KPI
-                    </button>
-                </div>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className={`${GLASS_PANEL} relative overflow-hidden rounded-3xl p-1`}
+            >
+                <div className="relative overflow-hidden rounded-[23px] bg-obsidian/80 px-6 py-8 sm:px-8 sm:py-10">
+                    <div
+                        className="pointer-events-none absolute inset-0 opacity-[0.35]"
+                        aria-hidden
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
+                            backgroundSize: '48px 48px',
+                        }}
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(0,255,157,0.12),transparent_42%),radial-gradient(circle_at_10%_90%,rgba(0,240,255,0.1),transparent_38%)]" />
+                    <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-neonMint/10 blur-3xl" />
+                    <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-neonBlue/10 blur-3xl" />
 
-                {headlineKpis.length > 0 && (
-                    <div className="relative mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                        {headlineKpis.map((kpi) => {
-                            const metric = getKpiMetric(analytics, kpi.id);
-
-                            return (
-                                <div
-                                    key={kpi.id}
-                                    className={`rounded-2xl border px-4 py-3 backdrop-blur-sm ${
-                                        triggeredSet.has(kpi.id)
-                                            ? 'border-amber-400/30 bg-amber-400/5'
-                                            : 'border-white/8 bg-black/20'
-                                    }`}
-                                >
-                                    <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">{kpi.name}</p>
-                                    <p className="font-display mt-1 text-xl font-bold text-white">{metric.value ?? '—'}</p>
-                                    <div className="mt-2 flex items-center justify-between gap-2">
-                                        <TrendBadge trend={metric.trend} />
-                                    </div>
-                                    {metric.sparkline?.length > 1 && (
-                                        <div className="mt-2 h-10 opacity-80">
-                                            <MiniAreaChart
-                                                data={metric.sparkline}
-                                                color={kpi.tier === 'essential' ? '#00FF9D' : '#00F0FF'}
-                                                fillId={`headline-${kpi.id}`}
-                                                dashed={simulationMode}
-                                            />
-                                        </div>
-                                    )}
+                    <div className="relative grid gap-8 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
+                        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+                            <div className="relative shrink-0">
+                                <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-[20px] border border-neonMint/25 bg-[linear-gradient(145deg,rgba(0,255,157,0.14)_0%,rgba(0,240,255,0.06)_100%)] text-3xl shadow-[0_0_48px_rgba(0,255,157,0.12),inset_0_1px_1px_rgba(255,255,255,0.12)]">
+                                    {profile.icon}
                                 </div>
-                            );
-                        })}
-                    </div>
-                )}
+                                <span className="absolute -bottom-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-obsidian bg-neonMint text-obsidian shadow-[0_0_16px_rgba(0,255,157,0.45)]">
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                </span>
+                            </div>
 
-                {statsSummary.liveCount > 0 && (
-                    <div className="relative mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
-                        <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${
-                                statsSummary.momentum === 'positive'
-                                    ? 'bg-neonMint/10 text-neonMint'
-                                    : statsSummary.momentum === 'cautious'
-                                      ? 'bg-rose-400/10 text-rose-300'
-                                      : 'bg-white/5 text-slate-400'
-                            }`}
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="inline-flex items-center gap-2 rounded-full border border-neonMint/20 bg-neonMint/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-neonMint">
+                                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neonMint shadow-[0_0_8px_rgba(0,255,157,0.8)]" />
+                                        Console Fio
+                                    </span>
+                                    {simulationMode && (
+                                        <span className="rounded-full border border-neonBlue/30 bg-neonBlue/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-neonBlue">
+                                            Simulation active
+                                        </span>
+                                    )}
+                                    {kpis?.mois_actuel ? (
+                                        <span className="rounded-full border border-white/8 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400">
+                                            {kpis.mois_actuel}
+                                        </span>
+                                    ) : null}
+                                </div>
+
+                                <h2 className="font-display mt-4 text-[clamp(1.75rem,4vw,2.75rem)] font-bold leading-[1.05] tracking-tight">
+                                    <span className="bg-gradient-to-br from-white via-white to-slate-400 bg-clip-text text-transparent">
+                                        {profile.name}
+                                    </span>
+                                </h2>
+                                <p className="mt-1 text-sm font-medium capitalize tracking-wide text-neonBlue/90">
+                                    {profile.sub}
+                                </p>
+                                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">
+                                    {simulationMode
+                                        ? 'Projection What-If a 6 mois — KPI, courbes et alertes recalculés en direct selon vos hypotheses.'
+                                        : `${activeKpis.length} indicateurs actifs · tendances M-1 et courbes d evolution sur vos saisies mensuelles.`}
+                                </p>
+
+                                {profileSignals.length > 0 && (
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        {profileSignals.slice(0, 4).map((signal) => (
+                                            <span
+                                                key={signal}
+                                                className="rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-[11px] text-slate-400 transition hover:border-white/14 hover:text-slate-300"
+                                            >
+                                                {signal}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-4 xl:items-stretch">
+                            <div className="grid grid-cols-3 gap-2">
+                                <HeroStatPill label="KPI actifs" value={activeKpis.length} accent="mint" />
+                                <HeroStatPill
+                                    label="Alimentes"
+                                    value={`${statsSummary.liveCount}/${statsSummary.totalEssentials}`}
+                                    accent="blue"
+                                />
+                                <HeroStatPill label="Alertes" value={alertCount} accent="amber" />
+                            </div>
+                            <button
+                                type="button"
+                                onClick={onEditProfile}
+                                className="group inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.02)_100%)] px-4 py-3 text-xs font-semibold text-slate-100 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] transition duration-300 hover:border-neonMint/35 hover:bg-neonMint/10 hover:text-white"
+                            >
+                                <Pencil className="h-3.5 w-3.5 transition group-hover:text-neonMint" />
+                                Ajuster mes KPI
+                            </button>
+                        </div>
+                    </div>
+
+                    {statsSummary.liveCount > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.15 }}
+                            className="relative mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-white/6 bg-black/25 px-4 py-3 backdrop-blur-sm"
                         >
-                            {statsSummary.momentum === 'positive'
-                                ? 'Dynamique favorable'
-                                : statsSummary.momentum === 'cautious'
-                                  ? 'Points de vigilance'
-                                  : 'Tendances stables'}
-                        </span>
-                        <p className="text-xs text-slate-400">
-                            {statsSummary.liveCount}/{statsSummary.totalEssentials} KPI essentiels alimentes ·{' '}
-                            {statsSummary.upCount} en hausse · {statsSummary.downCount} en baisse vs M-1
-                        </p>
-                    </div>
-                )}
+                            <span
+                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${
+                                    statsSummary.momentum === 'positive'
+                                        ? 'border border-neonMint/25 bg-neonMint/10 text-neonMint'
+                                        : statsSummary.momentum === 'cautious'
+                                          ? 'border border-rose-400/25 bg-rose-400/10 text-rose-300'
+                                          : 'border border-white/10 bg-white/5 text-slate-400'
+                                }`}
+                            >
+                                {statsSummary.momentum === 'positive'
+                                    ? 'Dynamique favorable'
+                                    : statsSummary.momentum === 'cautious'
+                                      ? 'Points de vigilance'
+                                      : 'Tendances stables'}
+                            </span>
+                            <p className="text-xs text-slate-400">
+                                {statsSummary.upCount} en hausse · {statsSummary.downCount} en baisse vs M-1
+                            </p>
+                        </motion.div>
+                    )}
+                </div>
+            </motion.div>
 
-                <ProfileAlertsStrip alerts={profileAlerts.items} simulationMode={simulationMode} />
-            </div>
+            {headlineKpis.length > 0 && (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {headlineKpis.map((kpi, index) => (
+                        <HeadlineKpiTile
+                            key={kpi.id}
+                            kpi={kpi}
+                            metric={getKpiMetric(analytics, kpi.id)}
+                            triggered={triggeredSet.has(kpi.id)}
+                            simulationMode={simulationMode}
+                            index={index}
+                        />
+                    ))}
+                </div>
+            )}
+
+            <ProfileAlertsStrip alerts={profileAlerts.items} simulationMode={simulationMode} />
 
             <section className={`${GLASS_PANEL} rounded-[24px] p-5 sm:p-6`}>
                 <SimulationModeToggle
