@@ -14,7 +14,7 @@ import {
     Wallet,
     X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const cardClass = 'rounded-xl border border-[#1e293b] bg-[#111827] p-5 shadow-sm';
 const tableHeaderClass =
@@ -111,6 +111,7 @@ function ClientModal({ open, onClose, selectedClient, countryOptions }) {
                         <input
                             value={form.data.name}
                             onChange={(e) => form.setData('name', e.target.value)}
+                            required
                             className="w-full rounded-lg border border-slate-700 bg-[#0f172a] px-3 py-2 text-sm text-white outline-none focus:border-blue-500"
                         />
                         {form.errors.name ? <p className="mt-1 text-xs text-red-400">{form.errors.name}</p> : null}
@@ -251,17 +252,29 @@ function ClientModal({ open, onClose, selectedClient, countryOptions }) {
     );
 }
 
-export default function ClientsIndex({ clients, stats, filters }) {
+export default function ClientsIndex({ clients, stats, filters, highlight_client_id: highlightClientId = null }) {
     const { tax_rates: taxRates = {} } = usePage().props;
     const countryOptions = useMemo(
         () => countryOptionsForClientForm(taxRates),
         [taxRates],
     );
 
-    const [selectedId, setSelectedId] = useState(clients.data[0]?.id ?? null);
+    const [selectedId, setSelectedId] = useState(
+        highlightClientId ?? clients.data[0]?.id ?? null,
+    );
     const [showModal, setShowModal] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
     const [search, setSearch] = useState(filters.search ?? '');
+
+    useEffect(() => {
+        if (highlightClientId) {
+            setSelectedId(highlightClientId);
+        }
+    }, [highlightClientId]);
+
+    useEffect(() => {
+        setSearch(filters.search ?? '');
+    }, [filters.search]);
 
     const selectedClient = useMemo(
         () => clients.data.find((client) => client.id === selectedId) ?? clients.data[0] ?? null,
@@ -389,12 +402,17 @@ export default function ClientsIndex({ clients, stats, filters }) {
                                         <tbody>
                                             {clients.data.map((client) => {
                                                 const isSelected = client.id === selectedClient?.id;
+                                                const isHighlighted = client.id === highlightClientId;
                                                 return (
                                                     <tr
                                                         key={client.id}
                                                         onClick={() => setSelectedId(client.id)}
                                                         className={`cursor-pointer border-t border-slate-800/80 transition ${
-                                                            isSelected ? 'bg-blue-500/10' : 'hover:bg-white/5'
+                                                            isSelected
+                                                                ? 'bg-blue-500/10'
+                                                                : isHighlighted
+                                                                  ? 'bg-emerald-500/10'
+                                                                  : 'hover:bg-white/5'
                                                         }`}
                                                     >
                                                         <td className="px-4 py-3.5">

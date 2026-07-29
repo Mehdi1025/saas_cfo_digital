@@ -13,6 +13,7 @@ class ClientController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search', ''));
+        $highlightClientId = $request->integer('created') ?: null;
 
         $clientsQuery = Tier::query()
             ->when($search !== '', function ($query) use ($search) {
@@ -55,6 +56,7 @@ class ClientController extends Controller
             'filters' => [
                 'search' => $search,
             ],
+            'highlight_client_id' => $highlightClientId,
             'clients' => [
                 'data' => $items,
                 'meta' => [
@@ -86,12 +88,18 @@ class ClientController extends Controller
             'vat_number' => ['nullable', 'string', 'max:255'],
         ]);
 
-        Tier::create([
+        $client = Tier::create([
             ...$validated,
+            'user_id' => $request->user()->id,
             'country_code' => $this->normalizeCountryCode($validated['country_code'] ?? null),
         ]);
 
-        return redirect()->route('clients.index')->with('success', 'Client ajouté.');
+        return redirect()
+            ->route('clients.index', [
+                'search' => $client->name,
+                'created' => $client->id,
+            ])
+            ->with('success', 'Client ajouté.');
     }
 
     public function update(Request $request, Tier $client): RedirectResponse

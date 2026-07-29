@@ -805,6 +805,16 @@ export default function InvoiceCreate({
                                                         </option>
                                                     ))}
                                                 </select>
+                                                <p className="mt-2 text-xs text-slate-500">
+                                                    Client absent de la liste ?{' '}
+                                                    <Link
+                                                        href={route('clients.index')}
+                                                        className="font-medium text-blue-400 transition hover:text-blue-300"
+                                                    >
+                                                        Ajouter un client
+                                                    </Link>
+                                                    {' '}puis revenez sur cette page.
+                                                </p>
                                                 {form.errors.tiers_id ? (
                                                     <p className="mt-2 text-xs text-red-400">
                                                         {form.errors.tiers_id}
